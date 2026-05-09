@@ -2,11 +2,15 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { useTranslation } from "@/components/providers/language-provider";
 
 const BUFFET_SPREAD =
   "https://media.base44.com/images/public/69ef9f21768de8fe150ac337/f58978fdf_generated_8faba501.png";
 
 export default function BuffetPreview() {
+  const { copy } = useTranslation();
+  const previewCopy = copy.reservation.preview;
+
   return (
     <section className="relative overflow-hidden py-20 lg:py-28" style={{ background: "#041F18" }}>
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
@@ -17,7 +21,7 @@ export default function BuffetPreview() {
             viewport={{ once: true }}
             transition={{ duration: 0.7 }}
           >
-            <img src={BUFFET_SPREAD} alt="Buffet spread" className="w-full rounded" />
+            <img src={BUFFET_SPREAD} alt={previewCopy.imageAlt} className="w-full rounded" />
           </motion.div>
 
           <motion.div
@@ -27,22 +31,22 @@ export default function BuffetPreview() {
             transition={{ duration: 0.7 }}
           >
             <span className="text-sm font-semibold" style={{ color: "#C9A56A" }}>
-              Decouvrez notre menu
+              {previewCopy.eyebrow}
             </span>
             <h2 className="mt-4 text-5xl font-bold leading-[1.05] sm:text-6xl" style={{ color: "#F4E8D2" }}>
-              SAVEURS D&apos;ASIE
+              {previewCopy.titleTop}
               <br />
-              <span style={{ color: "#C9A56A" }}>A VOLONTE</span>
+              <span style={{ color: "#C9A56A" }}>{previewCopy.titleBottom}</span>
             </h2>
             <p className="mt-6 max-w-md text-lg font-light leading-relaxed" style={{ color: "rgba(244,232,210,0.6)" }}>
-              Des plats frais, authentiques et savoureux prepares chaque jour pour regaler vos sens.
+              {previewCopy.description}
             </p>
             <Link
               href="/menu"
               className="mt-8 inline-block rounded border px-8 py-3 text-sm font-semibold transition-all duration-300 hover:opacity-80"
               style={{ borderColor: "rgba(201,165,106,0.5)", color: "#C9A56A" }}
             >
-              Voir le menu
+              {previewCopy.cta}
             </Link>
           </motion.div>
         </div>

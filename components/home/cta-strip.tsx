@@ -2,27 +2,11 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-
-const FOOD_IMAGES = [
-  {
-    src: "https://media.base44.com/images/public/69ef9f21768de8fe150ac337/f58978fdf_generated_8faba501.png",
-    alt: "Buffet spread with assorted dishes",
-  },
-  {
-    src: "https://media.base44.com/images/public/69ef9f21768de8fe150ac337/872a06ea3_generated_c0f1cb51.png",
-    alt: "Italian plate with pizza and pasta",
-  },
-  {
-    src: "https://media.base44.com/images/public/69ef9f21768de8fe150ac337/58249255b_generated_0f949410.png",
-    alt: "Grilled skewers with rice and vegetables",
-  },
-  {
-    src: "https://media.base44.com/images/public/69ef9f21768de8fe150ac337/52f6f9e6a_generated_cb6366c6.png",
-    alt: "Asian platter with dim sum and wok dishes",
-  },
-];
+import { useTranslation } from "@/components/providers/language-provider";
 
 export default function CtaStrip() {
+  const { copy } = useTranslation();
+
   return (
     <section
       className="relative overflow-hidden"
@@ -34,7 +18,7 @@ export default function CtaStrip() {
       <div
         className="grid grid-cols-2 lg:grid-cols-4"
       >
-        {FOOD_IMAGES.map((image, index) => (
+        {copy.home.ctaStrip.images.map((image, index) => (
           <motion.div
             key={image.src}
             initial={{ opacity: 0, y: 24 }}
@@ -63,10 +47,10 @@ export default function CtaStrip() {
         >
           <div className="flex flex-col items-center">
             <h2 className="text-4xl font-bold sm:text-5xl lg:text-6xl" style={{ color: "#062F24" }}>
-              RESERVEZ VOTRE TABLE
+              {copy.home.ctaStrip.title}
             </h2>
             <p className="mt-2 max-w-2xl text-base font-light" style={{ color: "rgba(6,47,36,0.62)" }}>
-              et venez vivre un moment gourmand unique.
+              {copy.home.ctaStrip.description}
             </p>
           </div>
 
@@ -75,7 +59,7 @@ export default function CtaStrip() {
             className="rounded px-10 py-4 text-base font-semibold transition-all duration-300 hover:opacity-90 sm:text-lg"
             style={{ background: "#C9A56A", color: "#062F24" }}
           >
-            Reserver maintenant
+            {copy.home.ctaStrip.cta}
           </Link>
         </motion.div>
       </div>

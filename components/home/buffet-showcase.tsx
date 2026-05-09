@@ -4,47 +4,22 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-
-const DISHES = [
-  {
-    name: "Poulet General Tao",
-    description: "Poulet croustillant, sauce sucree-salee.",
-    img: "https://media.base44.com/images/public/69ef9f21768de8fe150ac337/872a06ea3_generated_c0f1cb51.png",
-  },
-  {
-    name: "Boeuf Poivre Noir",
-    description: "Boeuf saute, oignons et sauce poivree.",
-    img: "https://media.base44.com/images/public/69ef9f21768de8fe150ac337/58249255b_generated_0f949410.png",
-  },
-  {
-    name: "Nouilles Sautees",
-    description: "Nouilles wok et legumes croquants.",
-    img: "https://media.base44.com/images/public/69ef9f21768de8fe150ac337/52f6f9e6a_generated_cb6366c6.png",
-  },
-  {
-    name: "Crevettes Sel et Poivre",
-    description: "Crevettes sautees, ail et echalotes.",
-    img: "https://media.base44.com/images/public/69ef9f21768de8fe150ac337/58249255b_generated_0f949410.png",
-  },
-  {
-    name: "Saumon Teriyaki",
-    description: "Saumon fondant, glaze teriyaki.",
-    img: "https://media.base44.com/images/public/69ef9f21768de8fe150ac337/872a06ea3_generated_c0f1cb51.png",
-  },
-];
+import { useTranslation } from "@/components/providers/language-provider";
 
 export default function BuffetShowcase() {
-  const [activeIndex, setActiveIndex] = useState(Math.floor(DISHES.length / 2));
+  const { copy } = useTranslation();
+  const dishes = copy.home.buffetShowcase.dishes;
+  const [activeIndex, setActiveIndex] = useState(Math.floor(dishes.length / 2));
 
   const slides = useMemo(
     () =>
-      DISHES.map((dish, index) => {
+      dishes.map((dish, index) => {
         const rawOffset = index - activeIndex;
         const offset =
-          rawOffset > DISHES.length / 2
-            ? rawOffset - DISHES.length
-            : rawOffset < -DISHES.length / 2
-              ? rawOffset + DISHES.length
+          rawOffset > dishes.length / 2
+            ? rawOffset - dishes.length
+            : rawOffset < -dishes.length / 2
+              ? rawOffset + dishes.length
               : rawOffset;
         const isActive = offset === 0;
 
@@ -55,15 +30,15 @@ export default function BuffetShowcase() {
           isActive,
         };
       }),
-    [activeIndex],
+    [activeIndex, dishes],
   );
 
   const goPrevious = () => {
-    setActiveIndex((current) => (current === 0 ? DISHES.length - 1 : current - 1));
+    setActiveIndex((current) => (current === 0 ? dishes.length - 1 : current - 1));
   };
 
   const goNext = () => {
-    setActiveIndex((current) => (current === DISHES.length - 1 ? 0 : current + 1));
+    setActiveIndex((current) => (current === dishes.length - 1 ? 0 : current + 1));
   };
 
   return (
@@ -77,20 +52,20 @@ export default function BuffetShowcase() {
           className="mx-auto max-w-3xl text-center"
         >
           <h2 className="mt-4 text-[2.15rem] font-bold leading-[1.05] sm:text-6xl lg:text-7xl" style={{ color: "#F4E8D2" }}>
-            <span className="block text-balance sm:whitespace-nowrap">UN VOYAGE CULINAIRE</span>
+            <span className="block text-balance sm:whitespace-nowrap">{copy.home.buffetShowcase.titleTop}</span>
             <span className="block text-balance sm:whitespace-nowrap" style={{ color: "#C9A56A" }}>
-              SANS LIMITES
+              {copy.home.buffetShowcase.titleBottom}
             </span>
           </h2>
           <p className="mx-auto mt-6 max-w-2xl text-lg font-light leading-relaxed" style={{ color: "rgba(244,232,210,0.6)" }}>
-            Sushis, woks, grillades, dim sum, desserts maison. Parcourez quelques assiettes vedettes dans un format plus immersif.
+            {copy.home.buffetShowcase.description}
           </p>
           <Link
             href="/menu"
             className="mt-8 inline-block rounded px-10 py-4 text-base font-semibold transition-all duration-300 hover:opacity-90 sm:text-lg"
             style={{ background: "#C9A56A", color: "#062F24" }}
           >
-            Voir le menu
+            {copy.home.buffetShowcase.cta}
           </Link>
         </motion.div>
 
@@ -101,7 +76,7 @@ export default function BuffetShowcase() {
               onClick={goPrevious}
               className="absolute left-0 top-1/2 z-40 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border transition-colors duration-300 hover:bg-[#C9A56A]/10 sm:left-3 sm:h-16 sm:w-16 lg:left-4 lg:h-20 lg:w-20"
               style={{ borderColor: "rgba(201,165,106,0.32)", color: "#C9A56A", background: "rgba(5,20,15,0.88)" }}
-              aria-label="Plat precedent"
+              aria-label={copy.home.buffetShowcase.previousDish}
             >
               <ArrowLeft size={24} className="sm:h-9 sm:w-9 lg:h-10 lg:w-10" />
             </button>
@@ -169,7 +144,7 @@ export default function BuffetShowcase() {
               onClick={goNext}
               className="absolute right-0 top-1/2 z-40 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border transition-colors duration-300 hover:bg-[#C9A56A]/10 sm:right-3 sm:h-16 sm:w-16 lg:right-4 lg:h-20 lg:w-20"
               style={{ borderColor: "rgba(201,165,106,0.32)", color: "#C9A56A", background: "rgba(5,20,15,0.88)" }}
-              aria-label="Plat suivant"
+              aria-label={copy.home.buffetShowcase.nextDish}
             >
               <ArrowRight size={24} className="sm:h-9 sm:w-9 lg:h-10 lg:w-10" />
             </button>

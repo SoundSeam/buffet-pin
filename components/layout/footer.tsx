@@ -1,10 +1,14 @@
-import Link from "next/link";
+"use client";
+
 import { FaFacebookF, FaInstagram } from "react-icons/fa";
+import { useTranslation } from "@/components/providers/language-provider";
 
 const LOGO_HORIZONTAL =
   "https://soundseam-origin.s3.us-east-2.amazonaws.com/misc/Buffet+PIN-Logo+Square.png";
 
 export default function Footer() {
+  const { copy } = useTranslation();
+
   return (
     <footer style={{ background: "#041F18", borderTop: "1px solid rgba(201,165,106,0.15)" }}>
       <div className="mx-auto max-w-7xl px-6 py-10 lg:px-8 lg:py-12">
@@ -15,57 +19,69 @@ export default function Footer() {
 
           <div className="text-center sm:text-left">
             <h4 className="mb-5 text-sm font-semibold" style={{ color: "#C9A56A" }}>
-              Socials
+              {copy.footer.socials}
             </h4>
             <div className="flex flex-col items-center gap-3 sm:items-start">
-              <a
-                href="#"
-                aria-label="Facebook"
-                className="inline-flex items-center gap-3 transition-all duration-300 hover:opacity-80"
-                style={{ color: "#C9A56A" }}
-              >
-                <FaFacebookF size={20} />
-                <span className="text-base" style={{ color: "rgba(244,232,210,0.65)" }}>
-                  Facebook
-                </span>
-              </a>
-              <a
-                href="#"
-                aria-label="Instagram"
-                className="inline-flex items-center gap-3 transition-all duration-300 hover:opacity-80"
-                style={{ color: "#C9A56A" }}
-              >
-                <FaInstagram size={20} />
-                <span className="text-base" style={{ color: "rgba(244,232,210,0.65)" }}>
-                  Instagram
-                </span>
-              </a>
+              {copy.footer.socialLinks.map((link) => {
+                const Icon = link.label === "Facebook" ? FaFacebookF : FaInstagram;
+
+                return (
+                  <a
+                    key={link.label}
+                    href={link.href}
+                    aria-label={link.ariaLabel}
+                    className="inline-flex items-center gap-3 transition-all duration-300 hover:opacity-80"
+                    style={{ color: "#C9A56A" }}
+                  >
+                    <Icon size={20} />
+                    <span className="text-base" style={{ color: "rgba(244,232,210,0.65)" }}>
+                      {link.label}
+                    </span>
+                  </a>
+                );
+              })}
             </div>
           </div>
 
           <div className="text-center sm:text-left">
             <h4 className="mb-5 text-sm font-semibold" style={{ color: "#C9A56A" }}>
-              Addresse
+              {copy.footer.address}
             </h4>
             <div
               className="flex flex-col items-center gap-3 text-base sm:items-start"
               style={{ color: "rgba(244,232,210,0.65)" }}
             >
-              <p>90 Boul. Saint Jean Baptiste</p>
-              <p>Chateauguay, QC J6K 3A6</p>
+              {copy.footer.addressLines.map((line) => (
+                <p key={line}>{line}</p>
+              ))}
             </div>
           </div>
 
           <div className="text-center sm:text-left">
             <h4 className="mb-5 text-sm font-semibold" style={{ color: "#C9A56A" }}>
-              Contact
+              {copy.footer.contact}
             </h4>
             <div
               className="flex flex-col items-center gap-3 text-base sm:items-start"
               style={{ color: "rgba(244,232,210,0.65)" }}
             >
-              <p>contact@buffetpin.ca</p>
-              <p>(514) 123-4567</p>
+              {copy.footer.contactLinks.map((link) => (
+                (() => {
+                  const isExternal = "external" in link && link.external;
+
+                  return (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  target={isExternal ? "_blank" : undefined}
+                  rel={isExternal ? "noopener noreferrer" : undefined}
+                  className="transition-all duration-300 hover:opacity-80"
+                >
+                  {link.label}
+                </a>
+                  );
+                })()
+              ))}
             </div>
           </div>
         </div>

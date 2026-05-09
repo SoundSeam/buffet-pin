@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  NO_SHOW
+}
+
+enum ReservationLanguage {
+  EN
+  FR
+}
+
+model Reservation {
+  id                 String              @id @default(cuid())
+  confirmationCode   String              @unique
+  manageToken        String              @unique
+  status             ReservationStatus   @default(PENDING)
+  reservationDate    DateTime            @db.Date
+  reservationTime    DateTime            @db.Time(0)
+  reservationAt      DateTime
+  partySize          Int
+  guestName          String
+  guestPhone         String
+  guestEmail         String?
+  language           ReservationLanguage @default(FR)
+  specialRequests    String?
+  internalNotes      String?
+  confirmationSentAt DateTime?
+  reminderSentAt     DateTime?
+  cancelledAt        DateTime?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  @@index([reservationDate, reservationTime])
+  @@index([status])
+}
+
+model Settings {
+  id                     Int      @id @default(1)
+  slotCapacityGuests     Int      @default(24)
+  minPartySize           Int
+  maxPartySize           Int
+  firstSlot              DateTime @db.Time(0)
+  lastSlot               DateTime @db.Time(0)
+  slotIntervalMinutes    Int
+  guestModifyCutoffHours Int
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+}
+
+model ClosureDate {
+  id        String   @id @default(cuid())
+  date      DateTime @unique @db.Date
+  note      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

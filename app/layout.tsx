@@ -1,9 +1,16 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+import { LanguageProvider } from "@/components/providers/language-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Buffet PIN",
-  description: "Buffet asiatique a volonte a Chateauguay.",
+  description: "Asian buffet restaurant in Chateauguay | Buffet asiatique a volonte a Chateauguay.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#041F18",
 };
 
 export default function RootLayout({
@@ -20,7 +27,7 @@ export default function RootLayout({
             "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
         }}
       >
-        {children}
+        <LanguageProvider>{children}</LanguageProvider>
       </body>
     </html>
   );

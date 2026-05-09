@@ -5,20 +5,18 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
+import LanguageToggle from "@/components/layout/language-toggle";
+import { useTranslation } from "@/components/providers/language-provider";
 
 const LOGO =
   "https://soundseam-origin.s3.us-east-2.amazonaws.com/misc/Buffet+PIN-Logo+Horizontal.png";
-
-const NAV_LINKS = [
-  { label: "Accueil", path: "/" },
-  { label: "Menu", path: "/menu" },
-];
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
   const mobileMenuId = "primary-navigation-mobile";
+  const { copy } = useTranslation();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 40);
@@ -49,7 +47,7 @@ export default function Navbar() {
           </Link>
 
           <div className="hidden items-center justify-end gap-10 lg:flex lg:ml-auto">
-            {NAV_LINKS.map((link) => (
+            {copy.navbar.links.map((link) => (
               <Link
                 key={link.label}
                 href={link.path}
@@ -60,11 +58,13 @@ export default function Navbar() {
               </Link>
             ))}
 
+            <LanguageToggle />
+
             <Link
               href="/reservation"
               className="rounded bg-[#C9A56A] px-6 py-2.5 text-sm font-semibold text-[#062F24] transition-all duration-300 hover:opacity-90"
             >
-              Reserver
+              {copy.navbar.reserve}
             </Link>
           </div>
 
@@ -74,7 +74,7 @@ export default function Navbar() {
             className="min-h-11 min-w-11 rounded-md bg-[#C9A56A] p-2 text-[#062F24] transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A56A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#062F24] lg:hidden"
             aria-controls={mobileMenuId}
             aria-expanded={mobileOpen}
-            aria-label={mobileOpen ? "Fermer le menu" : "Ouvrir le menu"}
+            aria-label={mobileOpen ? copy.navbar.closeMenu : copy.navbar.openMenu}
           >
             {mobileOpen ? <X size={24} aria-hidden="true" /> : <Menu size={24} aria-hidden="true" />}
           </button>
@@ -92,7 +92,9 @@ export default function Navbar() {
             style={{ background: "#041F18" }}
           >
             <div className="space-y-6 px-6 py-8">
-              {NAV_LINKS.map((link) => (
+              <LanguageToggle mobile />
+
+              {copy.navbar.links.map((link) => (
                 <Link
                   key={link.label}
                   href={link.path}
@@ -106,7 +108,7 @@ export default function Navbar() {
                 href="/reservation"
                 className="block rounded bg-[#C9A56A] px-6 py-3 text-center text-sm font-semibold text-[#062F24] transition-all duration-300 hover:opacity-90"
               >
-                Reserver
+                {copy.navbar.reserve}
               </Link>
             </div>
           </motion.div>

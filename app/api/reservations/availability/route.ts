@@ -1,0 +1,99 @@
+import { NextResponse } from "next/server";
+import { ZodError } from "zod";
+
+import { db } from "@/lib/db";
+import { getCapacityBySlot } from "@/lib/reservations/capacity";
+import {
+  ReservationRuleError,
+  assertDateIsNotPast,
+  assertDateIsOpen,
+  assertPartySize,
+} from "@/lib/reservations/rules";
+import { generateDinnerSlotsFromSettings } from "@/lib/reservations/slots";
+import {
+  type PublicAvailabilityPayload,
+  publicAvailabilityPayloadSchema,
+} from "@/lib/validation";
+
+export const dynamic = "force-dynamic";
+
+function errorResponse(
+  status: number,
+  code: string,
+  message: string,
+  details?: unknown,
+) {
+  return NextResponse.json(
+    {
+      ok: false,
+      error: {
+        code,
+        message,
+        ...(details ? { details } : {}),
+      },
+    },
+    { status },
+  );
+}
+
+export async function POST(request: Request) {
+  let payload: PublicAvailabilityPayload;
+
+  try {
+    payload = publicAvailabilityPayloadSchema.parse(await request.json());
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return errorResponse(
+        400,
+        "VALIDATION_ERROR",
+        "Invalid availability request.",
+        error.issues,
+      );
+    }
+
+    return errorResponse(400, "INVALID_JSON", "Invalid availability request.");
+  }
+
+  try {
+    const settings = await db.settings.findUnique({ where: { id: 1 } });
+
+    if (!settings) {
+      return errorResponse(
+        500,
+        "SETTINGS_NOT_FOUND",
+        "Reservation settings are not configured.",
+      );
+    }
+
+    assertPartySize(settings, payload.partySize);
+    assertDateIsNotPast(payload.date);
+    await assertDateIsOpen(db, payload.date);
+
+    const reservationTimes = generateDinnerSlotsFromSettings(settings);
+    const slots = await getCapacityBySlot(db, settings, {
+      reservationDate: payload.date,
+      reservationTimes,
+    });
+
+    return NextResponse.json({
+      ok: true,
+      data: {
+        date: payload.date,
+        partySize: payload.partySize,
+        slots: slots
+          .filter((slot) => slot.remainingCapacity >= payload.partySize)
+          .map((slot) => ({
+            time: slot.reservationTime,
+            remainingCapacity: slot.remainingCapacity,
+          })),
+      },
+    });
+  } catch (error) {
+    if (error instanceof ReservationRuleError) {
+      return errorResponse(400, error.code, error.message);
+    }
+
+    console.error(error);
+    return errorResponse(500, "INTERNAL_ERROR", "Unable to load availability.");
+  }
+}

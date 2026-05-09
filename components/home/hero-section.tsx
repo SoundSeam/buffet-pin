@@ -2,8 +2,11 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { useTranslation } from "@/components/providers/language-provider";
 
 export default function HeroSection() {
+  const { copy } = useTranslation();
+
   return (
     <section
       className="relative flex min-h-[100svh] items-center overflow-hidden"
@@ -23,7 +26,8 @@ export default function HeroSection() {
         }}
       >
         <source
-          src="https://soundseam-origin.s3.us-east-2.amazonaws.com/misc/Restaurant+Buffet+des+Continents+Resto+buffet+toujours+a%CC%80+volonte%CC%81.mkv"
+          src="https://soundseam-origin.s3.us-east-2.amazonaws.com/misc/Buffet+Pin+Hero+Background+Final.mp4"
+          type="video/mp4"
         />
       </video>
       <div
@@ -47,30 +51,30 @@ export default function HeroSection() {
                 className="text-sm font-semibold uppercase leading-none sm:text-base"
                 style={{ color: "rgba(244,232,210,0.9)" }}
               >
-                Buffet Pin
+                {copy.home.hero.brand}
               </span>
               <span
                 className="text-sm font-medium uppercase leading-none sm:text-base"
                 style={{ color: "#C9A56A" }}
               >
-                Buffet asiatique a volonte
+                {copy.home.hero.eyebrow}
               </span>
             </div>
 
             <h1 className="max-w-3xl" style={{ color: "#F4E8D2" }}>
               <span className="block text-[clamp(3.15rem,14vw,4.5rem)] font-bold leading-[0.9] tracking-tight sm:text-6xl lg:text-7xl xl:text-[5.25rem]">
-                VENEZ VOUS
+                {copy.home.hero.titleTop}
               </span>
               <span
                 className="mt-1 block text-[clamp(3.15rem,14vw,4.5rem)] font-bold leading-[0.9] tracking-tight sm:mt-2 sm:text-6xl lg:text-7xl xl:text-[5.25rem]"
                 style={{ color: "#C9A56A" }}
               >
-                REGALER
+                {copy.home.hero.titleBottom}
               </span>
             </h1>
 
             <p className="mt-5 max-w-lg px-2 text-sm font-light leading-6 text-[rgba(244,232,210,0.72)] sm:mt-6 sm:px-0 sm:text-[0.95rem] lg:text-base lg:leading-7">
-              Un buffet asiatique a volonte frais, genereux et convivial a partager.
+              {copy.home.hero.description}
             </p>
 
             <div className="mt-8 flex w-full max-w-sm flex-col justify-center gap-3 sm:mt-9 sm:max-w-none sm:flex-row sm:flex-wrap sm:gap-4">
@@ -79,7 +83,7 @@ export default function HeroSection() {
                 className="w-full rounded px-6 py-3.5 text-[0.95rem] font-semibold transition-all duration-300 hover:opacity-90 sm:w-auto sm:px-10 sm:py-4 sm:text-lg"
                 style={{ background: "#C9A56A", color: "#062F24" }}
               >
-                Nous trouver
+                {copy.home.hero.locationCta}
               </Link>
               <Link
                 href="/reservation"
@@ -90,7 +94,7 @@ export default function HeroSection() {
                   color: "#062F24",
                 }}
               >
-                Reserver votre table
+                {copy.home.hero.reservationCta}
               </Link>
             </div>
           </motion.div>

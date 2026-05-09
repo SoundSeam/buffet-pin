@@ -17,26 +17,28 @@ import {
   Users,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
+import { useTranslation } from "@/components/providers/language-provider";
+import type { OccasionKey } from "@/lib/i18n";
 
-const LUNCH_SLOTS = ["11:00", "11:30", "12:00", "12:30", "13:00", "13:30"];
-const DINNER_SLOTS = ["17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30"];
-const PARTY_SIZES = [1, 2, 3, 4, 5, 6, 7, 8];
-const OCCASIONS = ["Aucune", "Anniversaire", "Souper d'affaires", "Sortie en famille", "Autre"];
-const MONTH_NAMES = [
-  "Janvier",
-  "Fevrier",
-  "Mars",
-  "Avril",
-  "Mai",
-  "Juin",
-  "Juillet",
-  "Aout",
-  "Septembre",
-  "Octobre",
-  "Novembre",
-  "Decembre",
-];
-const WEEKDAY_NAMES = ["Di", "Lu", "Ma", "Me", "Je", "Ve", "Sa"];
+const PARTY_SIZES = [5, 6, 7, 8, 9, 10, 11, 12];
+
+type AvailabilitySlot = {
+  time: string;
+  remainingCapacity: number;
+};
+
+type ReservationSuccess = {
+  confirmationCode: string;
+  manageUrlPath: string;
+};
+
+type ApiErrorResponse = {
+  ok: false;
+  error?: {
+    code?: string;
+    message?: string;
+  };
+};
 
 type FormState = {
   date: string;
@@ -45,7 +47,7 @@ type FormState = {
   name: string;
   phone: string;
   email: string;
-  occasion: string;
+  occasion: OccasionKey;
   specialRequests: string;
 };
 
@@ -76,18 +78,19 @@ function formatTime(value: string) {
   };
 }
 
-function formatReservationDate(value: string) {
+function formatReservationDate(value: string, months: readonly string[], language: "fr" | "en") {
   if (!value) return "";
 
   const [year, month, day] = value.split("-").map(Number);
-  return `${MONTH_NAMES[month - 1]} ${day}, ${year}`;
+
+  if (language === "fr") {
+    return `${day} ${months[month - 1]} ${year}`;
+  }
+
+  return `${months[month - 1]} ${day}, ${year}`;
 }
 
-function generateCode() {
-  return `PIN-${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
-}
-
-function StepIndicator({ step }: { step: number }) {
+function StepIndicator({ step, labels }: { step: number; labels: readonly string[] }) {
   return (
     <div className="mb-12 flex items-center justify-center gap-3 sm:mb-14">
       {[1, 2, 3].map((item) => {
@@ -109,7 +112,7 @@ function StepIndicator({ step }: { step: number }) {
               className="hidden text-[11px] font-semibold uppercase tracking-[0.24em] sm:block"
               style={{ color: active ? "#C9A56A" : "rgba(244,232,210,0.42)" }}
             >
-              {item === 1 ? "Date et heure" : item === 2 ? "Vos details" : "Confirmer"}
+              {labels[item - 1]}
             </span>
             {item < 3 ? <div className="mx-1 hidden h-px w-10 sm:block" style={{ background: "rgba(201,165,106,0.16)" }} /> : null}
           </div>
@@ -151,6 +154,8 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 }
 
 export default function ReservationForm() {
+  const { language, copy } = useTranslation();
+  const formCopy = copy.reservation.form;
   const today = new Date();
   const minDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
   const sectionRef = useRef<HTMLElement | null>(null);
@@ -160,23 +165,29 @@ export default function ReservationForm() {
   const [calMonth, setCalMonth] = useState(today.getMonth());
   const [calYear, setCalYear] = useState(today.getFullYear());
   const [loading, setLoading] = useState(false);
-  const [confirmationCode, setConfirmationCode] = useState("");
+  const [availabilityLoading, setAvailabilityLoading] = useState(false);
+  const [availabilitySlots, setAvailabilitySlots] = useState<AvailabilitySlot[]>([]);
+  const [availabilityError, setAvailabilityError] = useState("");
+  const [submitError, setSubmitError] = useState("");
+  const [reservationSuccess, setReservationSuccess] = useState<ReservationSuccess | null>(null);
   const [lockedHeight, setLockedHeight] = useState<number | null>(null);
   const [form, setForm] = useState<FormState>({
     date: "",
     time: "",
-    partySize: 2,
+    partySize: 5,
     name: "",
     phone: "",
     email: "",
-    occasion: "Aucune",
+    occasion: "none",
     specialRequests: "",
   });
 
   const daysInMonth = getDaysInMonth(calYear, calMonth);
   const firstDay = getFirstDayOfMonth(calYear, calMonth);
-  const stepOneValid = Boolean(form.date && form.time && form.partySize);
+  const stepOneValid = Boolean(form.date && form.time && form.partySize && !availabilityLoading);
   const stepTwoValid = Boolean(form.name.trim() && form.phone.trim());
+  const selectedOccasion = formCopy.occasions.find((occasion) => occasion.value === form.occasion);
+  const guestLabel = form.partySize > 1 ? formCopy.guestPlural : formCopy.guestSingular;
 
   useEffect(() => {
     if (!stepContentRef.current) return;
@@ -216,6 +227,75 @@ export default function ReservationForm() {
     setForm((current) => ({ ...current, [field]: value }));
   };
 
+  useEffect(() => {
+    if (!form.date || !form.partySize) {
+      setAvailabilitySlots([]);
+      setAvailabilityError("");
+      return;
+    }
+
+    const controller = new AbortController();
+
+    const loadAvailability = async () => {
+      setAvailabilityLoading(true);
+      setAvailabilityError("");
+
+      try {
+        const response = await fetch("/api/reservations/availability", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            date: form.date,
+            partySize: form.partySize,
+          }),
+          signal: controller.signal,
+        });
+
+        const result = (await response.json()) as
+          | {
+              ok: true;
+              data: {
+                slots: AvailabilitySlot[];
+              };
+            }
+          | ApiErrorResponse;
+
+        if (!result.ok) {
+          setAvailabilitySlots([]);
+          setField("time", "");
+          setAvailabilityError(result.error?.message ?? formCopy.availabilityError);
+          return;
+        }
+
+        setAvailabilitySlots(result.data.slots);
+        setForm((current) => ({
+          ...current,
+          time: result.data.slots.some((slot) => slot.time === current.time) ? current.time : "",
+        }));
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") {
+          return;
+        }
+
+        setAvailabilitySlots([]);
+        setField("time", "");
+        setAvailabilityError(formCopy.availabilityError);
+      } finally {
+        if (!controller.signal.aborted) {
+          setAvailabilityLoading(false);
+        }
+      }
+    };
+
+    void loadAvailability();
+
+    return () => {
+      controller.abort();
+    };
+  }, [form.date, form.partySize, formCopy.availabilityError]);
+
   const prevMonth = () => {
     if (calMonth === 0) {
       setCalMonth(11);
@@ -241,29 +321,80 @@ export default function ReservationForm() {
     if (selectedDate < minDate) return;
 
     const formatted = `${calYear}-${String(calMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-    setField("date", formatted);
+    setForm((current) => ({ ...current, date: formatted, time: "" }));
   };
 
   const submitReservation = async () => {
     setLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 900));
-    setConfirmationCode(generateCode());
-    setLoading(false);
-    setStep(4);
+    setSubmitError("");
+
+    const occasion = form.occasion !== "none" && selectedOccasion ? selectedOccasion.label : "";
+    const specialRequests = [occasion ? `${formCopy.occasion}: ${occasion}` : "", form.specialRequests.trim()]
+      .filter(Boolean)
+      .join("\n\n");
+
+    try {
+      const response = await fetch("/api/reservations", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          date: form.date,
+          time: form.time,
+          partySize: form.partySize,
+          name: form.name,
+          phone: form.phone,
+          email: form.email || undefined,
+          language: language.toUpperCase(),
+          specialRequests: specialRequests || undefined,
+        }),
+      });
+
+      const result = (await response.json()) as
+        | {
+            ok: true;
+            data: {
+              reservation: {
+                confirmationCode: string;
+              };
+              manageUrlPath: string;
+            };
+          }
+        | ApiErrorResponse;
+
+      if (!result.ok) {
+        setSubmitError(result.error?.message ?? formCopy.submitError);
+        return;
+      }
+
+      setReservationSuccess({
+        confirmationCode: result.data.reservation.confirmationCode,
+        manageUrlPath: result.data.manageUrlPath,
+      });
+      setStep(4);
+    } catch {
+      setSubmitError(formCopy.submitError);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const resetForm = () => {
     setForm({
       date: "",
       time: "",
-      partySize: 2,
+      partySize: 5,
       name: "",
       phone: "",
       email: "",
-      occasion: "Aucune",
+      occasion: "none",
       specialRequests: "",
     });
-    setConfirmationCode("");
+    setReservationSuccess(null);
+    setAvailabilitySlots([]);
+    setAvailabilityError("");
+    setSubmitError("");
     setCalMonth(today.getMonth());
     setCalYear(today.getFullYear());
     setStep(1);
@@ -281,19 +412,19 @@ export default function ReservationForm() {
             className="text-5xl font-bold leading-none tracking-tight sm:text-6xl lg:text-7xl"
             style={{ color: "#F4E8D2" }}
           >
-            RESERVER
+            {formCopy.title}
           </h1>
 
           <p
             className="mt-3 max-w-xl text-sm leading-relaxed sm:text-base"
             style={{ color: "rgba(244,232,210,0.66)" }}
           >
-            Choisissez votre date, votre heure et vos coordonnees dans un parcours simple, puis nous vous recontacterons pour confirmer la disponibilite.
+            {formCopy.description}
           </p>
         </div>
 
         <div className="mx-auto mt-10 w-full max-w-5xl">
-          {step < 4 ? <StepIndicator step={step} /> : null}
+          {step < 4 ? <StepIndicator step={step} labels={formCopy.steps} /> : null}
 
           <div style={{ minHeight: lockedHeight ? `${lockedHeight}px` : undefined }}>
             <AnimatePresence mode="wait">
@@ -308,7 +439,7 @@ export default function ReservationForm() {
                 >
                   <div className="space-y-6">
                     <div className={panelClass}>
-                      <FieldLabel icon={Users}>Nombre de convives</FieldLabel>
+                      <FieldLabel icon={Users}>{formCopy.partySizeLabel}</FieldLabel>
                       <div className="grid grid-cols-4 gap-3 sm:grid-cols-8">
                         {PARTY_SIZES.map((size) => {
                           const selected = form.partySize === size;
@@ -317,11 +448,14 @@ export default function ReservationForm() {
                             <button
                               key={size}
                               type="button"
-                              onClick={() => setField("partySize", size)}
+                              onClick={() => {
+                                setForm((current) => ({ ...current, partySize: size, time: "" }));
+                              }}
                               className="h-14 rounded-2xl text-base font-bold transition-all"
+                              data-testid={`party-size-${size}`}
                               style={{
                                 background: selected ? "#C9A56A" : "rgba(6,47,36,0.05)",
-                                color: selected ? "#062F24" : "#062F24",
+                                color: "#062F24",
                                 border: selected ? "none" : "1px solid rgba(6,47,36,0.12)",
                               }}
                             >
@@ -331,38 +465,38 @@ export default function ReservationForm() {
                         })}
                       </div>
                       <p className="mt-4 text-sm leading-7" style={{ color: "rgba(6,47,36,0.62)" }}>
-                        Pour les groupes de plus de 8 personnes, contactez-nous directement.
+                        {formCopy.partySizeHint}
                       </p>
                     </div>
 
                     <div className={panelClass}>
-                      <FieldLabel icon={Calendar}>Date</FieldLabel>
+                      <FieldLabel icon={Calendar}>{formCopy.dateLabel}</FieldLabel>
                       <div className="mb-6 flex items-center justify-between">
                         <button
                           type="button"
                           onClick={prevMonth}
                           className="flex h-11 w-11 items-center justify-center rounded-full"
                           style={{ color: "#C9A56A", background: "rgba(201,165,106,0.08)" }}
-                          aria-label="Mois precedent"
+                          aria-label={formCopy.previousMonth}
                         >
                           <ChevronLeft size={18} />
                         </button>
                         <div className="text-lg font-semibold tracking-[0.04em]" style={{ color: "#062F24" }}>
-                          {MONTH_NAMES[calMonth]} {calYear}
+                          {formCopy.months[calMonth]} {calYear}
                         </div>
                         <button
                           type="button"
                           onClick={nextMonth}
                           className="flex h-11 w-11 items-center justify-center rounded-full"
                           style={{ color: "#C9A56A", background: "rgba(201,165,106,0.08)" }}
-                          aria-label="Mois suivant"
+                          aria-label={formCopy.nextMonth}
                         >
                           <ChevronRight size={18} />
                         </button>
                       </div>
 
                       <div className="grid grid-cols-7 gap-2">
-                        {WEEKDAY_NAMES.map((day) => (
+                        {formCopy.weekdaysShort.map((day) => (
                           <div key={day} className="pb-2 text-center text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: "rgba(6,47,36,0.45)" }}>
                             {day}
                           </div>
@@ -404,43 +538,40 @@ export default function ReservationForm() {
                         animate={{ opacity: 1, y: 0 }}
                         className={panelClass}
                       >
-                        <FieldLabel icon={Clock}>Heure</FieldLabel>
+                        <FieldLabel icon={Clock}>{formCopy.timeLabel}</FieldLabel>
                         <div className="space-y-6">
                           <div>
                             <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em]" style={{ color: "rgba(6,47,36,0.45)" }}>
-                              Midi
+                              {formCopy.lunch}
                             </p>
-                            <div className="grid grid-cols-3 gap-3">
-                              {LUNCH_SLOTS.map((time) => {
-                                const { hour, period } = formatTime(time);
-                                const selected = form.time === time;
-
-                                return (
-                                  <button
-                                    key={time}
-                                    type="button"
-                                    onClick={() => setField("time", time)}
-                                    className="rounded-2xl py-4 text-center transition-all"
-                                    style={{
-                                      background: selected ? "#C9A56A" : "rgba(6,47,36,0.05)",
-                                      color: selected ? "#062F24" : "#062F24",
-                                      border: selected ? "none" : "1px solid rgba(6,47,36,0.12)",
-                                    }}
-                                  >
-                                    <div className="text-base font-semibold leading-none">{hour}</div>
-                                    <div className="mt-1 text-[11px] font-semibold">{period}</div>
-                                  </button>
-                                );
-                              })}
-                            </div>
+                            <p className="rounded-2xl border px-4 py-4 text-sm leading-7" style={{ borderColor: "rgba(6,47,36,0.12)", color: "rgba(6,47,36,0.62)", background: "rgba(6,47,36,0.04)" }}>
+                              {formCopy.lunchInfo}
+                            </p>
                           </div>
 
                           <div>
                             <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em]" style={{ color: "rgba(6,47,36,0.45)" }}>
-                              Soir
+                              {formCopy.dinner}
                             </p>
+                            {availabilityLoading ? (
+                              <div className="flex items-center gap-3 rounded-2xl px-4 py-4 text-sm font-medium" style={{ color: "rgba(6,47,36,0.62)", background: "rgba(6,47,36,0.05)" }}>
+                                <Loader2 size={16} className="animate-spin" />
+                                {formCopy.availabilityLoading}
+                              </div>
+                            ) : null}
+                            {availabilityError ? (
+                              <p className="rounded-2xl border px-4 py-4 text-sm leading-7" style={{ borderColor: "rgba(153,27,27,0.18)", color: "#7F1D1D", background: "rgba(153,27,27,0.06)" }}>
+                                {availabilityError}
+                              </p>
+                            ) : null}
+                            {!availabilityLoading && !availabilityError && availabilitySlots.length === 0 ? (
+                              <p className="rounded-2xl border px-4 py-4 text-sm leading-7" style={{ borderColor: "rgba(6,47,36,0.12)", color: "rgba(6,47,36,0.62)", background: "rgba(6,47,36,0.04)" }}>
+                                {formCopy.noSlots}
+                              </p>
+                            ) : null}
                             <div className="grid grid-cols-3 gap-3">
-                              {DINNER_SLOTS.map((time) => {
+                              {availabilitySlots.map((slot) => {
+                                const time = slot.time;
                                 const { hour, period } = formatTime(time);
                                 const selected = form.time === time;
 
@@ -450,14 +581,18 @@ export default function ReservationForm() {
                                     type="button"
                                     onClick={() => setField("time", time)}
                                     className="rounded-2xl py-4 text-center transition-all"
+                                    data-testid={`slot-${time}`}
                                     style={{
                                       background: selected ? "#C9A56A" : "rgba(6,47,36,0.05)",
-                                      color: selected ? "#062F24" : "#062F24",
+                                      color: "#062F24",
                                       border: selected ? "none" : "1px solid rgba(6,47,36,0.12)",
                                     }}
                                   >
                                     <div className="text-base font-semibold leading-none">{hour}</div>
                                     <div className="mt-1 text-[11px] font-semibold">{period}</div>
+                                    <div className="mt-2 text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(6,47,36,0.5)" }}>
+                                      {slot.remainingCapacity} {formCopy.remaining}
+                                    </div>
                                   </button>
                                 );
                               })}
@@ -476,7 +611,7 @@ export default function ReservationForm() {
                       className={primaryButtonClass}
                       style={{ background: "#C9A56A", color: "#062F24" }}
                     >
-                      Continuer
+                      {formCopy.continue}
                     </button>
                   </div>
                 </motion.div>
@@ -494,12 +629,12 @@ export default function ReservationForm() {
                   <div className={panelClass}>
                     <div className="space-y-6">
                       <div>
-                        <FieldLabel icon={User}>Nom complet *</FieldLabel>
+                        <FieldLabel icon={User}>{formCopy.fullName}</FieldLabel>
                         <input
                           type="text"
                           value={form.name}
                           onChange={(event) => setField("name", event.target.value)}
-                          placeholder="Ex. Marie Tremblay"
+                          placeholder={formCopy.fullNamePlaceholder}
                           className={fieldClass}
                           style={{ borderColor: "rgba(201,165,106,0.18)" }}
                         />
@@ -507,24 +642,24 @@ export default function ReservationForm() {
 
                       <div className="grid gap-6 sm:grid-cols-2">
                         <div>
-                          <FieldLabel icon={Phone}>Telephone *</FieldLabel>
+                          <FieldLabel icon={Phone}>{formCopy.phone}</FieldLabel>
                           <input
                             type="tel"
                             value={form.phone}
                             onChange={(event) => setField("phone", event.target.value)}
-                            placeholder="Ex. (514) 555-0123"
+                            placeholder={formCopy.phonePlaceholder}
                             className={fieldClass}
                             style={{ borderColor: "rgba(201,165,106,0.18)" }}
                           />
                         </div>
 
                         <div>
-                          <FieldLabel icon={Mail}>Courriel</FieldLabel>
+                          <FieldLabel icon={Mail}>{formCopy.email}</FieldLabel>
                           <input
                             type="email"
                             value={form.email}
                             onChange={(event) => setField("email", event.target.value)}
-                            placeholder="Ex. marie@email.com"
+                            placeholder={formCopy.emailPlaceholder}
                             className={fieldClass}
                             style={{ borderColor: "rgba(201,165,106,0.18)" }}
                           />
@@ -532,24 +667,24 @@ export default function ReservationForm() {
                       </div>
 
                       <div>
-                        <FieldLabel icon={Star}>Occasion</FieldLabel>
+                        <FieldLabel icon={Star}>{formCopy.occasion}</FieldLabel>
                         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                          {OCCASIONS.map((occasion) => {
-                            const selected = form.occasion === occasion;
+                          {formCopy.occasions.map((occasion) => {
+                            const selected = form.occasion === occasion.value;
 
                             return (
                               <button
-                                key={occasion}
+                                key={occasion.value}
                                 type="button"
-                                onClick={() => setField("occasion", occasion)}
+                                onClick={() => setField("occasion", occasion.value)}
                                 className="rounded-2xl px-3 py-3.5 text-sm font-medium transition-all"
                                 style={{
                                   background: selected ? "#C9A56A" : "rgba(6,47,36,0.05)",
-                                  color: selected ? "#062F24" : "#062F24",
+                                  color: "#062F24",
                                   border: selected ? "none" : "1px solid rgba(6,47,36,0.12)",
                                 }}
                               >
-                                {occasion}
+                                {occasion.label}
                               </button>
                             );
                           })}
@@ -557,12 +692,12 @@ export default function ReservationForm() {
                       </div>
 
                       <div>
-                        <FieldLabel icon={MessageSquare}>Demandes speciales</FieldLabel>
+                        <FieldLabel icon={MessageSquare}>{formCopy.specialRequests}</FieldLabel>
                         <textarea
                           rows={4}
                           value={form.specialRequests}
                           onChange={(event) => setField("specialRequests", event.target.value)}
-                          placeholder="Allergies, chaise haute, preference d'emplacement..."
+                          placeholder={formCopy.specialRequestsPlaceholder}
                           className={`${fieldClass} resize-none`}
                           style={{ borderColor: "rgba(201,165,106,0.18)" }}
                         />
@@ -577,7 +712,7 @@ export default function ReservationForm() {
                       className={secondaryButtonClass}
                       style={{ borderColor: "rgba(201,165,106,0.18)", color: "#C9A56A" }}
                     >
-                      Retour
+                      {formCopy.back}
                     </button>
                     <button
                       type="button"
@@ -586,7 +721,7 @@ export default function ReservationForm() {
                       className={primaryButtonClass}
                       style={{ background: "#C9A56A", color: "#062F24" }}
                     >
-                      Verifier
+                      {formCopy.review}
                     </button>
                   </div>
                 </motion.div>
@@ -602,21 +737,20 @@ export default function ReservationForm() {
                   transition={{ duration: 0.28 }}
                 >
                   <div className={panelClass}>
-                    <DetailRow label="Date" value={formatReservationDate(form.date)} />
-                    <DetailRow label="Heure" value={form.time} />
-                    <DetailRow
-                      label="Convives"
-                      value={`${form.partySize} ${form.partySize > 1 ? "personnes" : "personne"}`}
-                    />
-                    <DetailRow label="Nom" value={form.name} />
-                    <DetailRow label="Telephone" value={form.phone} />
-                    {form.email ? <DetailRow label="Courriel" value={form.email} /> : null}
-                    {form.occasion !== "Aucune" ? <DetailRow label="Occasion" value={form.occasion} /> : null}
-                    {form.specialRequests ? <DetailRow label="Demandes" value={form.specialRequests} /> : null}
+                    <DetailRow label={formCopy.summary.date} value={formatReservationDate(form.date, formCopy.months, language)} />
+                    <DetailRow label={formCopy.summary.time} value={form.time} />
+                    <DetailRow label={formCopy.summary.guests} value={`${form.partySize} ${guestLabel}`} />
+                    <DetailRow label={formCopy.summary.name} value={form.name} />
+                    <DetailRow label={formCopy.summary.phone} value={form.phone} />
+                    {form.email ? <DetailRow label={formCopy.summary.email} value={form.email} /> : null}
+                    {form.occasion !== "none" && selectedOccasion ? (
+                      <DetailRow label={formCopy.summary.occasion} value={selectedOccasion.label} />
+                    ) : null}
+                    {form.specialRequests ? <DetailRow label={formCopy.summary.requests} value={form.specialRequests} /> : null}
                   </div>
 
                   <p className="mt-5 max-w-2xl text-sm leading-7" style={{ color: "rgba(244,232,210,0.58)" }}>
-                    En envoyant votre demande, notre equipe pourra vous recontacter pour confirmer la disponibilite.
+                    {formCopy.reviewNote}
                   </p>
 
                   <div className="mt-8 flex items-center justify-between">
@@ -626,7 +760,7 @@ export default function ReservationForm() {
                       className={secondaryButtonClass}
                       style={{ borderColor: "rgba(201,165,106,0.18)", color: "#C9A56A" }}
                     >
-                      Modifier
+                      {formCopy.edit}
                     </button>
                     <button
                       type="button"
@@ -636,9 +770,14 @@ export default function ReservationForm() {
                       style={{ background: "#C9A56A", color: "#062F24" }}
                     >
                       {loading ? <Loader2 size={16} className="animate-spin" /> : null}
-                      Confirmer la reservation
+                      {formCopy.confirmReservation}
                     </button>
                   </div>
+                  {submitError ? (
+                    <p className="mt-5 rounded-2xl border px-4 py-4 text-sm leading-7" style={{ borderColor: "rgba(153,27,27,0.18)", color: "#FCA5A5", background: "rgba(153,27,27,0.14)" }}>
+                      {submitError}
+                    </p>
+                  ) : null}
                 </motion.div>
               ) : null}
 
@@ -659,31 +798,28 @@ export default function ReservationForm() {
                   </div>
 
                   <p className="text-sm font-semibold uppercase tracking-[0.28em]" style={{ color: "#C9A56A" }}>
-                    Confirmation
+                    {formCopy.successEyebrow}
                   </p>
                   <h2 className="mt-3 text-3xl font-bold tracking-[-0.03em] sm:text-4xl" style={{ color: "#F4E8D2" }}>
-                    Votre demande est recue
+                    {formCopy.successTitle}
                   </h2>
                   <p className="mx-auto mt-5 max-w-2xl text-sm leading-8 sm:text-base" style={{ color: "rgba(244,232,210,0.66)" }}>
-                    Merci. Nous communiquerons avec vous sous peu au {form.phone} pour finaliser votre reservation.
+                    {formCopy.successDescription.replace("{phone}", form.phone)}
                   </p>
 
                   <div className={`${panelClass} mx-auto mt-10 max-w-lg`}>
                     <p className="text-[11px] font-semibold uppercase tracking-[0.24em]" style={{ color: "rgba(6,47,36,0.45)" }}>
-                      Numero de suivi
+                      {formCopy.trackingCode}
                     </p>
                     <p className="mt-2 text-3xl font-bold" style={{ color: "#C9A56A" }}>
-                      {confirmationCode}
+                      {reservationSuccess?.confirmationCode}
                     </p>
 
                     <div className="mt-6 text-left">
-                      <DetailRow label="Date" value={formatReservationDate(form.date)} />
-                      <DetailRow label="Heure" value={form.time} />
-                      <DetailRow
-                        label="Convives"
-                        value={`${form.partySize} ${form.partySize > 1 ? "personnes" : "personne"}`}
-                      />
-                      <DetailRow label="Nom" value={form.name} />
+                      <DetailRow label={formCopy.summary.date} value={formatReservationDate(form.date, formCopy.months, language)} />
+                      <DetailRow label={formCopy.summary.time} value={form.time} />
+                      <DetailRow label={formCopy.summary.guests} value={`${form.partySize} ${guestLabel}`} />
+                      <DetailRow label={formCopy.summary.name} value={form.name} />
                     </div>
                   </div>
 
@@ -694,14 +830,21 @@ export default function ReservationForm() {
                       className={secondaryButtonClass}
                       style={{ borderColor: "rgba(201,165,106,0.18)", color: "#C9A56A" }}
                     >
-                      Faire une autre reservation
+                      {formCopy.anotherReservation}
                     </button>
                     <Link
-                      href="/"
+                      href={reservationSuccess?.manageUrlPath ?? "#"}
                       className="rounded-full px-6 py-3.5 text-sm font-semibold uppercase tracking-[0.16em]"
                       style={{ background: "#C9A56A", color: "#062F24" }}
                     >
-                      Retour a l'accueil
+                      {formCopy.manageReservation}
+                    </Link>
+                    <Link
+                      href="/"
+                      className="rounded-full px-6 py-3.5 text-sm font-semibold uppercase tracking-[0.16em]"
+                      style={{ background: "rgba(201,165,106,0.12)", color: "#C9A56A" }}
+                    >
+                      {formCopy.backHome}
                     </Link>
                   </div>
                 </motion.div>
