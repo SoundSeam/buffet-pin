@@ -205,7 +205,7 @@ export default function AdminSettingsPage() {
 
   return (
     <section className="pb-20 pt-36 lg:pt-40" style={{ background: "#FFFFFF" }}>
-      <div className="mx-auto max-w-5xl px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div>
           <Link
             href="/admin/reservations"
