@@ -63,29 +63,6 @@ const envSchema = z
     TWILIO_ACCOUNT_SID: optionalString,
     TWILIO_AUTH_TOKEN: optionalString,
     TWILIO_FROM_NUMBER: optionalString,
-  })
-  .superRefine((env, ctx) => {
-    const twilioEntries = [
-      ["TWILIO_ACCOUNT_SID", env.TWILIO_ACCOUNT_SID],
-      ["TWILIO_AUTH_TOKEN", env.TWILIO_AUTH_TOKEN],
-      ["TWILIO_FROM_NUMBER", env.TWILIO_FROM_NUMBER],
-    ] as const;
-    const configuredEntries = twilioEntries.filter(([, value]) => Boolean(value));
-
-    if (configuredEntries.length === 0 || configuredEntries.length === twilioEntries.length) {
-      return;
-    }
-
-    const missingKeys = twilioEntries
-      .filter(([, value]) => !value)
-      .map(([key]) => key)
-      .join(", ");
-
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: `Twilio SMS must be fully configured or fully disabled. Missing: ${missingKeys}.`,
-      path: ["TWILIO_ACCOUNT_SID"],
-    });
   });
 
 export type AppEnv = z.infer<typeof envSchema>;
@@ -127,10 +104,15 @@ export function validateEnv(source: NodeJS.ProcessEnv = process.env): AppEnv {
   return env;
 }
 
-export const env = validateEnv();
+let cachedEnv: AppEnv | null = null;
 
 export function getEnv(source: NodeJS.ProcessEnv = process.env): AppEnv {
-  return source === process.env ? env : validateEnv(source);
+  if (source !== process.env) {
+    return validateEnv(source);
+  }
+
+  cachedEnv ??= validateEnv(source);
+  return cachedEnv;
 }
 
 export function getAdminEmails(source: NodeJS.ProcessEnv = process.env): string[] {
@@ -169,8 +151,20 @@ export function getSmsConfig(source: NodeJS.ProcessEnv = process.env) {
   const authToken = currentEnv.TWILIO_AUTH_TOKEN;
   const from = currentEnv.TWILIO_FROM_NUMBER;
 
-  if (!accountSid || !authToken || !from) {
+  if (!accountSid && !authToken && !from) {
     return null;
+  }
+
+  const missingKeys = [
+    !accountSid ? "TWILIO_ACCOUNT_SID" : null,
+    !authToken ? "TWILIO_AUTH_TOKEN" : null,
+    !from ? "TWILIO_FROM_NUMBER" : null,
+  ].filter(Boolean);
+
+  if (missingKeys.length > 0) {
+    throw new Error(
+      `Twilio SMS must be fully configured or fully disabled. Missing: ${missingKeys.join(", ")}.`,
+    );
   }
 
   return { accountSid, authToken, from };

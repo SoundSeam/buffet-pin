@@ -33,7 +33,13 @@ function getTwilioClient() {
 }
 
 export async function sendSms(to: string, body: string): Promise<SmsSendResult> {
-  const twilioClient = getTwilioClient();
+  let twilioClient: ReturnType<typeof getTwilioClient>;
+
+  try {
+    twilioClient = getTwilioClient();
+  } catch (error) {
+    return { ok: false, error };
+  }
 
   if (!twilioClient) {
     return {
