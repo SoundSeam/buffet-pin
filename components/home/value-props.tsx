@@ -7,7 +7,7 @@ const HOURS = [
   { dayKey: "monday", open: "11:30am", close: "9pm", lunchPrice: "$24.95", dinnerPrice: "$33.95" },
   { dayKey: "tuesday", open: "11:30am", close: "9pm", lunchPrice: "$24.95", dinnerPrice: "$33.95" },
   { dayKey: "wednesday", open: "11:30am", close: "9pm", lunchPrice: "$24.95", dinnerPrice: "$33.95" },
-  { dayKey: "thursday", open: "11:30am", close: "9pm", lunchPrice: "$26.95", dinnerPrice: "$43.95" },
+  { dayKey: "thursday", open: "11:30am", close: "9pm", lunchPrice: "$24.95", dinnerPrice: "$33.95" },
   { dayKey: "friday", open: "11:30am", close: "9pm", lunchPrice: "$26.95", dinnerPrice: "$43.95" },
   { dayKey: "saturday", open: "11:30am", close: "9pm", lunchPrice: "$26.95", dinnerPrice: "$43.95" },
   { dayKey: "sunday", open: "11:30am", close: "9pm", lunchPrice: "$26.95", dinnerPrice: "$43.95" },

@@ -66,7 +66,7 @@ export const translations = {
         notesEyebrow: "À noter",
         notesDescription: "Les détails du buffet et du service en un coup d'œil.",
         notes: [
-          { title: "Enfants", body: "Les enfants de 4 à 11 ans obtiennent 50 % de rabais." },
+          { title: "Enfants", body: "Les enfants de 5 à 12 ans obtiennent 50 % de rabais." },
           { title: "Tout-petits", body: "Les enfants de 0 à 4 ans mangent gratuitement." },
           {
             title: "Service",
@@ -563,7 +563,7 @@ export const translations = {
         notesEyebrow: "Please Note",
         notesDescription: "Buffet details and service policies at a glance.",
         notes: [
-          { title: "Children", body: "Kids ages 4-11 receive 50% off." },
+          { title: "Children", body: "Kids ages 5-12 receive 50% off." },
           { title: "Toddlers", body: "Children ages 0-4 dine free." },
           {
             title: "Seating",
