@@ -1,4 +1,8 @@
-import type { PrismaClient, Settings } from "@prisma/client";
+import type {
+  PrismaClient,
+  Settings,
+  SlotCapacitySetting,
+} from "@prisma/client";
 
 import { hasCapacityForParty } from "./capacity";
 import { isReservationSlotForSettings } from "./slots";
@@ -36,7 +40,9 @@ type RulesSettings = Pick<
   | "maxPartySize"
   | "guestModifyCutoffHours"
   | "slotCapacityGuests"
->;
+> & {
+  slotCapacities?: Pick<SlotCapacitySetting, "reservationTime" | "capacityGuests">[];
+};
 
 type ClosureDb = Pick<PrismaClient, "closureDate">;
 type CapacityDb = Pick<PrismaClient, "reservation">;

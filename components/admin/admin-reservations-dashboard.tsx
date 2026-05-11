@@ -4,12 +4,14 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
+  Bell,
   CalendarDays,
   ChevronLeft,
   ChevronRight,
   Ellipsis,
   ListChecks,
   Loader2,
+  RotateCw,
   X,
 } from "lucide-react";
 
@@ -31,6 +33,7 @@ type AdminReservation = {
   status: AdminReservationStatus;
   date: string;
   time: string;
+  reservationAt: string;
   partySize: number;
   guest: {
     name: string;
@@ -40,6 +43,9 @@ type AdminReservation = {
   };
   specialRequests: string | null;
   internalNotes: string | null;
+  cancelledAt: string | null;
+  createdAt: string;
+  updatedAt: string;
 };
 
 type DisplayMode = "calendar" | "list";
@@ -54,6 +60,18 @@ type ReservationEditorForm = {
   email: string;
   specialRequests: string;
   internalNotes: string;
+};
+
+type ReservationActivityKind = "new" | "updated" | "cancelled";
+
+type ReservationActivity = {
+  kind: ReservationActivityKind;
+  reservation: AdminReservation;
+};
+
+type LoadReservationsOptions = {
+  foreground?: boolean;
+  source?: "initial" | "filter" | "manual" | "poll" | "mutation";
 };
 
 const fieldClass =
@@ -77,6 +95,7 @@ const dangerButtonStyle = {
   border: "1px solid rgba(153,27,27,0.18)",
   color: "#7F1D1D",
 };
+const POLL_INTERVAL_MS = 15000;
 
 const slotTimes = Array.from({ length: 11 }, (_, index) => {
   const totalMinutes = 16 * 60 + index * 30;
@@ -341,6 +360,45 @@ function compareReservationsDescending(a: AdminReservation, b: AdminReservation)
   return compareReservationsAscending(b, a);
 }
 
+function compareActivitiesDescending(a: ReservationActivity, b: ReservationActivity) {
+  return b.reservation.updatedAt.localeCompare(a.reservation.updatedAt);
+}
+
+function detectReservationActivity(
+  previousReservations: AdminReservation[],
+  nextReservations: AdminReservation[],
+) {
+  const previousById = new Map(
+    previousReservations.map((reservation) => [reservation.id, reservation]),
+  );
+  const activity: ReservationActivity[] = [];
+
+  for (const reservation of nextReservations) {
+    const previousReservation = previousById.get(reservation.id);
+
+    if (!previousReservation) {
+      activity.push({ kind: "new", reservation });
+      continue;
+    }
+
+    if (previousReservation.updatedAt === reservation.updatedAt) {
+      continue;
+    }
+
+    if (
+      reservation.status === "CANCELLED" &&
+      previousReservation.status !== "CANCELLED"
+    ) {
+      activity.push({ kind: "cancelled", reservation });
+      continue;
+    }
+
+    activity.push({ kind: "updated", reservation });
+  }
+
+  return activity.sort(compareActivitiesDescending);
+}
+
 function isDisplayMode(value: string | null): value is DisplayMode {
   return value === "calendar" || value === "list";
 }
@@ -373,6 +431,12 @@ export default function AdminReservationsDashboard() {
   const searchParams = useSearchParams();
   const initialSearchParams = useRef(searchParams);
   const actionMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const latestReservationsRef = useRef<AdminReservation[] | null>(null);
+  const hasLoadedOnceRef = useRef(false);
+  const requestInFlightRef = useRef(false);
+  const suppressChangeAlertsRef = useRef(false);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const audioUnlockedRef = useRef(false);
   const [reservations, setReservations] = useState<AdminReservation[]>([]);
   const [displayMode, setDisplayMode] = useState<DisplayMode>(() => {
     const value = initialSearchParams.current.get("mode");
@@ -396,6 +460,7 @@ export default function AdminReservationsDashboard() {
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
   const [copiedReservationId, setCopiedReservationId] = useState<string | null>(null);
   const [openActionMenuId, setOpenActionMenuId] = useState<string | null>(null);
@@ -403,10 +468,12 @@ export default function AdminReservationsDashboard() {
     useState<AdminReservation | null>(null);
   const [editorForm, setEditorForm] = useState<ReservationEditorForm | null>(null);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [activityDialogOpen, setActivityDialogOpen] = useState(false);
+  const [activityItems, setActivityItems] = useState<ReservationActivity[]>([]);
   const [form, setForm] = useState({
     date: today(),
     time: "16:30",
-    partySize: 5,
+    partySize: 6,
     name: "",
     phone: "",
     email: "",
@@ -477,10 +544,86 @@ export default function AdminReservationsDashboard() {
     };
   }, [openActionMenuId]);
 
-  const loadReservations = async () => {
-    setLoading(true);
-    setError("");
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
 
+    const unlockAudio = async () => {
+      const AudioContextConstructor =
+        window.AudioContext ??
+        (
+          window as Window & {
+            webkitAudioContext?: typeof AudioContext;
+          }
+        ).webkitAudioContext;
+
+      if (!AudioContextConstructor) {
+        return;
+      }
+
+      audioUnlockedRef.current = true;
+
+      try {
+        audioContextRef.current ??= new AudioContextConstructor();
+
+        if (audioContextRef.current.state === "suspended") {
+          await audioContextRef.current.resume();
+        }
+      } catch {
+        audioContextRef.current = null;
+      }
+    };
+
+    window.addEventListener("pointerdown", unlockAudio);
+
+    return () => {
+      window.removeEventListener("pointerdown", unlockAudio);
+    };
+  }, []);
+
+  const playActivitySound = async () => {
+    if (!audioUnlockedRef.current || !audioContextRef.current) {
+      return;
+    }
+
+    try {
+      if (audioContextRef.current.state === "suspended") {
+        await audioContextRef.current.resume();
+      }
+
+      const context = audioContextRef.current;
+      const firstOscillator = context.createOscillator();
+      const secondOscillator = context.createOscillator();
+      const gain = context.createGain();
+      const startAt = context.currentTime;
+
+      firstOscillator.type = "sine";
+      firstOscillator.frequency.setValueAtTime(880, startAt);
+      secondOscillator.type = "sine";
+      secondOscillator.frequency.setValueAtTime(1174, startAt + 0.18);
+
+      gain.gain.setValueAtTime(0.0001, startAt);
+      gain.gain.exponentialRampToValueAtTime(0.16, startAt + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, startAt + 0.14);
+      gain.gain.setValueAtTime(0.0001, startAt + 0.18);
+      gain.gain.exponentialRampToValueAtTime(0.14, startAt + 0.2);
+      gain.gain.exponentialRampToValueAtTime(0.0001, startAt + 0.34);
+
+      firstOscillator.connect(gain);
+      secondOscillator.connect(gain);
+      gain.connect(context.destination);
+
+      firstOscillator.start(startAt);
+      firstOscillator.stop(startAt + 0.14);
+      secondOscillator.start(startAt + 0.18);
+      secondOscillator.stop(startAt + 0.34);
+    } catch {
+      // Ignore audio failures and keep the visual alert path active.
+    }
+  };
+
+  const buildReservationParams = () => {
     const params = new URLSearchParams();
 
     if (displayMode === "calendar") {
@@ -495,21 +638,100 @@ export default function AdminReservationsDashboard() {
 
     if (status !== "ALL") params.set("status", status);
 
-    const response = await fetch(`/api/admin/reservations?${params.toString()}`);
-    const result = await response.json();
+    return params;
+  };
 
-    if (!result.ok) {
-      setError(formatApiError(result, reservationsCopy.loadError));
-      setReservations([]);
-    } else {
-      setReservations(result.data.reservations);
+  const loadReservations = async (options: LoadReservationsOptions = {}) => {
+    if (requestInFlightRef.current) {
+      return;
     }
 
-    setLoading(false);
+    const source = options.source ?? "filter";
+
+    requestInFlightRef.current = true;
+
+    if (options.foreground) {
+      setLoading(true);
+    }
+
+    if (source === "manual") {
+      setRefreshing(true);
+    }
+
+    setError("");
+
+    try {
+      const response = await fetch(
+        `/api/admin/reservations?${buildReservationParams().toString()}`,
+        { cache: "no-store" },
+      );
+      const result = await response.json();
+
+      if (!result.ok) {
+        setError(formatApiError(result, reservationsCopy.loadError));
+        if (source !== "poll") {
+          setReservations([]);
+          latestReservationsRef.current = [];
+        }
+        return;
+      }
+
+      const nextReservations = result.data.reservations as AdminReservation[];
+      const previousReservations = latestReservationsRef.current;
+
+      if (
+        source === "poll" &&
+        previousReservations &&
+        !suppressChangeAlertsRef.current
+      ) {
+        const nextActivity = detectReservationActivity(
+          previousReservations,
+          nextReservations,
+        );
+
+        if (nextActivity.length > 0) {
+          setActivityItems(nextActivity);
+          setActivityDialogOpen(true);
+          void playActivitySound();
+        }
+      }
+
+      latestReservationsRef.current = nextReservations;
+      hasLoadedOnceRef.current = true;
+      setReservations(nextReservations);
+    } catch {
+      setError(reservationsCopy.loadError);
+    } finally {
+      if (source !== "poll") {
+        suppressChangeAlertsRef.current = false;
+      }
+
+      requestInFlightRef.current = false;
+      setLoading(false);
+      setRefreshing(false);
+    }
   };
 
   useEffect(() => {
-    void loadReservations();
+    void loadReservations({
+      foreground: true,
+      source: hasLoadedOnceRef.current ? "filter" : "initial",
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [displayMode, calendarView, anchorDate, date, status]);
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      if (document.visibilityState !== "visible") {
+        return;
+      }
+
+      void loadReservations({ source: "poll" });
+    }, POLL_INTERVAL_MS);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [displayMode, calendarView, anchorDate, date, status]);
 
@@ -532,6 +754,7 @@ export default function AdminReservationsDashboard() {
   const createReservation = async () => {
     setSaving(true);
     setError("");
+    suppressChangeAlertsRef.current = true;
 
     const response = await fetch("/api/admin/reservations", {
       method: "POST",
@@ -552,7 +775,7 @@ export default function AdminReservationsDashboard() {
         internalNotes: "",
       }));
       setCreateDialogOpen(false);
-      await loadReservations();
+      await loadReservations({ source: "mutation" });
     }
 
     setSaving(false);
@@ -561,6 +784,7 @@ export default function AdminReservationsDashboard() {
   const updateReservation = async (id: string, body: Record<string, unknown>) => {
     setSaving(true);
     setError("");
+    suppressChangeAlertsRef.current = true;
 
     const response = await fetch(`/api/admin/reservations/${id}`, {
       method: "PATCH",
@@ -573,7 +797,7 @@ export default function AdminReservationsDashboard() {
       setError(formatApiError(result, reservationsCopy.updateError));
     }
 
-    await loadReservations();
+    await loadReservations({ source: "mutation" });
     setSaving(false);
   };
 
@@ -653,6 +877,30 @@ export default function AdminReservationsDashboard() {
 
   const closeActionMenu = () => {
     setOpenActionMenuId(null);
+  };
+
+  const getActivityLabel = (activityKind: ReservationActivityKind) => {
+    if (activityKind === "new") {
+      return reservationsCopy.activity.changeLabels.new;
+    }
+
+    if (activityKind === "cancelled") {
+      return reservationsCopy.activity.changeLabels.cancelled;
+    }
+
+    return reservationsCopy.activity.changeLabels.updated;
+  };
+
+  const openReservationFromActivity = (reservationId: string) => {
+    const reservation = reservations.find((item) => item.id === reservationId);
+
+    if (!reservation) {
+      setActivityDialogOpen(false);
+      return;
+    }
+
+    setActivityDialogOpen(false);
+    openReservationDialog(reservation);
   };
 
   const renderStatusPill = (reservation: AdminReservation) => (
@@ -1467,6 +1715,75 @@ export default function AdminReservationsDashboard() {
     );
   };
 
+  const renderActivityDialog = () => {
+    if (!activityDialogOpen || activityItems.length === 0) return null;
+
+    return (
+      <ModalShell
+        labelledBy="reservation-activity-title"
+        onClose={() => setActivityDialogOpen(false)}
+        panelClassName="max-w-2xl rounded border border-[rgba(6,47,36,0.08)] bg-white p-6 shadow-sm sm:p-8"
+      >
+        <div className="flex items-start justify-between gap-4 border-b border-[#062F24]/10 pb-5">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full bg-[rgba(6,47,36,0.08)] px-3 py-1 text-xs font-semibold text-[#062F24]">
+              <Bell size={14} aria-hidden="true" />
+              {reservationsCopy.activity.live}
+            </div>
+            <h2
+              id="reservation-activity-title"
+              className="mt-3 text-3xl font-extrabold text-[#062F24]"
+            >
+              {reservationsCopy.activity.title}
+            </h2>
+            <p className="mt-2 text-sm text-[#062F24]/65">
+              {reservationsCopy.activity.description}
+            </p>
+          </div>
+          <button
+            type="button"
+            className={buttonClass}
+            onClick={() => setActivityDialogOpen(false)}
+            style={quietButtonStyle}
+          >
+            {reservationsCopy.activity.dismiss}
+          </button>
+        </div>
+
+        <div className="mt-6 grid gap-3">
+          {activityItems.map((activity) => (
+            <button
+              key={`${activity.kind}-${activity.reservation.id}-${activity.reservation.updatedAt}`}
+              type="button"
+              onClick={() => openReservationFromActivity(activity.reservation.id)}
+              className="grid gap-3 rounded border border-[#062F24]/10 bg-[rgba(6,47,36,0.03)] p-4 text-left transition hover:bg-[rgba(6,47,36,0.06)]"
+            >
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="inline-flex rounded px-3 py-1 text-xs font-bold text-[#062F24]">
+                  {getActivityLabel(activity.kind)}
+                </span>
+                {renderStatusPill(activity.reservation)}
+              </div>
+              <div>
+                <p className="text-base font-semibold text-[#062F24]">
+                  {activity.reservation.guest.name}
+                </p>
+                <p className="mt-1 text-sm text-[#062F24]/65">
+                  {formatHumanDate(activity.reservation.date, language)} •{" "}
+                  {formatDisplayTime(activity.reservation.time, language)} •{" "}
+                  {activity.reservation.partySize} {reservationsCopy.guests}
+                </p>
+              </div>
+              <p className="text-sm font-semibold text-[#062F24]">
+                {reservationsCopy.activity.openReservation}
+              </p>
+            </button>
+          ))}
+        </div>
+      </ModalShell>
+    );
+  };
+
   const todayValue = today();
   const todayReservations = reservations
     .filter((reservation) => reservation.date === todayValue)
@@ -1502,6 +1819,9 @@ export default function AdminReservationsDashboard() {
             >
               {reservationsCopy.createReservation}
             </button>
+            <Link href="/admin/settings" className={buttonClass} style={quietButtonStyle}>
+              {reservationsCopy.settings}
+            </Link>
             <button type="button" onClick={signOut} className={buttonClass} style={quietButtonStyle}>
               {reservationsCopy.signOut}
             </button>
@@ -1683,6 +2003,33 @@ export default function AdminReservationsDashboard() {
       </div>
       {renderReservationDialog()}
       {renderCreateDialog()}
+      {renderActivityDialog()}
+      <div
+        className="fixed bottom-4 left-4 z-[60] sm:bottom-6 sm:left-6"
+        style={{
+          bottom: "max(1rem, env(safe-area-inset-bottom))",
+          left: "max(1rem, env(safe-area-inset-left))",
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => void loadReservations({ source: "manual" })}
+          disabled={refreshing || loading}
+          aria-label={refreshing ? reservationsCopy.refreshing : reservationsCopy.refresh}
+          className="inline-flex min-h-0 items-center rounded border border-white/20 bg-[#062F24] p-1 transition-all"
+        >
+          <span className="inline-flex min-h-0 items-center gap-2 rounded-sm px-3 py-2 text-xs font-semibold leading-none text-white">
+            <RotateCw
+              size={14}
+              aria-hidden="true"
+              className={refreshing || loading ? "animate-spin" : ""}
+            />
+            {refreshing || loading
+              ? reservationsCopy.refreshing
+              : reservationsCopy.refresh}
+          </span>
+        </button>
+      </div>
     </section>
   );
 }

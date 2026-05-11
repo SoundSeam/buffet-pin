@@ -77,6 +77,8 @@ function serializeReservation(row: {
   specialRequests: string | null;
   internalNotes: string | null;
   cancelledAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
 }) {
   return {
     id: row.id,
@@ -96,6 +98,8 @@ function serializeReservation(row: {
     specialRequests: row.specialRequests,
     internalNotes: row.internalNotes,
     cancelledAt: row.cancelledAt?.toISOString() ?? null,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
   };
 }
 
@@ -219,6 +223,8 @@ export async function GET(request: Request) {
       specialRequests: true,
       internalNotes: true,
       cancelledAt: true,
+      createdAt: true,
+      updatedAt: true,
     },
   });
 
@@ -248,7 +254,12 @@ export async function POST(request: Request) {
   try {
     const reservation = await db.$transaction(
       async (tx) => {
-        const settings = await tx.settings.findUnique({ where: { id: 1 } });
+        const settings = await tx.settings.findUnique({
+          where: { id: 1 },
+          include: {
+            slotCapacities: true,
+          },
+        });
         if (!settings) throw new Error("Reservation settings are not configured.");
 
         await lockReservationSlot(tx, payload.date, payload.time);
@@ -291,6 +302,8 @@ export async function POST(request: Request) {
             specialRequests: true,
             internalNotes: true,
             cancelledAt: true,
+            createdAt: true,
+            updatedAt: true,
           },
         });
       },

@@ -77,7 +77,12 @@ export async function POST(request: Request) {
   }
 
   try {
-    const settings = await db.settings.findUnique({ where: { id: 1 } });
+    const settings = await db.settings.findUnique({
+      where: { id: 1 },
+      include: {
+        slotCapacities: true,
+      },
+    });
 
     if (!settings) {
       return errorResponse(

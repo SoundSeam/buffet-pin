@@ -2,16 +2,24 @@ import { NextResponse } from "next/server";
 import { z, ZodError } from "zod";
 
 import { db } from "@/lib/db";
+import { getConfiguredCapacityForSlot } from "@/lib/reservations/capacity";
 import { dateOnlyToUtcDate, formatDateOnly, formatSlotTime } from "@/lib/reservations/time";
+import { generateReservationSlotsFromSettings } from "@/lib/reservations/slots";
 import { getAdminUser } from "@/lib/supabase/auth";
-import { localDateSchema } from "@/lib/validation";
+import { localDateSchema, slotTimeSchema } from "@/lib/validation";
 
 export const dynamic = "force-dynamic";
+
+const slotCapacitySchema = z.object({
+  time: slotTimeSchema,
+  capacityGuests: z.coerce.number().int().positive(),
+});
 
 const settingsSchema = z.object({
   slotCapacityGuests: z.coerce.number().int().positive().optional(),
   minPartySize: z.coerce.number().int().positive().optional(),
   maxPartySize: z.coerce.number().int().positive().optional(),
+  slotCapacities: z.array(slotCapacitySchema).optional(),
 });
 
 const closureSchema = z.object({
@@ -39,7 +47,13 @@ function serializeSettings(settings: {
   lastSlot: Date;
   slotIntervalMinutes: number;
   guestModifyCutoffHours: number;
+  slotCapacities: {
+    reservationTime: Date;
+    capacityGuests: number;
+  }[];
 }) {
+  const reservationTimes = generateReservationSlotsFromSettings(settings);
+
   return {
     slotCapacityGuests: settings.slotCapacityGuests,
     minPartySize: settings.minPartySize,
@@ -48,6 +62,10 @@ function serializeSettings(settings: {
     lastSlot: formatSlotTime(settings.lastSlot),
     slotIntervalMinutes: settings.slotIntervalMinutes,
     guestModifyCutoffHours: settings.guestModifyCutoffHours,
+    slotCapacities: reservationTimes.map((time) => ({
+      time,
+      capacityGuests: getConfiguredCapacityForSlot(settings, time),
+    })),
   };
 }
 
@@ -56,7 +74,14 @@ export async function GET() {
   if (unauthorized) return unauthorized;
 
   const [settings, closureDates] = await Promise.all([
-    db.settings.findUnique({ where: { id: 1 } }),
+    db.settings.findUnique({
+      where: { id: 1 },
+      include: {
+        slotCapacities: {
+          orderBy: { reservationTime: "asc" },
+        },
+      },
+    }),
     db.closureDate.findMany({ orderBy: { date: "asc" } }),
   ]);
 
@@ -83,7 +108,14 @@ export async function PATCH(request: Request) {
 
   try {
     const payload = settingsSchema.parse(await request.json());
-    const current = await db.settings.findUnique({ where: { id: 1 } });
+    const current = await db.settings.findUnique({
+      where: { id: 1 },
+      include: {
+        slotCapacities: {
+          orderBy: { reservationTime: "asc" },
+        },
+      },
+    });
 
     if (!current) {
       return errorResponse(500, "SETTINGS_NOT_FOUND", "Reservation settings are not configured.");
@@ -91,15 +123,74 @@ export async function PATCH(request: Request) {
 
     const minPartySize = payload.minPartySize ?? current.minPartySize;
     const maxPartySize = payload.maxPartySize ?? current.maxPartySize;
+    const defaultSlotCapacityGuests =
+      payload.slotCapacityGuests ?? current.slotCapacityGuests;
 
     if (minPartySize > maxPartySize) {
       return errorResponse(400, "INVALID_SETTINGS", "Minimum party size cannot exceed maximum party size.");
     }
 
-    const settings = await db.settings.update({
-      where: { id: 1 },
-      data: payload,
+    const allowedSlotTimes = generateReservationSlotsFromSettings(current);
+    const allowedSlotTimeSet = new Set(allowedSlotTimes);
+    const slotCapacitiesByTime = new Map(
+      allowedSlotTimes.map((time) => [time, getConfiguredCapacityForSlot(current, time)]),
+    );
+
+    if (payload.slotCapacities) {
+      const seenTimes = new Set<string>();
+
+      for (const slotCapacity of payload.slotCapacities) {
+        if (!allowedSlotTimeSet.has(slotCapacity.time)) {
+          return errorResponse(400, "INVALID_SETTINGS", `Unknown slot time: ${slotCapacity.time}.`);
+        }
+
+        if (seenTimes.has(slotCapacity.time)) {
+          return errorResponse(400, "INVALID_SETTINGS", `Duplicate slot time: ${slotCapacity.time}.`);
+        }
+
+        seenTimes.add(slotCapacity.time);
+        slotCapacitiesByTime.set(slotCapacity.time, slotCapacity.capacityGuests);
+      }
+    }
+
+    const settings = await db.$transaction(async (tx) => {
+      await tx.settings.update({
+        where: { id: 1 },
+        data: {
+          slotCapacityGuests: payload.slotCapacityGuests,
+          minPartySize: payload.minPartySize,
+          maxPartySize: payload.maxPartySize,
+        },
+      });
+
+      if (payload.slotCapacities) {
+        await tx.slotCapacitySetting.deleteMany({
+          where: { settingsId: current.id },
+        });
+
+        await tx.slotCapacitySetting.createMany({
+          data: allowedSlotTimes.map((time) => ({
+            settingsId: current.id,
+            reservationTime: new Date(`1970-01-01T${time}:00.000Z`),
+            capacityGuests:
+              slotCapacitiesByTime.get(time) ?? defaultSlotCapacityGuests,
+          })),
+        });
+      }
+
+      return tx.settings.findUnique({
+        where: { id: 1 },
+        include: {
+          slotCapacities: {
+            orderBy: { reservationTime: "asc" },
+          },
+        },
+      });
     });
+
+    if (!settings) {
+      return errorResponse(500, "SETTINGS_NOT_FOUND", "Reservation settings are not configured.");
+    }
 
     return NextResponse.json({ ok: true, data: { settings: serializeSettings(settings) } });
   } catch (error) {

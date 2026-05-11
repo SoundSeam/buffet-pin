@@ -191,7 +191,12 @@ export async function PATCH(request: Request) {
     try {
       const updatedReservation = await db.$transaction(
         async (tx) => {
-          const settings = await tx.settings.findUnique({ where: { id: 1 } });
+          const settings = await tx.settings.findUnique({
+            where: { id: 1 },
+            include: {
+              slotCapacities: true,
+            },
+          });
 
           if (!settings) {
             throw new Error("Reservation settings are not configured.");

@@ -87,7 +87,12 @@ export async function PATCH(
     const reservation = await db.$transaction(
       async (tx) => {
         const [settings, current] = await Promise.all([
-          tx.settings.findUnique({ where: { id: 1 } }),
+          tx.settings.findUnique({
+            where: { id: 1 },
+            include: {
+              slotCapacities: true,
+            },
+          }),
           tx.reservation.findUnique({
             where: { id },
             select: {

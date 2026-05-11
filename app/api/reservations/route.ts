@@ -160,7 +160,12 @@ export async function POST(request: Request) {
     try {
       const reservation = await db.$transaction(
         async (tx) => {
-          const settings = await tx.settings.findUnique({ where: { id: 1 } });
+          const settings = await tx.settings.findUnique({
+            where: { id: 1 },
+            include: {
+              slotCapacities: true,
+            },
+          });
 
           if (!settings) {
             throw new Error("Reservation settings are not configured.");

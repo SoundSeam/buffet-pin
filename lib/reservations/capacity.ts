@@ -1,4 +1,9 @@
-import { ReservationStatus, type PrismaClient, type Settings } from "@prisma/client";
+import {
+  ReservationStatus,
+  type PrismaClient,
+  type Settings,
+  type SlotCapacitySetting,
+} from "@prisma/client";
 
 import {
   dateOnlyToUtcDate,
@@ -6,7 +11,9 @@ import {
   timeOnlyToUtcDate,
 } from "./time";
 
-type CapacitySettings = Pick<Settings, "slotCapacityGuests">;
+type CapacitySettings = Pick<Settings, "slotCapacityGuests"> & {
+  slotCapacities?: Pick<SlotCapacitySetting, "reservationTime" | "capacityGuests">[];
+};
 
 type CapacityDb = Pick<PrismaClient, "reservation">;
 
@@ -18,9 +25,27 @@ type CapacityQuery = {
 
 export type SlotCapacity = {
   reservationTime: string;
+  configuredCapacity: number;
   reservedGuests: number;
   remainingCapacity: number;
 };
+
+function buildConfiguredCapacityMap(settings: CapacitySettings) {
+  return Object.fromEntries(
+    settings.slotCapacities?.map((slotCapacity) => [
+      formatSlotTime(slotCapacity.reservationTime),
+      slotCapacity.capacityGuests,
+    ]) ?? [],
+  ) as Record<string, number>;
+}
+
+export function getConfiguredCapacityForSlot(
+  settings: CapacitySettings,
+  reservationTime: string,
+): number {
+  const configuredCapacities = buildConfiguredCapacityMap(settings);
+  return configuredCapacities[reservationTime] ?? settings.slotCapacityGuests;
+}
 
 function activeReservationWhere(excludeReservationId?: string) {
   return {
@@ -90,7 +115,12 @@ export async function getRemainingCapacityForSlot(
   query: CapacityQuery,
 ): Promise<number> {
   const reservedGuests = await getReservedGuestsForSlot(db, query);
-  return Math.max(settings.slotCapacityGuests - reservedGuests, 0);
+  const configuredCapacity = getConfiguredCapacityForSlot(
+    settings,
+    query.reservationTime,
+  );
+
+  return Math.max(configuredCapacity - reservedGuests, 0);
 }
 
 export async function getCapacityBySlot(
@@ -103,17 +133,18 @@ export async function getCapacityBySlot(
   },
 ): Promise<SlotCapacity[]> {
   const reservedBySlot = await getReservedGuestsBySlot(db, query);
+  const configuredCapacities = buildConfiguredCapacityMap(settings);
 
   return query.reservationTimes.map((reservationTime) => {
     const reservedGuests = reservedBySlot[reservationTime] ?? 0;
+    const configuredCapacity =
+      configuredCapacities[reservationTime] ?? settings.slotCapacityGuests;
 
     return {
       reservationTime,
+      configuredCapacity,
       reservedGuests,
-      remainingCapacity: Math.max(
-        settings.slotCapacityGuests - reservedGuests,
-        0,
-      ),
+      remainingCapacity: Math.max(configuredCapacity - reservedGuests, 0),
     };
   });
 }
