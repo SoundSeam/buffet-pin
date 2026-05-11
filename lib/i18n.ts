@@ -49,6 +49,7 @@ export const translations = {
         appleMaps: "Ouvrir dans Apple Maps",
         tableHead: {
           day: "Jour",
+          hours: "Heures",
           lunch: "Midi",
           dinner: "Soir",
         },
@@ -583,6 +584,7 @@ export const translations = {
         appleMaps: "Open in Apple Maps",
         tableHead: {
           day: "Day",
+          hours: "Hours",
           lunch: "Lunch",
           dinner: "Dinner",
         },
