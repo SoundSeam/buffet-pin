@@ -4,21 +4,21 @@ import { motion } from "framer-motion";
 import { useTranslation } from "@/components/providers/language-provider";
 
 const HOURS = [
-  { dayKey: "monday", open: "11:30am", close: "9pm", lunchPrice: "$24.95", dinnerPrice: "$33.95" },
-  { dayKey: "tuesday", open: "11:30am", close: "9pm", lunchPrice: "$24.95", dinnerPrice: "$33.95" },
-  { dayKey: "wednesday", open: "11:30am", close: "9pm", lunchPrice: "$24.95", dinnerPrice: "$33.95" },
-  { dayKey: "thursday", open: "11:30am", close: "9pm", lunchPrice: "$24.95", dinnerPrice: "$33.95" },
-  { dayKey: "friday", open: "11:30am", close: "9pm", lunchPrice: "$26.95", dinnerPrice: "$43.95" },
-  { dayKey: "saturday", open: "11:30am", close: "9pm", lunchPrice: "$26.95", dinnerPrice: "$43.95" },
-  { dayKey: "sunday", open: "11:30am", close: "9pm", lunchPrice: "$26.95", dinnerPrice: "$43.95" },
+  { dayKey: "monday", lunchHours: "11:30am - 2:30pm", lunchPrice: "$24.95", dinnerHours: "4:30pm - 9pm", dinnerPrice: "$33.95" },
+  { dayKey: "tuesday", lunchHours: "11:30am - 2:30pm", lunchPrice: "$24.95", dinnerHours: "4:30pm - 9pm", dinnerPrice: "$33.95" },
+  { dayKey: "wednesday", lunchHours: "11:30am - 2:30pm", lunchPrice: "$24.95", dinnerHours: "4:30pm - 9pm", dinnerPrice: "$33.95" },
+  { dayKey: "thursday", lunchHours: "11:30am - 2:30pm", lunchPrice: "$24.95", dinnerHours: "4:30pm - 9pm", dinnerPrice: "$33.95" },
+  { dayKey: "friday", lunchHours: "11:30am - 2:30pm", lunchPrice: "$26.95", dinnerHours: "4:30pm - 9pm", dinnerPrice: "$43.95" },
+  { dayKey: "saturday", lunchHours: "11:30am - 2:30pm", lunchPrice: "$26.95", dinnerHours: "4:30pm - 9pm", dinnerPrice: "$43.95" },
+  { dayKey: "sunday", lunchHours: "11:30am - 2:30pm", lunchPrice: "$26.95", dinnerHours: "4:30pm - 9pm", dinnerPrice: "$43.95" },
 ] as const;
 
 const DAY_KEYS = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"] as const;
 
 const GOOGLE_MAPS_URL =
-  "https://www.google.com/maps/dir/?api=1&destination=90+Boulevard+Saint+Jean+Baptiste,+Châteauguay,+QC+J6K+3A6";
+  "https://maps.app.goo.gl/9qoswmW14dh1AJVh7?g_st=ic";
 const APPLE_MAPS_URL =
-  "https://maps.apple.com/?daddr=90+Boulevard+Saint+Jean+Baptiste,+Ch%C3%A2teauguay,+QC+J6K+3A6";
+  "https://maps.apple.com/place?address=3-90%20Boul%20St-Jean-Baptiste,%20Ch%C3%A2teauguay%20QC%20J6K%203A6,%20Canada&coordinate=45.360646,-73.713994&name=Buffet%20Pin%20Chateauguay&map=explore";
 const GOOGLE_MAPS_ICON =
   "https://soundseam-origin.s3.us-east-2.amazonaws.com/misc/Google_Maps_iOS_26.webp";
 const APPLE_MAPS_ICON =
@@ -88,11 +88,10 @@ export default function LocationHours() {
           >
             <div>
               <div
-                className="mb-2 hidden grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_minmax(7rem,0.7fr)_minmax(7rem,0.7fr)] gap-x-6 border-b pb-3 text-xs font-semibold uppercase lg:grid"
+                className="mb-2 hidden grid-cols-[minmax(0,1.2fr)_minmax(9rem,0.9fr)_minmax(9rem,0.9fr)] gap-x-6 border-b pb-3 text-xs font-semibold uppercase lg:grid"
                 style={{ borderColor: "rgba(6,47,36,0.12)", color: "rgba(6,47,36,0.45)" }}
               >
                 <div>{locationCopy.tableHead.day}</div>
-                <div>{locationCopy.tableHead.hours}</div>
                 <div>{locationCopy.tableHead.lunch}</div>
                 <div>{locationCopy.tableHead.dinner}</div>
               </div>
@@ -103,7 +102,7 @@ export default function LocationHours() {
                 return (
                   <div
                     key={hours.dayKey}
-                    className={`grid grid-cols-[minmax(0,1fr)_auto] gap-x-6 gap-y-1 py-3 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_minmax(7rem,0.7fr)_minmax(7rem,0.7fr)] ${isLastRow ? "" : "border-b"} ${isToday ? "font-bold" : ""}`}
+                    className={`grid grid-cols-2 gap-x-6 gap-y-3 py-3 lg:grid-cols-[minmax(0,1.2fr)_minmax(9rem,0.9fr)_minmax(9rem,0.9fr)] lg:gap-y-1 ${isLastRow ? "" : "border-b"} ${isToday ? "font-bold" : ""}`}
                     style={{
                       color: isToday ? "#062F24" : "rgba(6,47,36,0.68)",
                       borderColor: isLastRow ? "transparent" : "rgba(6,47,36,0.072)",
@@ -120,11 +119,15 @@ export default function LocationHours() {
                         </span>
                       ) : null}
                     </div>
-                    <div className="text-base">
-                      {hours.open} - {hours.close}
+                    <div aria-hidden="true" className="lg:hidden" />
+                    <div className="text-sm leading-relaxed">
+                      <div>{hours.lunchHours}</div>
+                      <div style={{ color: "rgba(6,47,36,0.52)" }}>{hours.lunchPrice}</div>
                     </div>
-                    <div className="text-sm leading-relaxed">{hours.lunchPrice}</div>
-                    <div className="text-sm leading-relaxed">{hours.dinnerPrice}</div>
+                    <div className="text-sm leading-relaxed">
+                      <div>{hours.dinnerHours}</div>
+                      <div style={{ color: "rgba(6,47,36,0.52)" }}>{hours.dinnerPrice}</div>
+                    </div>
                   </div>
                 );
               })}
@@ -140,9 +143,11 @@ export default function LocationHours() {
               <p className="text-xs font-semibold uppercase" style={{ color: "rgba(6,47,36,0.45)" }}>
                 {locationCopy.notesEyebrow}
               </p>
-              <p className="mt-2 text-sm leading-relaxed" style={{ color: "rgba(6,47,36,0.56)" }}>
-                {locationCopy.notesDescription}
-              </p>
+              <div className="mt-2 space-y-1 text-sm leading-relaxed" style={{ color: "rgba(6,47,36,0.56)" }}>
+                {locationCopy.notesDescription.map((note) => (
+                  <p key={note}>{note}</p>
+                ))}
+              </div>
             </div>
             <div
               aria-hidden="true"

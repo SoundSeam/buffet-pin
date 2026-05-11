@@ -8,14 +8,16 @@ async function main() {
   await prisma.settings.upsert({
     where: { id: 1 },
     update: {
+      minPartySize: 6,
+      maxPartySize: 15,
       firstSlot: time("16:30"),
       lastSlot: time("20:00"),
     },
     create: {
       id: 1,
       slotCapacityGuests: 24,
-      minPartySize: 5,
-      maxPartySize: 12,
+      minPartySize: 6,
+      maxPartySize: 15,
       firstSlot: time("16:30"),
       lastSlot: time("20:00"),
       slotIntervalMinutes: 30,

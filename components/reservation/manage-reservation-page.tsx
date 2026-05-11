@@ -60,7 +60,7 @@ type ApiErrorResponse = {
   };
 };
 
-const PARTY_SIZES = [5, 6, 7, 8, 9, 10, 11, 12];
+const PARTY_SIZES = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 
 const panelClass =
   "rounded border border-[rgba(6,47,36,0.08)] bg-white p-6 shadow-sm sm:p-8 lg:p-10";

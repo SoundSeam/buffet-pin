@@ -66,13 +66,6 @@ export default function Navbar() {
           </div>
 
           <div className="flex items-center gap-3 lg:hidden">
-            <Link
-              href="/reservation"
-              className="rounded bg-[#C9A56A] px-4 py-2.5 text-sm font-semibold text-[#062F24] transition-all duration-300 hover:opacity-90"
-            >
-              {copy.navbar.reserve}
-            </Link>
-
             <button
               onClick={() => setMobileOpen((open) => !open)}
               type="button"
@@ -107,6 +100,13 @@ export default function Navbar() {
                   {link.label}
                 </Link>
               ))}
+
+              <Link
+                href="/reservation"
+                className="inline-flex min-h-11 w-full items-center justify-center rounded bg-[#C9A56A] px-4 py-3 text-sm font-semibold text-[#062F24] transition-all duration-300 hover:opacity-90"
+              >
+                {copy.navbar.reserve}
+              </Link>
             </div>
           </motion.div>
         )}

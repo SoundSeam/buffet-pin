@@ -7,7 +7,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Buffet PIN",
-  description: "Asian buffet restaurant in Chateauguay | Buffet asiatique à volonté à Châteauguay.",
+  description: "Asian buffet restaurant in Chateauguay | Buffet asiatique à volonté de Châteauguay.",
 };
 
 export const viewport: Viewport = {

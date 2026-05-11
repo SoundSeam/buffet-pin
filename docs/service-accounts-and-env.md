@@ -131,8 +131,8 @@ TWILIO_FROM_NUMBER=
 Use these operational defaults in code or seed data:
 
 - Timezone: `America/Montreal`
-- Minimum online party size: `5`
-- Maximum online party size: `12`
+- Minimum online party size: `6`
+- Maximum online party size: `15`
 - First slot: `16:30`
 - Last slot: `20:00`
 - Slot interval: `30`
