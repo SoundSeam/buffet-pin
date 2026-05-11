@@ -90,7 +90,7 @@ export default function AdminLoginForm() {
           className="inline-flex w-full items-center justify-center gap-3 rounded bg-[#062F24] px-6 py-4 text-base font-extrabold text-white transition-all duration-300 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading ? <Loader2 size={16} className="animate-spin" /> : null}
-          {loading ? "Signing in… Sign in" : "Sign in"}
+          {loading ? "Signing in…" : "Sign in"}
         </button>
       </form>
     </div>
