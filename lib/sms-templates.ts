@@ -32,7 +32,7 @@ export function renderConfirmationSms(input: ReservationSmsInput): string {
     return `${RESTAURANT_NAME}: reservation confirmed for ${dateTime}, party of ${input.partySize}. Code: ${input.confirmationCode}. Manage: ${input.manageUrl}`;
   }
 
-  return `${RESTAURANT_NAME} : reservation confirmee pour ${dateTime}, ${input.partySize} personnes. Code : ${input.confirmationCode}. Gerer : ${input.manageUrl}`;
+  return `${RESTAURANT_NAME} : réservation confirmée pour ${dateTime}, ${input.partySize} personnes. Code : ${input.confirmationCode}. Gérer : ${input.manageUrl}`;
 }
 
 export function renderReminderSms(input: ReservationSmsInput): string {
@@ -42,5 +42,5 @@ export function renderReminderSms(input: ReservationSmsInput): string {
     return `${RESTAURANT_NAME}: reminder for your reservation ${dateTime}, party of ${input.partySize}. Code: ${input.confirmationCode}. Manage: ${input.manageUrl}`;
   }
 
-  return `${RESTAURANT_NAME} : rappel pour votre reservation ${dateTime}, ${input.partySize} personnes. Code : ${input.confirmationCode}. Gerer : ${input.manageUrl}`;
+  return `${RESTAURANT_NAME} : rappel pour votre réservation ${dateTime}, ${input.partySize} personnes. Code : ${input.confirmationCode}. Gérer : ${input.manageUrl}`;
 }

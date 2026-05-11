@@ -1,7 +1,7 @@
 import type { PrismaClient, Settings } from "@prisma/client";
 
 import { hasCapacityForParty } from "./capacity";
-import { isDinnerSlotForSettings } from "./slots";
+import { isReservationSlotForSettings } from "./slots";
 import {
   dateOnlyToUtcDate,
   guestModifyCutoffAt,
@@ -42,14 +42,14 @@ type ClosureDb = Pick<PrismaClient, "closureDate">;
 type CapacityDb = Pick<PrismaClient, "reservation">;
 type RulesDb = ClosureDb & CapacityDb;
 
-export function assertDinnerOnlySlot(
+export function assertReservationSlot(
   settings: Pick<RulesSettings, "firstSlot" | "lastSlot" | "slotIntervalMinutes">,
   reservationTime: string,
 ): void {
-  if (!isDinnerSlotForSettings(reservationTime, settings)) {
+  if (!isReservationSlotForSettings(reservationTime, settings)) {
     throw new ReservationRuleError(
       "INVALID_SLOT",
-      "Online reservations are only available for configured dinner slots.",
+      "Online reservations are only available during configured reservation hours.",
     );
   }
 }
@@ -162,7 +162,7 @@ export async function assertPublicBookingRules(
     now?: Date;
   },
 ): Promise<void> {
-  assertDinnerOnlySlot(settings, query.reservationTime);
+  assertReservationSlot(settings, query.reservationTime);
   assertPartySize(settings, query.partySize);
   assertDateIsNotPast(query.reservationDate, query.now);
   await assertDateIsOpen(db, query.reservationDate);
@@ -176,13 +176,24 @@ export async function assertPublicUpdateRules(
     reservationId: string;
     reservationDate: string;
     reservationTime: string;
-    reservationAt: Date;
+    currentReservationAt: Date;
+    nextReservationAt?: Date;
     partySize: number;
     now?: Date;
   },
 ): Promise<void> {
-  assertBeforeGuestModifyCutoff(settings, query.reservationAt, query.now);
-  assertDinnerOnlySlot(settings, query.reservationTime);
+  assertBeforeGuestModifyCutoff(settings, query.currentReservationAt, query.now);
+
+  const proposedReservationAt =
+    query.nextReservationAt ?? query.currentReservationAt;
+
+  // Guest edits must still be allowed on the current reservation, and any
+  // rescheduled slot must also remain outside the guest modification cutoff.
+  if (proposedReservationAt.getTime() !== query.currentReservationAt.getTime()) {
+    assertBeforeGuestModifyCutoff(settings, proposedReservationAt, query.now);
+  }
+
+  assertReservationSlot(settings, query.reservationTime);
   assertPartySize(settings, query.partySize);
   assertDateIsNotPast(query.reservationDate, query.now);
   await assertDateIsOpen(db, query.reservationDate);

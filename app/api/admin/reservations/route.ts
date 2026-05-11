@@ -16,6 +16,7 @@ import {
   timeOnlyToUtcDate,
   todayInBusinessTimeZone,
 } from "@/lib/reservations/time";
+import { buildManagePath } from "@/lib/reservations/manage-link";
 import { generateManageToken } from "@/lib/reservations/tokens";
 import { sendReservationConfirmationSms } from "@/lib/sms";
 import { getAdminUser } from "@/lib/supabase/auth";
@@ -80,7 +81,7 @@ function serializeReservation(row: {
   return {
     id: row.id,
     confirmationCode: row.confirmationCode,
-    manageUrlPath: `/reservation/manage?token=${row.manageToken}`,
+    manageUrlPath: buildManagePath(row.manageToken),
     status: row.status,
     date: formatDateOnly(row.reservationDate),
     time: formatSlotTime(row.reservationTime),
@@ -148,6 +149,7 @@ export async function GET(request: Request) {
   const dateFrom = url.searchParams.get("dateFrom");
   const dateTo = url.searchParams.get("dateTo");
   const status = url.searchParams.get("status");
+  const includePast = url.searchParams.get("includePast") === "true";
 
   const where: Prisma.ReservationWhereInput = {};
 
@@ -184,7 +186,7 @@ export async function GET(request: Request) {
       ...(dateFrom ? { gte: dateOnlyToUtcDate(dateFrom) } : {}),
       ...(dateTo ? { lte: dateOnlyToUtcDate(dateTo) } : {}),
     };
-  } else {
+  } else if (!includePast) {
     where.reservationDate = {
       gte: dateOnlyToUtcDate(todayInBusinessTimeZone()),
     };

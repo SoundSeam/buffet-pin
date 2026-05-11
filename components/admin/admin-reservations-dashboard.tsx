@@ -7,10 +7,13 @@ import {
   CalendarDays,
   ChevronLeft,
   ChevronRight,
+  Ellipsis,
   ListChecks,
   Loader2,
+  X,
 } from "lucide-react";
 
+import { useTranslation } from "@/components/providers/language-provider";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import ModalShell from "@/components/a11y/modal-shell";
 
@@ -54,73 +57,75 @@ type ReservationEditorForm = {
 };
 
 const fieldClass =
-  "w-full rounded border bg-[#F8F5EE] px-3 py-2.5 text-sm text-[#062F24] focus:outline-none";
+  "w-full rounded border border-[rgba(6,47,36,0.12)] bg-[rgba(6,47,36,0.05)] px-3 py-2.5 text-sm text-[#062F24] focus:outline-none focus-visible:outline-none focus-visible:outline-0";
 const buttonClass =
-  "rounded px-4 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-50";
-const primaryButtonStyle = { background: "#C9A56A", color: "#062F24" };
-const quietButtonStyle = { background: "rgba(244,232,210,0.14)", color: "#F4E8D2" };
-const panelQuietButtonStyle = { background: "rgba(6,47,36,0.08)", color: "#062F24" };
+  "inline-flex items-center justify-center rounded px-4 py-2.5 text-sm font-semibold transition-all duration-300 hover:opacity-90 focus-visible:outline-none focus-visible:outline-0 disabled:cursor-not-allowed disabled:opacity-50";
+const actionMenuItemClass =
+  "rounded px-3 py-2.5 text-left text-sm font-semibold text-[#062F24] hover:bg-[#062F24]/5";
+const primaryButtonStyle = {
+  background: "#062F24",
+  border: "1px solid #062F24",
+  color: "#FFFFFF",
+};
+const quietButtonStyle = {
+  background: "rgba(6,47,36,0.05)",
+  border: "1px solid rgba(6,47,36,0.12)",
+  color: "#062F24",
+};
+const dangerButtonStyle = {
+  background: "#FFFFFF",
+  border: "1px solid rgba(153,27,27,0.18)",
+  color: "#7F1D1D",
+};
 
-const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const slotTimes = ["16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00"];
+const slotTimes = Array.from({ length: 11 }, (_, index) => {
+  const totalMinutes = 16 * 60 + index * 30;
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+});
 
-const statusMeta: Record<
+const statusSurfaceMeta: Record<
   AdminReservationStatus,
-  { label: string; description: string; color: string; background: string }
+  { color: string; background: string }
 > = {
   PENDING: {
-    label: "Pending",
-    description: "Awaiting confirmation.",
     color: "#7C5A16",
     background: "#FFF7D6",
   },
   CONFIRMED: {
-    label: "Confirmed",
-    description: "Active reservation.",
     color: "#065F46",
     background: "#DDF7E8",
   },
   CANCELLED: {
-    label: "Cancelled",
-    description: "Removed from capacity.",
     color: "#8B1E1E",
     background: "#FFE1D8",
   },
   COMPLETED: {
-    label: "Completed",
-    description: "Guest was seated.",
     color: "#17456B",
     background: "#DDEEFF",
   },
   NO_SHOW: {
-    label: "No-show",
-    description: "Guest did not arrive.",
     color: "#5F3B10",
     background: "#FFE8B8",
   },
 };
 
-const statusActions = [
+const statusActionMeta = [
   {
     action: "complete",
-    label: "Mark completed",
-    activeLabel: "Completed",
     status: "COMPLETED",
     background: "#DDEEFF",
     color: "#17456B",
   },
   {
     action: "no_show",
-    label: "Mark no-show",
-    activeLabel: "No-show",
     status: "NO_SHOW",
     background: "#FFE8B8",
     color: "#5F3B10",
   },
   {
     action: "cancel",
-    label: "Cancel reservation",
-    activeLabel: "Cancelled",
     status: "CANCELLED",
     background: "#FFE1D8",
     color: "#8B1E1E",
@@ -177,6 +182,19 @@ function parseDateInput(value: string) {
   return new Date(year, month - 1, day);
 }
 
+function getLocale(language: "fr" | "en") {
+  return language === "fr" ? "fr-CA" : "en-CA";
+}
+
+function formatHumanDate(value: string, language: "fr" | "en") {
+  return parseDateInput(value).toLocaleDateString(getLocale(language), {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
 function today() {
   return toDateInputValue(new Date());
 }
@@ -218,9 +236,9 @@ function getCalendarRange(view: CalendarView, anchorDate: Date) {
   };
 }
 
-function getCalendarTitle(view: CalendarView, anchorDate: Date) {
+function getCalendarTitle(view: CalendarView, anchorDate: Date, language: "fr" | "en") {
   if (view === "day") {
-    return new Intl.DateTimeFormat("en-CA", {
+    return new Intl.DateTimeFormat(getLocale(language), {
       weekday: "long",
       month: "long",
       day: "numeric",
@@ -230,11 +248,11 @@ function getCalendarTitle(view: CalendarView, anchorDate: Date) {
 
   if (view === "week") {
     const range = getCalendarRange("week", anchorDate);
-    const start = new Intl.DateTimeFormat("en-CA", {
+    const start = new Intl.DateTimeFormat(getLocale(language), {
       month: "short",
       day: "numeric",
     }).format(range.start);
-    const end = new Intl.DateTimeFormat("en-CA", {
+    const end = new Intl.DateTimeFormat(getLocale(language), {
       month: "short",
       day: "numeric",
       year: "numeric",
@@ -243,16 +261,10 @@ function getCalendarTitle(view: CalendarView, anchorDate: Date) {
     return `${start} - ${end}`;
   }
 
-  return new Intl.DateTimeFormat("en-CA", {
+  return new Intl.DateTimeFormat(getLocale(language), {
     month: "long",
     year: "numeric",
   }).format(anchorDate);
-}
-
-function getCurrentPeriodLabel(view: CalendarView) {
-  if (view === "month") return "This month";
-  if (view === "week") return "This week";
-  return "Today";
 }
 
 function moveAnchorDate(view: CalendarView, anchorDate: Date, direction: -1 | 1) {
@@ -280,12 +292,29 @@ function getDatesBetween(start: Date, end: Date) {
   return dates;
 }
 
-function formatDisplayTime(time: string) {
+function formatDisplayTime(time: string, language: "fr" | "en") {
   const [hour, minute] = time.split(":").map(Number);
-  const period = hour >= 12 ? "PM" : "AM";
-  const displayHour = hour % 12 || 12;
+  const date = new Date(2026, 0, 1, hour, minute);
 
-  return `${displayHour}:${String(minute).padStart(2, "0")} ${period}`;
+  return new Intl.DateTimeFormat(getLocale(language), {
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(date);
+}
+
+function formatPhoneNumber(value: string) {
+  const trimmed = value.trim();
+  const digits = trimmed.replace(/\D/g, "");
+
+  if (digits.length === 10) {
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+  }
+
+  if (digits.length === 11 && digits.startsWith("1")) {
+    return `+1 (${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7)}`;
+  }
+
+  return trimmed;
 }
 
 function reservationsOnDate(reservations: AdminReservation[], date: string) {
@@ -302,6 +331,14 @@ function reservationsAtSlot(
   return reservations
     .filter((reservation) => reservation.date === date && reservation.time === time)
     .sort((a, b) => a.guest.name.localeCompare(b.guest.name));
+}
+
+function compareReservationsAscending(a: AdminReservation, b: AdminReservation) {
+  return `${a.date}T${a.time}`.localeCompare(`${b.date}T${b.time}`);
+}
+
+function compareReservationsDescending(a: AdminReservation, b: AdminReservation) {
+  return compareReservationsAscending(b, a);
 }
 
 function isDisplayMode(value: string | null): value is DisplayMode {
@@ -329,10 +366,13 @@ function isValidDateInput(value: string | null): value is string {
 }
 
 export default function AdminReservationsDashboard() {
+  const { language, copy } = useTranslation();
+  const reservationsCopy = copy.admin.reservations;
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const initialSearchParams = useRef(searchParams);
+  const actionMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const [reservations, setReservations] = useState<AdminReservation[]>([]);
   const [displayMode, setDisplayMode] = useState<DisplayMode>(() => {
     const value = initialSearchParams.current.get("mode");
@@ -358,6 +398,7 @@ export default function AdminReservationsDashboard() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [copiedReservationId, setCopiedReservationId] = useState<string | null>(null);
+  const [openActionMenuId, setOpenActionMenuId] = useState<string | null>(null);
   const [selectedReservation, setSelectedReservation] =
     useState<AdminReservation | null>(null);
   const [editorForm, setEditorForm] = useState<ReservationEditorForm | null>(null);
@@ -369,10 +410,72 @@ export default function AdminReservationsDashboard() {
     name: "",
     phone: "",
     email: "",
-    language: "FR",
+    language: language.toUpperCase(),
     specialRequests: "",
     internalNotes: "",
   });
+
+  const statusMeta: Record<
+    AdminReservationStatus,
+    { label: string; description: string; color: string; background: string }
+  > = {
+    PENDING: {
+      label: reservationsCopy.statusLabels.PENDING,
+      description: reservationsCopy.statusDescriptions.PENDING,
+      ...statusSurfaceMeta.PENDING,
+    },
+    CONFIRMED: {
+      label: reservationsCopy.statusLabels.CONFIRMED,
+      description: reservationsCopy.statusDescriptions.CONFIRMED,
+      ...statusSurfaceMeta.CONFIRMED,
+    },
+    CANCELLED: {
+      label: reservationsCopy.statusLabels.CANCELLED,
+      description: reservationsCopy.statusDescriptions.CANCELLED,
+      ...statusSurfaceMeta.CANCELLED,
+    },
+    COMPLETED: {
+      label: reservationsCopy.statusLabels.COMPLETED,
+      description: reservationsCopy.statusDescriptions.COMPLETED,
+      ...statusSurfaceMeta.COMPLETED,
+    },
+    NO_SHOW: {
+      label: reservationsCopy.statusLabels.NO_SHOW,
+      description: reservationsCopy.statusDescriptions.NO_SHOW,
+      ...statusSurfaceMeta.NO_SHOW,
+    },
+  };
+
+  useEffect(() => {
+    setForm((current) => ({ ...current, language: language.toUpperCase() }));
+  }, [language]);
+
+  useEffect(() => {
+    if (!openActionMenuId) return;
+
+    const handlePointerDown = (event: MouseEvent) => {
+      const activeMenu = actionMenuRefs.current[openActionMenuId];
+      if (!activeMenu) return;
+
+      if (!activeMenu.contains(event.target as Node)) {
+        setOpenActionMenuId(null);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpenActionMenuId(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [openActionMenuId]);
 
   const loadReservations = async () => {
     setLoading(true);
@@ -386,6 +489,8 @@ export default function AdminReservationsDashboard() {
       params.set("dateTo", toDateInputValue(range.end));
     } else if (date) {
       params.set("date", date);
+    } else {
+      params.set("includePast", "true");
     }
 
     if (status !== "ALL") params.set("status", status);
@@ -394,7 +499,7 @@ export default function AdminReservationsDashboard() {
     const result = await response.json();
 
     if (!result.ok) {
-      setError(formatApiError(result, "Unable to load reservations."));
+      setError(formatApiError(result, reservationsCopy.loadError));
       setReservations([]);
     } else {
       setReservations(result.data.reservations);
@@ -436,7 +541,7 @@ export default function AdminReservationsDashboard() {
     const result = await response.json();
 
     if (!result.ok) {
-      setError(formatApiError(result, "Unable to create reservation."));
+      setError(formatApiError(result, reservationsCopy.createError));
     } else {
       setForm((current) => ({
         ...current,
@@ -465,7 +570,7 @@ export default function AdminReservationsDashboard() {
     const result = await response.json();
 
     if (!result.ok) {
-      setError(formatApiError(result, "Unable to update reservation."));
+      setError(formatApiError(result, reservationsCopy.updateError));
     }
 
     await loadReservations();
@@ -474,12 +579,10 @@ export default function AdminReservationsDashboard() {
 
   const applyStatusAction = async (
     reservation: AdminReservation,
-    action: (typeof statusActions)[number]["action"],
+    action: (typeof statusActionMeta)[number]["action"],
   ) => {
     if (action === "cancel") {
-      const confirmed = window.confirm(
-        "Cancel this reservation? It will be removed from online capacity.",
-      );
+      const confirmed = window.confirm(reservationsCopy.cancelConfirmation);
 
       if (!confirmed) return;
     }
@@ -530,7 +633,7 @@ export default function AdminReservationsDashboard() {
       setCopiedReservationId(reservation.id);
       window.setTimeout(() => setCopiedReservationId(null), 1800);
     } catch {
-      setError("Unable to copy to clipboard.");
+      setError(reservationsCopy.copyError);
     }
   };
 
@@ -548,6 +651,10 @@ export default function AdminReservationsDashboard() {
     window.location.href = "/admin/login";
   };
 
+  const closeActionMenu = () => {
+    setOpenActionMenuId(null);
+  };
+
   const renderStatusPill = (reservation: AdminReservation) => (
     <span
       className="inline-flex rounded px-3 py-1 text-xs font-bold"
@@ -560,75 +667,115 @@ export default function AdminReservationsDashboard() {
     </span>
   );
 
-  const renderActionMenu = (reservation: AdminReservation, compact = false) => (
-    <details className="relative" onClick={(event) => event.stopPropagation()}>
-      <summary
-        className="inline-flex cursor-pointer list-none rounded px-3 py-1.5 text-[11px] font-black"
-        style={{
-          background: compact ? "rgba(248,245,238,0.82)" : "rgba(6,47,36,0.08)",
-          color: "#062F24",
+  const renderActionMenu = (
+    reservation: AdminReservation,
+    options?: {
+      fullWidth?: boolean;
+      className?: string;
+      style?: { background: string; border: string; color: string };
+      summaryContent?: React.ReactNode;
+      ariaLabel?: string;
+    },
+  ) => (
+    <div
+      ref={(element) => {
+        actionMenuRefs.current[reservation.id] = element;
+      }}
+      className={`relative ${options?.fullWidth ? "w-full" : ""}`}
+    >
+      <button
+        type="button"
+        className={
+          options?.className ??
+          buttonClass
+        }
+        style={options?.style ?? quietButtonStyle}
+        aria-label={options?.ariaLabel ?? reservationsCopy.actions}
+        aria-expanded={openActionMenuId === reservation.id}
+        onClick={(event) => {
+          event.stopPropagation();
+          setOpenActionMenuId((current) =>
+            current === reservation.id ? null : reservation.id,
+          );
         }}
       >
-        Actions
-      </summary>
-      <div className="absolute right-0 z-20 mt-2 grid w-56 gap-1 rounded border border-[#062F24]/10 bg-[#F8F5EE] p-2 text-left shadow-xl">
+        {options?.summaryContent ?? reservationsCopy.actions}
+      </button>
+      {openActionMenuId === reservation.id ? (
+        <div className="absolute right-0 z-20 mt-2 grid w-56 gap-1 rounded border border-[#062F24]/10 bg-white p-2 text-left shadow-sm">
         <button
           type="button"
-          className="rounded px-3 py-2 text-left text-xs font-bold text-[#062F24] hover:bg-[#062F24]/5"
-          onClick={() => openReservationDialog(reservation)}
+          className={actionMenuItemClass}
+          onClick={() => {
+            closeActionMenu();
+            openReservationDialog(reservation);
+          }}
         >
-          Edit reservation
+          {reservationsCopy.actionMenu.editReservation}
         </button>
         <button
           type="button"
-          className="rounded px-3 py-2 text-left text-xs font-bold text-[#062F24] hover:bg-[#062F24]/5"
-          onClick={() => copyText(reservation, getManageUrl(reservation))}
+          className={actionMenuItemClass}
+          onClick={() => {
+            closeActionMenu();
+            void copyText(reservation, getManageUrl(reservation));
+          }}
         >
-          Copy manage link
+          {reservationsCopy.actionMenu.copyManageLink}
         </button>
         <button
           type="button"
-          className="rounded px-3 py-2 text-left text-xs font-bold text-[#062F24] hover:bg-[#062F24]/5"
-          onClick={() => copyText(reservation, reservation.confirmationCode)}
+          className={actionMenuItemClass}
+          onClick={() => {
+            closeActionMenu();
+            void copyText(reservation, reservation.confirmationCode);
+          }}
         >
-          Copy confirmation code
+          {reservationsCopy.actionMenu.copyConfirmationCode}
         </button>
         <button
           type="button"
-          className="rounded px-3 py-2 text-left text-xs font-bold text-[#062F24] hover:bg-[#062F24]/5"
-          onClick={() => copyText(reservation, reservation.guest.phone)}
+          className={actionMenuItemClass}
+          onClick={() => {
+            closeActionMenu();
+            void copyText(reservation, reservation.guest.phone);
+          }}
         >
-          Copy guest phone
+          {reservationsCopy.actionMenu.copyGuestPhone}
         </button>
         <Link
-          className="rounded px-3 py-2 text-left text-xs font-bold text-[#062F24] hover:bg-[#062F24]/5"
+          className={actionMenuItemClass}
           href={reservation.manageUrlPath}
           target="_blank"
           rel="noreferrer"
+          onClick={closeActionMenu}
         >
-          Open manage page
+          {reservationsCopy.actionMenu.openManagePage}
         </Link>
         {reservation.guest.email ? (
           <a
-            className="rounded px-3 py-2 text-left text-xs font-bold text-[#062F24] hover:bg-[#062F24]/5"
+            className={actionMenuItemClass}
             href={`mailto:${reservation.guest.email}`}
+            onClick={closeActionMenu}
           >
-            Email guest
+            {reservationsCopy.actionMenu.emailGuest}
           </a>
         ) : null}
         <a
-          className="rounded px-3 py-2 text-left text-xs font-bold text-[#062F24] hover:bg-[#062F24]/5"
+          className={actionMenuItemClass}
           href={`tel:${reservation.guest.phone}`}
+          onClick={closeActionMenu}
         >
-          Call guest
+          {reservationsCopy.actionMenu.callGuest}
         </a>
         {copiedReservationId === reservation.id ? (
-          <p className="px-3 py-1 text-[11px] font-black text-[#C9A56A]">
-            Copied
+          <p className="px-3 py-2.5 text-sm font-semibold text-[#062F24]/60">
+            {reservationsCopy.actionMenu.copied}
           </p>
         ) : null}
-      </div>
-    </details>
+        </div>
+      ) : null}
+    </div>
   );
 
   const renderCalendarEvent = (reservation: AdminReservation, compact = false) => (
@@ -636,7 +783,7 @@ export default function AdminReservationsDashboard() {
       key={reservation.id}
       role="button"
       tabIndex={0}
-      className="cursor-pointer rounded border px-2.5 py-2 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+      className="min-w-0 cursor-pointer overflow-hidden rounded border p-3 text-left shadow-sm transition hover:bg-white/70 focus:outline-none focus-visible:outline-none"
       onClick={() => openReservationDialog(reservation)}
       onKeyDown={(event) => {
         if (event.key === "Enter" || event.key === " ") {
@@ -650,24 +797,43 @@ export default function AdminReservationsDashboard() {
         color: statusMeta[reservation.status].color,
       }}
     >
-      <div className="flex items-start justify-between gap-2">
-        <p className="truncate text-xs font-black">
-          {formatDisplayTime(reservation.time)} {reservation.guest.name}
+      <div className="min-w-0 grid gap-1">
+        <p className="truncate text-[10px] font-semibold uppercase tracking-normal">
+          {formatDisplayTime(reservation.time, language)}
         </p>
-        <p className="shrink-0 text-[10px] font-black">{reservation.partySize}p</p>
+        <p className="line-clamp-2 break-words text-xs font-semibold leading-snug">
+          {reservation.guest.name}
+        </p>
+        <p className="text-[10px] font-semibold">
+          {reservation.partySize} {reservationsCopy.guests}
+        </p>
       </div>
       {!compact ? (
-        <>
-          <p className="mt-1 truncate text-[11px] font-semibold">
-            {reservation.guest.phone}
+        <div className="mt-2 grid gap-2">
+          <p className="truncate text-[11px] font-medium">
+            {formatPhoneNumber(reservation.guest.phone)}
           </p>
-          <div className="mt-2 flex items-center justify-between gap-2">
-            <p className="text-[10px] font-bold">
+          <div className="grid gap-2">
+            <p className="text-[10px] font-semibold">
               {statusMeta[reservation.status].label}
             </p>
-            {renderActionMenu(reservation, true)}
+            <button
+              type="button"
+              className="inline-flex w-full items-center justify-center rounded px-3 py-2 text-xs font-semibold transition-all duration-300 hover:opacity-90 focus-visible:outline-none focus-visible:outline-0"
+              onClick={(event) => {
+                event.stopPropagation();
+                openReservationDialog(reservation);
+              }}
+              style={{
+                background: statusMeta[reservation.status].color,
+                border: `1px solid ${statusMeta[reservation.status].color}`,
+                color: "#FFFFFF",
+              }}
+            >
+              {reservationsCopy.openDetails}
+            </button>
           </div>
-        </>
+        </div>
       ) : null}
     </div>
   );
@@ -678,18 +844,20 @@ export default function AdminReservationsDashboard() {
       className="border-b border-l-4 border-b-[#062F24]/10 p-5 last:border-b-0"
       style={{ borderLeftColor: statusMeta[reservation.status].color }}
     >
-      <div className="grid gap-3 lg:grid-cols-[0.7fr_1fr_1.3fr]">
+      <div className="grid gap-3 lg:grid-cols-[0.9fr_1.1fr]">
         <div>
-          <p className="font-bold text-[#062F24]">
-            {reservation.date} {reservation.time}
+          <p className="font-semibold text-[#062F24]">
+            {formatHumanDate(reservation.date, language)} {formatDisplayTime(reservation.time, language)}
           </p>
-          <p className="text-sm text-[#062F24]/65">{reservation.partySize} guests</p>
+          <p className="text-sm text-[#062F24]/65">
+            {reservation.partySize} {reservationsCopy.guests}
+          </p>
           <div className="mt-3">{renderStatusPill(reservation)}</div>
-          <p className="mt-2 text-xs font-semibold text-[#062F24]/60">
+          <p className="mt-2 text-xs font-medium text-[#062F24]/60">
             {statusMeta[reservation.status].description}
           </p>
-          <p className="mt-3 text-xs font-semibold text-[#062F24]/55">
-            Code: {reservation.confirmationCode}
+          <p className="mt-3 text-xs font-medium text-[#062F24]/55">
+            {reservationsCopy.code}: {reservation.confirmationCode}
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             <button
@@ -698,83 +866,59 @@ export default function AdminReservationsDashboard() {
               onClick={() => openReservationDialog(reservation)}
               style={primaryButtonStyle}
             >
-              Open details
+              {reservationsCopy.openDetails}
             </button>
-            {renderActionMenu(reservation)}
+            {renderActionMenu(reservation, {
+              className:
+                "inline-flex h-10 w-10 items-center justify-center rounded bg-transparent text-[#062F24] transition hover:bg-[rgba(6,47,36,0.05)] focus-visible:outline-none focus-visible:outline-0",
+              style: {
+                background: "transparent",
+                border: "1px solid transparent",
+                color: "#062F24",
+              },
+              summaryContent: <Ellipsis size={18} aria-hidden="true" />,
+              ariaLabel: reservationsCopy.actions,
+            })}
           </div>
         </div>
-        <div onClick={(event) => event.stopPropagation()}>
-          <input
-            className={fieldClass}
-            aria-label={`Guest name for ${reservation.confirmationCode}`}
-            name={`guest-name-${reservation.id}`}
-            autoComplete="name"
-            defaultValue={reservation.guest.name}
-            onBlur={(event) =>
-              updateReservation(reservation.id, { name: event.target.value })
-            }
-          />
-          <input
-            className={`${fieldClass} mt-2`}
-            aria-label={`Guest phone for ${reservation.confirmationCode}`}
-            name={`guest-phone-${reservation.id}`}
-            autoComplete="tel"
-            inputMode="tel"
-            defaultValue={reservation.guest.phone}
-            onBlur={(event) =>
-              updateReservation(reservation.id, { phone: event.target.value })
-            }
-          />
-        </div>
-        <div onClick={(event) => event.stopPropagation()}>
-          <textarea
-            className={fieldClass}
-            aria-label={`Internal notes for ${reservation.confirmationCode}`}
-            name={`internal-notes-${reservation.id}`}
-            defaultValue={reservation.internalNotes ?? ""}
-            placeholder="Internal notes…"
-            onBlur={(event) =>
-              updateReservation(reservation.id, { internalNotes: event.target.value })
-            }
-          />
-          <div className="mt-3 rounded border border-[#062F24]/10 bg-[#F4E8D2]/55 p-3">
-            <p className="text-xs font-bold text-[#062F24]/55">
-              Status actions
-            </p>
-            {isTerminalStatus(reservation.status) ? (
-              <p className="mt-2 text-sm font-semibold text-[#062F24]">
-                Final state: {statusMeta[reservation.status].label}
+        <div>
+          <p className="text-sm font-semibold text-[#062F24]">{reservation.guest.name}</p>
+          <p className="mt-1 text-sm text-[#062F24]/65">
+            {formatPhoneNumber(reservation.guest.phone)}
+          </p>
+          {reservation.guest.email ? (
+            <p className="mt-1 text-sm text-[#062F24]/65">{reservation.guest.email}</p>
+          ) : null}
+          {reservation.specialRequests ? (
+            <div className="mt-3">
+              <p className="text-[10px] font-semibold text-[#062F24]/45">
+                {reservationsCopy.notes}
               </p>
-            ) : null}
-            <div className="mt-3 flex flex-wrap gap-2">
-              {statusActions.map((statusAction) => {
-                const isCurrentStatus = reservation.status === statusAction.status;
-                const disabled = saving || isTerminalStatus(reservation.status);
-
-                return (
-                  <button
-                    key={statusAction.action}
-                    className={buttonClass}
-                    onClick={() => applyStatusAction(reservation, statusAction.action)}
-                    disabled={disabled}
-                    style={{
-                      background: isCurrentStatus
-                        ? statusMeta[reservation.status].background
-                        : statusAction.background,
-                      color: isCurrentStatus
-                        ? statusMeta[reservation.status].color
-                        : statusAction.color,
-                    }}
-                  >
-                    {isCurrentStatus ? statusAction.activeLabel : statusAction.label}
-                  </button>
-                );
-              })}
+              <p className="mt-1 text-sm leading-relaxed text-[#062F24]/70">
+                {reservation.specialRequests}
+              </p>
             </div>
-          </div>
+          ) : null}
         </div>
       </div>
     </div>
+  );
+
+  const renderListSection = (
+    title: string,
+    emptyMessage: string,
+    items: AdminReservation[],
+  ) => (
+    <section className="overflow-visible rounded border border-[#062F24]/10 bg-white shadow-sm">
+      <div className="border-b border-[#062F24]/10 px-5 py-4">
+        <h3 className="text-base font-semibold text-[#062F24]">{title}</h3>
+      </div>
+      {items.length === 0 ? (
+        <p className="p-5 text-sm text-[#062F24]/60">{emptyMessage}</p>
+      ) : (
+        items.map((reservation) => renderReservationListItem(reservation))
+      )}
+    </section>
   );
 
   const renderCalendar = () => {
@@ -783,10 +927,10 @@ export default function AdminReservationsDashboard() {
 
     if (calendarView === "month") {
       return (
-        <div className="overflow-hidden rounded border border-[#062F24]/10 bg-[#F8F5EE]">
-          <div className="grid grid-cols-7 border-b border-[#062F24]/10 bg-[#F4E8D2]">
-            {weekDays.map((day) => (
-              <div key={day} className="p-3 text-xs font-black text-[#062F24]/60">
+        <div className="overflow-hidden rounded border border-[#062F24]/10 bg-white shadow-sm">
+          <div className="grid grid-cols-7 border-b border-[#062F24]/10 bg-[rgba(6,47,36,0.04)]">
+            {reservationsCopy.weekdayShort.map((day) => (
+              <div key={day} className="p-3 text-xs font-semibold text-[#062F24]/60">
                 {day}
               </div>
             ))}
@@ -801,12 +945,12 @@ export default function AdminReservationsDashboard() {
                 <div
                   key={key}
                   className="min-h-[138px] border-b border-r border-[#062F24]/10 p-2 last:border-r-0"
-                  style={{ background: inactive ? "rgba(6,47,36,0.04)" : "#F8F5EE" }}
+                  style={{ background: inactive ? "rgba(6,47,36,0.03)" : "#FFFFFF" }}
                 >
                   <div className="flex items-center justify-between">
                     <button
                       type="button"
-                      className="rounded px-2 py-1 text-sm font-black text-[#062F24]"
+                      className="rounded px-2 py-1 text-sm font-semibold text-[#062F24]"
                       onClick={() => {
                         setAnchorDate(day);
                         setCalendarView("day");
@@ -815,7 +959,7 @@ export default function AdminReservationsDashboard() {
                       {day.getDate()}
                     </button>
                     {dayReservations.length ? (
-                      <span className="rounded bg-[#C9A56A]/25 px-2 py-1 text-[10px] font-black text-[#062F24]">
+                      <span className="rounded bg-[rgba(6,47,36,0.08)] px-2 py-1 text-[10px] font-semibold text-[#062F24]">
                         {dayReservations.length}
                       </span>
                     ) : null}
@@ -833,7 +977,7 @@ export default function AdminReservationsDashboard() {
                           setCalendarView("day");
                         }}
                       >
-                        +{dayReservations.length - 4} more
+                        +{dayReservations.length - 4} {reservationsCopy.more}
                       </button>
                     ) : null}
                   </div>
@@ -847,11 +991,11 @@ export default function AdminReservationsDashboard() {
 
     if (calendarView === "week") {
       return (
-        <div className="overflow-x-auto rounded border border-[#062F24]/10 bg-[#F8F5EE]">
+        <div className="overflow-x-auto rounded border border-[#062F24]/10 bg-white shadow-sm">
           <div className="min-w-[900px]">
-            <div className="grid grid-cols-[88px_repeat(7,minmax(112px,1fr))] border-b border-[#062F24]/10 bg-[#F4E8D2]">
-              <div className="p-3 text-xs font-black text-[#062F24]/45">
-                Time
+            <div className="grid grid-cols-[88px_repeat(7,minmax(112px,1fr))] border-b border-[#062F24]/10 bg-[rgba(6,47,36,0.04)]">
+              <div className="p-3 text-xs font-semibold text-[#062F24]/45">
+                {reservationsCopy.time}
               </div>
               {days.map((day) => (
                 <button
@@ -863,10 +1007,10 @@ export default function AdminReservationsDashboard() {
                     setCalendarView("day");
                   }}
                 >
-                  <p className="text-xs font-black text-[#062F24]/50">
-                    {weekDays[day.getDay()]}
+                  <p className="text-xs font-semibold text-[#062F24]/50">
+                    {reservationsCopy.weekdayShort[day.getDay()]}
                   </p>
-                  <p className="mt-1 text-xl font-black text-[#062F24]">{day.getDate()}</p>
+                  <p className="mt-1 text-xl font-semibold text-[#062F24]">{day.getDate()}</p>
                 </button>
               ))}
             </div>
@@ -875,8 +1019,8 @@ export default function AdminReservationsDashboard() {
                 key={time}
                 className="grid grid-cols-[88px_repeat(7,minmax(112px,1fr))] border-b border-[#062F24]/10 last:border-b-0"
               >
-                <div className="bg-[#F4E8D2]/55 p-3 text-xs font-black text-[#062F24]/55">
-                  {formatDisplayTime(time)}
+                <div className="bg-[rgba(6,47,36,0.04)] p-3 text-xs font-semibold text-[#062F24]/55">
+                  {formatDisplayTime(time, language)}
                 </div>
                 {days.map((day) => {
                   const key = toDateInputValue(day);
@@ -902,7 +1046,7 @@ export default function AdminReservationsDashboard() {
     const selectedDate = toDateInputValue(anchorDate);
 
     return (
-      <div className="rounded border border-[#062F24]/10 bg-[#F8F5EE]">
+      <div className="rounded border border-[#062F24]/10 bg-white shadow-sm">
         {slotTimes.map((time) => {
           const slotReservations = reservationsAtSlot(reservations, selectedDate, time);
 
@@ -912,11 +1056,11 @@ export default function AdminReservationsDashboard() {
               className="grid gap-4 border-b border-[#062F24]/10 p-4 last:border-b-0 sm:grid-cols-[120px_1fr]"
             >
               <div>
-                <p className="text-sm font-black text-[#062F24]">
-                  {formatDisplayTime(time)}
+                <p className="text-sm font-semibold text-[#062F24]">
+                  {formatDisplayTime(time, language)}
                 </p>
                 <p className="text-xs font-semibold text-[#062F24]/50">
-                  {slotReservations.reduce((total, reservation) => total + reservation.partySize, 0)} guests
+                  {slotReservations.reduce((total, reservation) => total + reservation.partySize, 0)} {reservationsCopy.guests}
                 </p>
               </div>
               <div className="grid gap-3 md:grid-cols-2">
@@ -924,7 +1068,7 @@ export default function AdminReservationsDashboard() {
                   slotReservations.map((reservation) => renderCalendarEvent(reservation))
                 ) : (
                   <p className="rounded border border-dashed border-[#062F24]/15 p-4 text-sm font-semibold text-[#062F24]/45">
-                    No reservations.
+                    {reservationsCopy.noReservations}
                   </p>
                 )}
               </div>
@@ -942,39 +1086,80 @@ export default function AdminReservationsDashboard() {
       <ModalShell
         labelledBy="reservation-dialog-title"
         onClose={closeReservationDialog}
-        panelClassName="max-w-3xl"
+        panelClassName="max-w-3xl rounded border border-[rgba(6,47,36,0.08)] bg-white p-6 shadow-sm sm:p-8"
       >
           <div className="flex flex-col justify-between gap-4 border-b border-[#062F24]/10 pb-5 sm:flex-row sm:items-start">
             <div>
-              <p className="text-xs font-black text-[#C9A56A]">
-                Reservation details
-              </p>
-              <h2 id="reservation-dialog-title" className="mt-2 text-3xl font-black text-[#062F24]">
+              <h2 id="reservation-dialog-title" className="text-3xl font-extrabold text-[#062F24]">
                 {selectedReservation.guest.name}
               </h2>
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 {renderStatusPill(selectedReservation)}
-                <span className="rounded bg-[#C9A56A]/25 px-3 py-1 text-xs font-black text-[#062F24]">
+                <span className="rounded bg-[rgba(6,47,36,0.08)] px-3 py-1 text-xs font-semibold text-[#062F24]">
                   {selectedReservation.confirmationCode}
                 </span>
               </div>
             </div>
             <div className="flex flex-wrap gap-2">
-              {renderActionMenu(selectedReservation)}
               <button
                 type="button"
-                className={buttonClass}
+                className="inline-flex h-10 w-10 items-center justify-center rounded bg-transparent text-[#062F24] transition hover:bg-[rgba(6,47,36,0.05)] focus-visible:outline-none focus-visible:outline-0"
                 onClick={closeReservationDialog}
-                style={panelQuietButtonStyle}
+                aria-label={reservationsCopy.dialog.close}
               >
-                Close
+                <X size={18} aria-hidden="true" />
               </button>
             </div>
           </div>
 
-          <div className="mt-6 grid gap-4 md:grid-cols-3">
-            <label className="text-xs font-black text-[#062F24]/55">
-              Date
+          <div className="mt-6 grid gap-4 md:grid-cols-2">
+            <label className="text-xs font-semibold text-[#062F24]/55">
+              {reservationsCopy.dialog.guestName}
+              <input
+                className={`${fieldClass} mt-2`}
+                name="guest-name"
+                autoComplete="name"
+                value={editorForm.name}
+                onChange={(event) =>
+                  setEditorForm({ ...editorForm, name: event.target.value })
+                }
+              />
+            </label>
+            <label className="text-xs font-semibold text-[#062F24]/55">
+              {reservationsCopy.dialog.phone}
+              <input
+                className={`${fieldClass} mt-2`}
+                name="guest-phone"
+                autoComplete="tel"
+                inputMode="tel"
+                value={editorForm.phone}
+                onChange={(event) =>
+                  setEditorForm({ ...editorForm, phone: event.target.value })
+                }
+              />
+            </label>
+          </div>
+
+          <div className="mt-4">
+            <label className="text-xs font-semibold text-[#062F24]/55 md:col-span-2">
+              {reservationsCopy.dialog.email}
+              <input
+                className={`${fieldClass} mt-2`}
+                type="email"
+                name="guest-email"
+                autoComplete="email"
+                spellCheck={false}
+                value={editorForm.email}
+                onChange={(event) =>
+                  setEditorForm({ ...editorForm, email: event.target.value })
+                }
+              />
+            </label>
+          </div>
+
+          <div className="mt-4 grid gap-4 md:grid-cols-2">
+            <label className="text-xs font-semibold text-[#062F24]/55">
+              {reservationsCopy.dialog.date}
               <input
                 className={`${fieldClass} mt-2`}
                 type="date"
@@ -985,8 +1170,8 @@ export default function AdminReservationsDashboard() {
                 }
               />
             </label>
-            <label className="text-xs font-black text-[#062F24]/55">
-              Time
+            <label className="text-xs font-semibold text-[#062F24]/55">
+              {reservationsCopy.dialog.time}
               <select
                 className={`${fieldClass} mt-2`}
                 name="reservation-time"
@@ -997,15 +1182,18 @@ export default function AdminReservationsDashboard() {
               >
                 {slotTimes.map((time) => (
                   <option key={time} value={time}>
-                    {formatDisplayTime(time)}
+                    {formatDisplayTime(time, language)}
                   </option>
                 ))}
               </select>
             </label>
-            <label className="text-xs font-black text-[#062F24]/55">
-              Party size
+          </div>
+
+          <div className="mt-4">
+            <label className="text-xs font-semibold text-[#062F24]/55">
+              {reservationsCopy.dialog.partySize}
               <input
-                className={`${fieldClass} mt-2`}
+                className={`${fieldClass} mt-2 md:max-w-[220px]`}
                 type="number"
                 name="party-size"
                 inputMode="numeric"
@@ -1022,50 +1210,8 @@ export default function AdminReservationsDashboard() {
           </div>
 
           <div className="mt-4 grid gap-4 md:grid-cols-2">
-            <label className="text-xs font-black text-[#062F24]/55">
-              Guest name
-              <input
-                className={`${fieldClass} mt-2`}
-                name="guest-name"
-                autoComplete="name"
-                value={editorForm.name}
-                onChange={(event) =>
-                  setEditorForm({ ...editorForm, name: event.target.value })
-                }
-              />
-            </label>
-            <label className="text-xs font-black text-[#062F24]/55">
-              Phone
-              <input
-                className={`${fieldClass} mt-2`}
-                name="guest-phone"
-                autoComplete="tel"
-                inputMode="tel"
-                value={editorForm.phone}
-                onChange={(event) =>
-                  setEditorForm({ ...editorForm, phone: event.target.value })
-                }
-              />
-            </label>
-            <label className="text-xs font-black text-[#062F24]/55 md:col-span-2">
-              Email
-              <input
-                className={`${fieldClass} mt-2`}
-                type="email"
-                name="guest-email"
-                autoComplete="email"
-                spellCheck={false}
-                value={editorForm.email}
-                onChange={(event) =>
-                  setEditorForm({ ...editorForm, email: event.target.value })
-                }
-              />
-            </label>
-          </div>
-
-          <div className="mt-4 grid gap-4 md:grid-cols-2">
-            <label className="text-xs font-black text-[#062F24]/55">
-              Special requests
+            <label className="text-xs font-semibold text-[#062F24]/55">
+              {reservationsCopy.dialog.specialRequests}
               <textarea
                 className={`${fieldClass} mt-2 min-h-[120px]`}
                 name="special-requests"
@@ -1078,8 +1224,8 @@ export default function AdminReservationsDashboard() {
                 }
               />
             </label>
-            <label className="text-xs font-black text-[#062F24]/55">
-              Internal notes
+            <label className="text-xs font-semibold text-[#062F24]/55">
+              {reservationsCopy.dialog.internalNotes}
               <textarea
                 className={`${fieldClass} mt-2 min-h-[120px]`}
                 name="internal-notes"
@@ -1091,17 +1237,17 @@ export default function AdminReservationsDashboard() {
             </label>
           </div>
 
-          <div className="mt-6 rounded border border-[#062F24]/10 bg-[#F4E8D2]/55 p-4">
-            <p className="text-xs font-black text-[#062F24]/55">
-              Status actions
+          <div className="mt-6 rounded border border-[#062F24]/10 bg-[rgba(6,47,36,0.04)] p-4">
+            <p className="text-xs font-semibold text-[#062F24]/55">
+              {reservationsCopy.dialog.statusActions}
             </p>
             {isTerminalStatus(selectedReservation.status) ? (
               <p className="mt-2 text-sm font-semibold text-[#062F24]">
-                Final state: {statusMeta[selectedReservation.status].label}
+                {reservationsCopy.dialog.finalState}: {statusMeta[selectedReservation.status].label}
               </p>
             ) : null}
             <div className="mt-3 flex flex-wrap gap-2">
-              {statusActions.map((statusAction) => {
+              {statusActionMeta.map((statusAction) => {
                 const isCurrentStatus =
                   selectedReservation.status === statusAction.status;
                 const disabled = saving || isTerminalStatus(selectedReservation.status);
@@ -1123,7 +1269,17 @@ export default function AdminReservationsDashboard() {
                         : statusAction.color,
                     }}
                   >
-                    {isCurrentStatus ? statusAction.activeLabel : statusAction.label}
+                    {isCurrentStatus
+                      ? statusAction.action === "complete"
+                        ? reservationsCopy.statusActions.completed
+                        : statusAction.action === "no_show"
+                          ? reservationsCopy.statusActions.noShowActive
+                          : reservationsCopy.statusActions.cancelled
+                      : statusAction.action === "complete"
+                        ? reservationsCopy.statusActions.complete
+                        : statusAction.action === "no_show"
+                          ? reservationsCopy.statusActions.noShow
+                          : reservationsCopy.statusActions.cancel}
                   </button>
                 );
               })}
@@ -1135,9 +1291,9 @@ export default function AdminReservationsDashboard() {
               type="button"
               className={buttonClass}
               onClick={closeReservationDialog}
-              style={panelQuietButtonStyle}
+              style={quietButtonStyle}
             >
-              Discard
+              {reservationsCopy.dialog.discard}
             </button>
             <button
               type="button"
@@ -1147,7 +1303,7 @@ export default function AdminReservationsDashboard() {
               style={primaryButtonStyle}
             >
               {saving ? <Loader2 size={14} className="mr-2 inline animate-spin" aria-hidden="true" /> : null}
-              {saving ? "Saving… Save changes" : "Save changes"}
+              {saving ? reservationsCopy.dialog.saving : reservationsCopy.dialog.saveChanges}
             </button>
           </div>
       </ModalShell>
@@ -1161,30 +1317,27 @@ export default function AdminReservationsDashboard() {
       <ModalShell
         labelledBy="create-reservation-dialog-title"
         onClose={() => setCreateDialogOpen(false)}
-        panelClassName="max-w-2xl"
+        panelClassName="max-w-2xl rounded border border-[rgba(6,47,36,0.08)] bg-white p-6 shadow-sm sm:p-8"
       >
           <div className="flex items-start justify-between gap-4 border-b border-[#062F24]/10 pb-5">
             <div>
-              <p className="text-xs font-black text-[#C9A56A]">
-                Admin
-              </p>
-              <h2 id="create-reservation-dialog-title" className="mt-2 text-3xl font-black text-[#062F24]">
-                Create reservation
+              <h2 id="create-reservation-dialog-title" className="text-3xl font-extrabold text-[#062F24]">
+                {reservationsCopy.createDialog.title}
               </h2>
             </div>
             <button
               type="button"
               className={buttonClass}
               onClick={() => setCreateDialogOpen(false)}
-              style={panelQuietButtonStyle}
+              style={quietButtonStyle}
             >
-              Close
+              {reservationsCopy.dialog.close}
             </button>
           </div>
 
           <div className="mt-6 grid gap-4 md:grid-cols-3">
-            <label className="text-xs font-black text-[#062F24]/55">
-              Date
+            <label className="text-xs font-semibold text-[#062F24]/55">
+              {reservationsCopy.dialog.date}
               <input
                 className={`${fieldClass} mt-2`}
                 type="date"
@@ -1193,8 +1346,8 @@ export default function AdminReservationsDashboard() {
                 onChange={(event) => setForm({ ...form, date: event.target.value })}
               />
             </label>
-            <label className="text-xs font-black text-[#062F24]/55">
-              Time
+            <label className="text-xs font-semibold text-[#062F24]/55">
+              {reservationsCopy.dialog.time}
               <select
                 className={`${fieldClass} mt-2`}
                 name="new-reservation-time"
@@ -1203,13 +1356,13 @@ export default function AdminReservationsDashboard() {
               >
                 {slotTimes.map((time) => (
                   <option key={time} value={time}>
-                    {formatDisplayTime(time)}
+                    {formatDisplayTime(time, language)}
                   </option>
                 ))}
               </select>
             </label>
-            <label className="text-xs font-black text-[#062F24]/55">
-              Party size
+            <label className="text-xs font-semibold text-[#062F24]/55">
+              {reservationsCopy.dialog.partySize}
               <input
                 className={`${fieldClass} mt-2`}
                 type="number"
@@ -1225,38 +1378,38 @@ export default function AdminReservationsDashboard() {
           </div>
 
           <div className="mt-4 grid gap-4 md:grid-cols-2">
-            <label className="text-xs font-black text-[#062F24]/55">
-              Guest name
+            <label className="text-xs font-semibold text-[#062F24]/55">
+              {reservationsCopy.dialog.guestName}
               <input
                 className={`${fieldClass} mt-2`}
                 name="new-guest-name"
                 autoComplete="name"
-                placeholder="Guest name…"
+                placeholder={reservationsCopy.createDialog.guestNamePlaceholder}
                 value={form.name}
                 onChange={(event) => setForm({ ...form, name: event.target.value })}
               />
             </label>
-            <label className="text-xs font-black text-[#062F24]/55">
-              Phone
+            <label className="text-xs font-semibold text-[#062F24]/55">
+              {reservationsCopy.dialog.phone}
               <input
                 className={`${fieldClass} mt-2`}
                 name="new-guest-phone"
                 autoComplete="tel"
                 inputMode="tel"
-                placeholder="+1 (123) 456-7890"
+                placeholder={reservationsCopy.createDialog.phonePlaceholder}
                 value={form.phone}
                 onChange={(event) => setForm({ ...form, phone: event.target.value })}
               />
             </label>
-            <label className="text-xs font-black text-[#062F24]/55 md:col-span-2">
-              Email
+            <label className="text-xs font-semibold text-[#062F24]/55 md:col-span-2">
+              {reservationsCopy.dialog.email}
               <input
                 className={`${fieldClass} mt-2`}
                 type="email"
                 name="new-guest-email"
                 autoComplete="email"
                 spellCheck={false}
-                placeholder="guest@example.com"
+                placeholder={reservationsCopy.createDialog.emailPlaceholder}
                 value={form.email}
                 onChange={(event) => setForm({ ...form, email: event.target.value })}
               />
@@ -1264,24 +1417,24 @@ export default function AdminReservationsDashboard() {
           </div>
 
           <div className="mt-4 grid gap-4 md:grid-cols-2">
-            <label className="text-xs font-black text-[#062F24]/55">
-              Special requests
+            <label className="text-xs font-semibold text-[#062F24]/55">
+              {reservationsCopy.dialog.specialRequests}
               <textarea
                 className={`${fieldClass} mt-2 min-h-[120px]`}
                 name="new-special-requests"
-                placeholder="Allergies, accessibility notes, occasion…"
+                placeholder={reservationsCopy.createDialog.specialRequestsPlaceholder}
                 value={form.specialRequests}
                 onChange={(event) =>
                   setForm({ ...form, specialRequests: event.target.value })
                 }
               />
             </label>
-            <label className="text-xs font-black text-[#062F24]/55">
-              Internal notes
+            <label className="text-xs font-semibold text-[#062F24]/55">
+              {reservationsCopy.dialog.internalNotes}
               <textarea
                 className={`${fieldClass} mt-2 min-h-[120px]`}
                 name="new-internal-notes"
-                placeholder="Staff notes…"
+                placeholder={reservationsCopy.createDialog.internalNotesPlaceholder}
                 value={form.internalNotes}
                 onChange={(event) =>
                   setForm({ ...form, internalNotes: event.target.value })
@@ -1295,9 +1448,9 @@ export default function AdminReservationsDashboard() {
               type="button"
               className={buttonClass}
               onClick={() => setCreateDialogOpen(false)}
-              style={panelQuietButtonStyle}
+              style={quietButtonStyle}
             >
-              Discard
+              {reservationsCopy.createDialog.discard}
             </button>
             <button
               type="button"
@@ -1307,23 +1460,31 @@ export default function AdminReservationsDashboard() {
               style={primaryButtonStyle}
             >
               {saving ? <Loader2 size={14} className="mr-2 inline animate-spin" aria-hidden="true" /> : null}
-              {saving ? "Saving… Create reservation" : "Create reservation"}
+              {saving ? reservationsCopy.createDialog.saving : reservationsCopy.createDialog.createReservation}
             </button>
           </div>
       </ModalShell>
     );
   };
 
+  const todayValue = today();
+  const todayReservations = reservations
+    .filter((reservation) => reservation.date === todayValue)
+    .sort(compareReservationsAscending);
+  const upcomingReservations = reservations
+    .filter((reservation) => reservation.date > todayValue)
+    .sort(compareReservationsAscending);
+  const pastReservations = reservations
+    .filter((reservation) => reservation.date < todayValue)
+    .sort(compareReservationsDescending);
+
   return (
-    <section className="px-6 pb-20 pt-32" style={{ background: "#041F18" }}>
-      <div className="mx-auto max-w-7xl">
+    <section className="pb-20 pt-36 lg:pt-40" style={{ background: "#FFFFFF" }}>
+      <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
           <div>
-            <p className="text-sm font-semibold text-[#C9A56A]">
-              Admin
-            </p>
-            <h1 className="mt-3 text-5xl font-bold text-[#F4E8D2]">
-              Reservations
+            <h1 className="text-3xl font-extrabold leading-none text-[#062F24]">
+              {reservationsCopy.title}
             </h1>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -1339,20 +1500,17 @@ export default function AdminReservationsDashboard() {
               className={buttonClass}
               style={primaryButtonStyle}
             >
-              Create reservation
+              {reservationsCopy.createReservation}
             </button>
-            <Link href="/admin/settings" className={buttonClass} style={quietButtonStyle}>
-              Settings
-            </Link>
             <button type="button" onClick={signOut} className={buttonClass} style={quietButtonStyle}>
-              Sign out
+              {reservationsCopy.signOut}
             </button>
           </div>
         </div>
 
         {error ? (
           <p
-            className="mt-6 rounded bg-red-900/20 p-4 text-sm text-red-200"
+            className="mt-6 rounded border border-red-900/20 bg-red-900/10 p-4 text-sm text-red-800"
             role="alert"
             aria-live="polite"
           >
@@ -1362,166 +1520,162 @@ export default function AdminReservationsDashboard() {
 
         <div className="mt-8">
           <div>
-            <div className="mb-4 rounded bg-[#F8F5EE] p-4">
-              <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-center">
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setDisplayMode("calendar")}
-                    className={buttonClass}
-                    style={{
-                      background: displayMode === "calendar" ? "#C9A56A" : "rgba(6,47,36,0.08)",
-                      color: "#062F24",
-                    }}
-                  >
-                    <CalendarDays size={14} className="mr-2 inline" />
-                    Calendar
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setDisplayMode("list")}
-                    className={buttonClass}
-                    style={{
-                      background: displayMode === "list" ? "#C9A56A" : "rgba(6,47,36,0.08)",
-                      color: "#062F24",
-                    }}
-                  >
-                    <ListChecks size={14} className="mr-2 inline" />
-                    List
-                  </button>
-                </div>
-
-                <select
-                  className={`${fieldClass} lg:max-w-[220px]`}
-                  value={status}
-                  aria-label="Filter reservations by status"
-                  onChange={(event) => {
-                    const nextStatus = event.target.value;
-                    setStatus(
-                      isAdminReservationStatus(nextStatus) ? nextStatus : "ALL",
-                    );
+            <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-center">
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => setDisplayMode("calendar")}
+                  className={buttonClass}
+                  style={{
+                    ...(displayMode === "calendar" ? primaryButtonStyle : quietButtonStyle),
                   }}
                 >
-                  <option value="ALL">All statuses</option>
-                  <option value="PENDING">Pending</option>
-                  <option value="CONFIRMED">Confirmed</option>
-                  <option value="CANCELLED">Cancelled</option>
-                  <option value="COMPLETED">Completed</option>
-                  <option value="NO_SHOW">No show</option>
-                </select>
+                  <CalendarDays size={14} className="mr-2 inline" />
+                  {reservationsCopy.calendar}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDisplayMode("list")}
+                  className={buttonClass}
+                  style={{
+                    ...(displayMode === "list" ? primaryButtonStyle : quietButtonStyle),
+                  }}
+                >
+                  <ListChecks size={14} className="mr-2 inline" />
+                  {reservationsCopy.list}
+                </button>
               </div>
 
-              {displayMode === "calendar" ? (
-                <div className="mt-4 rounded border border-[#062F24]/10 bg-[#F4E8D2]/55 p-3">
-                  <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <button
-                        type="button"
-                        className={buttonClass}
-                        onClick={() => setAnchorDate(parseDateInput(today()))}
-                        style={primaryButtonStyle}
-                      >
-                        {getCurrentPeriodLabel(calendarView)}
-                      </button>
-                      <input
-                        className={`${fieldClass} max-w-[170px] bg-[#F8F5EE]`}
-                        type="date"
-                        aria-label="Go to calendar date"
-                        value={toDateInputValue(anchorDate)}
-                        onChange={(event) => {
-                          if (event.target.value) {
-                            setAnchorDate(parseDateInput(event.target.value));
-                          }
-                        }}
-                      />
-                    </div>
-
-                    <div className="flex min-w-0 flex-1 items-center justify-start gap-3 xl:justify-center">
-                      <button
-                        type="button"
-                        aria-label={`Previous ${calendarView}`}
-                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#062F24]/10 bg-[#F8F5EE] text-[#062F24] transition hover:bg-[#C9A56A]"
-                        onClick={() =>
-                          setAnchorDate(
-                            moveAnchorDate(calendarView, anchorDate, -1),
-                          )
-                        }
-                      >
-                        <ChevronLeft size={18} />
-                      </button>
-
-                      <div className="min-w-0 text-left xl:text-center">
-                        <p className="text-[11px] font-black text-[#062F24]/45">
-                          {calendarView} view
-                        </p>
-                        <p className="truncate text-2xl font-black leading-tight text-[#062F24] sm:text-3xl">
-                          {getCalendarTitle(calendarView, anchorDate)}
-                        </p>
-                      </div>
-
-                      <button
-                        type="button"
-                        aria-label={`Next ${calendarView}`}
-                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#062F24]/10 bg-[#F8F5EE] text-[#062F24] transition hover:bg-[#C9A56A]"
-                        onClick={() =>
-                          setAnchorDate(
-                            moveAnchorDate(calendarView, anchorDate, 1),
-                          )
-                        }
-                      >
-                        <ChevronRight size={18} />
-                      </button>
-                    </div>
-
-                    <div className="inline-flex w-full rounded bg-[#062F24]/10 p-1 sm:w-auto">
-                      {(["month", "week", "day"] as const).map((view) => (
-                        <button
-                          key={view}
-                          type="button"
-                          className="flex-1 rounded px-4 py-2 text-xs font-black transition sm:flex-none"
-                          onClick={() => setCalendarView(view)}
-                          style={{
-                            background: calendarView === view ? "#C9A56A" : "transparent",
-                            color: "#062F24",
-                          }}
-                        >
-                          {view}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="mt-4 flex flex-col gap-3 sm:flex-row">
-                  <input
-                    className={fieldClass}
-                    type="date"
-                    aria-label="Filter list by date"
-                    value={date}
-                    onChange={(event) => setDate(event.target.value)}
-                  />
-                  <button type="button" onClick={() => setDate("")} className={buttonClass} style={panelQuietButtonStyle}>
-                    Upcoming
-                  </button>
-                </div>
-              )}
+              <select
+                className={`${fieldClass} lg:max-w-[220px]`}
+                value={status}
+                aria-label={reservationsCopy.filterByStatus}
+                onChange={(event) => {
+                  const nextStatus = event.target.value;
+                  setStatus(
+                    isAdminReservationStatus(nextStatus) ? nextStatus : "ALL",
+                  );
+                }}
+              >
+                <option value="ALL">{reservationsCopy.allStatuses}</option>
+                <option value="PENDING">{reservationsCopy.statusLabels.PENDING}</option>
+                <option value="CONFIRMED">{reservationsCopy.statusLabels.CONFIRMED}</option>
+                <option value="CANCELLED">{reservationsCopy.statusLabels.CANCELLED}</option>
+                <option value="COMPLETED">{reservationsCopy.statusLabels.COMPLETED}</option>
+                <option value="NO_SHOW">{reservationsCopy.statusLabels.NO_SHOW}</option>
+              </select>
             </div>
 
+            {displayMode === "calendar" ? (
+              <div className="mt-4 rounded border border-[#062F24]/10 bg-[rgba(6,47,36,0.04)] p-3 shadow-sm">
+                <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      className={buttonClass}
+                      onClick={() => setAnchorDate(parseDateInput(today()))}
+                      style={primaryButtonStyle}
+                    >
+                      {reservationsCopy.currentPeriod[calendarView]}
+                    </button>
+                  </div>
+
+                  <div className="flex min-w-0 flex-1 items-center justify-start gap-6 xl:justify-center">
+                    <button
+                      type="button"
+                      aria-label={`${reservationsCopy.previous} ${reservationsCopy.viewOptions[calendarView].toLowerCase()}`}
+                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-transparent text-[#062F24] transition hover:bg-[rgba(6,47,36,0.05)]"
+                      onClick={() =>
+                        setAnchorDate(
+                          moveAnchorDate(calendarView, anchorDate, -1),
+                        )
+                      }
+                    >
+                      <ChevronLeft size={18} />
+                    </button>
+
+                    <div className="min-w-0 text-left xl:text-center">
+                      <p className="truncate text-3xl font-extrabold leading-tight text-[#062F24]">
+                        {getCalendarTitle(calendarView, anchorDate, language)}
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      aria-label={`${reservationsCopy.next} ${reservationsCopy.viewOptions[calendarView].toLowerCase()}`}
+                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-transparent text-[#062F24] transition hover:bg-[rgba(6,47,36,0.05)]"
+                      onClick={() =>
+                        setAnchorDate(
+                          moveAnchorDate(calendarView, anchorDate, 1),
+                        )
+                      }
+                    >
+                      <ChevronRight size={18} />
+                    </button>
+                  </div>
+
+                  <div className="inline-flex w-full rounded border border-[#062F24]/10 bg-white p-1 sm:w-auto">
+                    {(["day", "week", "month"] as const).map((view) => (
+                      <button
+                        key={view}
+                        type="button"
+                        className="flex-1 rounded px-4 py-2 text-xs font-semibold transition sm:flex-none"
+                        onClick={() => setCalendarView(view)}
+                        style={{
+                          ...(calendarView === view
+                            ? primaryButtonStyle
+                            : { background: "transparent", color: "#062F24", border: "1px solid transparent" }),
+                        }}
+                      >
+                        {reservationsCopy.viewOptions[view]}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                <input
+                  className={fieldClass}
+                  type="date"
+                  aria-label={reservationsCopy.filterListByDate}
+                  value={date}
+                  onChange={(event) => setDate(event.target.value)}
+                />
+                <button type="button" onClick={() => setDate("")} className={buttonClass} style={quietButtonStyle}>
+                  {reservationsCopy.allDates}
+                </button>
+              </div>
+            )}
+
             {loading ? (
-              <div className="flex items-center gap-3 rounded bg-[#F8F5EE] p-6 text-[#062F24]">
+              <div className="flex items-center gap-3 rounded border border-[#062F24]/10 bg-white p-6 text-[#062F24] shadow-sm">
                 <Loader2 size={16} className="animate-spin" />
-                Loading reservations…
+                {reservationsCopy.loading}
               </div>
             ) : null}
 
-            {!loading && displayMode === "calendar" ? renderCalendar() : null}
+            {!loading && displayMode === "calendar" ? (
+              <div className="mt-4">{renderCalendar()}</div>
+            ) : null}
 
             {!loading && displayMode === "list" ? (
-              <div className="overflow-hidden rounded bg-[#F8F5EE]">
-                {reservations.length === 0 ? (
-                  <p className="p-6 text-sm text-[#062F24]/70">No reservations found.</p>
-                ) : null}
-                {reservations.map((reservation) => renderReservationListItem(reservation))}
+              <div className="mt-6 grid gap-5">
+                {renderListSection(
+                  reservationsCopy.today,
+                  reservationsCopy.emptyToday,
+                  todayReservations,
+                )}
+                {renderListSection(
+                  reservationsCopy.upcoming,
+                  reservationsCopy.emptyUpcoming,
+                  upcomingReservations,
+                )}
+                {renderListSection(
+                  reservationsCopy.past,
+                  reservationsCopy.emptyPast,
+                  pastReservations,
+                )}
               </div>
             ) : null}
           </div>

@@ -1,7 +1,8 @@
 import type { ReservationLanguage } from "@prisma/client";
 import twilio from "twilio";
 
-import { getAppUrl, getSmsConfig } from "./env";
+import { getSmsConfig } from "./env";
+import { buildManageUrl } from "./reservations/manage-link";
 import { renderConfirmationSms, renderReminderSms } from "./sms-templates";
 
 type SmsReservation = {
@@ -31,10 +32,6 @@ function getTwilioClient() {
   return { client: cachedClient, from: config.from };
 }
 
-export function buildManageUrl(manageToken: string): string {
-  return new URL(`/reservation/manage?token=${manageToken}`, getAppUrl()).toString();
-}
-
 export async function sendSms(to: string, body: string): Promise<SmsSendResult> {
   const twilioClient = getTwilioClient();
 
@@ -42,7 +39,7 @@ export async function sendSms(to: string, body: string): Promise<SmsSendResult> 
     return {
       ok: false,
       skipped: true,
-      error: new Error("Twilio SMS config is incomplete."),
+      error: new Error("Twilio SMS is disabled."),
     };
   }
 

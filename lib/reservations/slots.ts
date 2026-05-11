@@ -33,7 +33,7 @@ export function normalizeSlotSettings(
   };
 }
 
-export function generateDinnerSlots(
+export function generateReservationSlots(
   settings: NormalizedSlotSettings,
 ): string[] {
   const first = minutesFromSlotTime(settings.firstSlot);
@@ -60,22 +60,22 @@ export function generateDinnerSlots(
   return slots;
 }
 
-export function generateDinnerSlotsFromSettings(
+export function generateReservationSlotsFromSettings(
   settings: SlotSettings,
 ): string[] {
-  return generateDinnerSlots(normalizeSlotSettings(settings));
+  return generateReservationSlots(normalizeSlotSettings(settings));
 }
 
-export function isDinnerSlot(
+export function isReservationSlot(
   time: string,
   settings: NormalizedSlotSettings,
 ): boolean {
-  return generateDinnerSlots(settings).includes(time);
+  return generateReservationSlots(settings).includes(time);
 }
 
-export function isDinnerSlotForSettings(
+export function isReservationSlotForSettings(
   time: string,
   settings: SlotSettings,
 ): boolean {
-  return isDinnerSlot(time, normalizeSlotSettings(settings));
+  return isReservationSlot(time, normalizeSlotSettings(settings));
 }

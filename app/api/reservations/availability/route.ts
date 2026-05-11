@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 
+import {
+  PUBLIC_ENDPOINT_RATE_LIMITS,
+  consumeRateLimit,
+  getPublicClientRateLimitKey,
+} from "@/lib/abuse-protection";
 import { db } from "@/lib/db";
 import { getCapacityBySlot } from "@/lib/reservations/capacity";
 import {
@@ -9,7 +14,7 @@ import {
   assertDateIsOpen,
   assertPartySize,
 } from "@/lib/reservations/rules";
-import { generateDinnerSlotsFromSettings } from "@/lib/reservations/slots";
+import { generateReservationSlotsFromSettings } from "@/lib/reservations/slots";
 import {
   type PublicAvailabilityPayload,
   publicAvailabilityPayloadSchema,
@@ -22,6 +27,7 @@ function errorResponse(
   code: string,
   message: string,
   details?: unknown,
+  headers?: HeadersInit,
 ) {
   return NextResponse.json(
     {
@@ -32,11 +38,27 @@ function errorResponse(
         ...(details ? { details } : {}),
       },
     },
-    { status },
+    { status, headers },
   );
 }
 
 export async function POST(request: Request) {
+  const clientRateLimit = await consumeRateLimit(
+    db,
+    PUBLIC_ENDPOINT_RATE_LIMITS.availabilityClient,
+    getPublicClientRateLimitKey(request),
+  );
+
+  if (!clientRateLimit.ok) {
+    return errorResponse(
+      429,
+      "RATE_LIMITED",
+      "Too many availability requests. Please try again later.",
+      { retryAfterSeconds: clientRateLimit.retryAfterSeconds },
+      { "Retry-After": clientRateLimit.retryAfterSeconds.toString() },
+    );
+  }
+
   let payload: PublicAvailabilityPayload;
 
   try {
@@ -69,7 +91,7 @@ export async function POST(request: Request) {
     assertDateIsNotPast(payload.date);
     await assertDateIsOpen(db, payload.date);
 
-    const reservationTimes = generateDinnerSlotsFromSettings(settings);
+    const reservationTimes = generateReservationSlotsFromSettings(settings);
     const slots = await getCapacityBySlot(db, settings, {
       reservationDate: payload.date,
       reservationTimes,

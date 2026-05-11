@@ -231,7 +231,8 @@ export async function PATCH(request: Request) {
             reservationId: reservation.id,
             reservationDate: nextDate,
             reservationTime: nextTime,
-            reservationAt: reservation.reservationAt,
+            currentReservationAt: reservation.reservationAt,
+            nextReservationAt,
             partySize: nextPartySize,
           });
 

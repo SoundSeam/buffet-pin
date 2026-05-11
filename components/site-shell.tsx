@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import Footer from "@/components/layout/footer";
+import LanguageToggle from "@/components/layout/language-toggle";
 import Navbar from "@/components/layout/navbar";
 
 type SiteShellProps = {
@@ -16,6 +17,15 @@ export default function SiteShell({ children }: SiteShellProps) {
       <main id="main-content" tabIndex={-1}>
         {children}
       </main>
+      <div
+        className="fixed bottom-4 right-4 z-[60] sm:bottom-6 sm:right-6"
+        style={{
+          bottom: "max(1rem, env(safe-area-inset-bottom))",
+          right: "max(1rem, env(safe-area-inset-right))",
+        }}
+      >
+        <LanguageToggle />
+      </div>
       <Footer />
     </div>
   );

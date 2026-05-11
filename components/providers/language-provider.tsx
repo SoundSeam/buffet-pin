@@ -25,7 +25,7 @@ function getPreferredLanguage(): Language {
     return storedLanguage;
   }
 
-  return window.navigator.language.toLowerCase().startsWith("fr") ? "fr" : "en";
+  return DEFAULT_LANGUAGE;
 }
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {

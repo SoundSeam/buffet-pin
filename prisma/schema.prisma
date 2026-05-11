@@ -66,3 +66,16 @@ model ClosureDate {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model PublicApiRateLimit {
+  scope          String
+  identifierHash String
+  hitCount       Int      @default(1)
+  windowStartedAt DateTime
+  expiresAt      DateTime
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@id([scope, identifierHash])
+  @@index([expiresAt])
+}

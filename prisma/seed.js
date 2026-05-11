@@ -7,7 +7,10 @@ const time = (value) => new Date(`1970-01-01T${value}:00.000Z`);
 async function main() {
   await prisma.settings.upsert({
     where: { id: 1 },
-    update: {},
+    update: {
+      firstSlot: time("16:30"),
+      lastSlot: time("20:00"),
+    },
     create: {
       id: 1,
       slotCapacityGuests: 24,

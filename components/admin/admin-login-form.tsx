@@ -7,7 +7,7 @@ import { Loader2 } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 const fieldClass =
-  "w-full rounded border bg-[#F8F5EE] px-4 py-3.5 text-base text-[#062F24] placeholder:text-[#062F24]/35 focus:outline-none";
+  "w-full rounded border border-[rgba(6,47,36,0.12)] bg-[rgba(6,47,36,0.05)] px-4 py-3.5 text-base text-[#062F24] placeholder:text-[#062F24]/35 focus:outline-none focus-visible:outline-none focus-visible:outline-0";
 
 export default function AdminLoginForm() {
   const router = useRouter();
@@ -38,7 +38,7 @@ export default function AdminLoginForm() {
   };
 
   return (
-    <div className="mx-auto max-w-md rounded bg-[#F8F5EE] p-6 shadow-2xl sm:p-8">
+    <div className="w-full rounded border border-[rgba(6,47,36,0.08)] bg-white p-6 shadow-sm sm:p-8">
       <form
         className="space-y-5"
         onSubmit={(event) => {
@@ -46,8 +46,8 @@ export default function AdminLoginForm() {
           void login();
         }}
       >
-        <label className="block">
-          <span className="mb-2 block text-[11px] font-semibold text-[#062F24]">
+        <label className="block focus-within:shadow-none">
+          <span className="mb-2 block text-[11px] font-semibold uppercase text-[#062F24]">
             Email
           </span>
           <input
@@ -61,8 +61,8 @@ export default function AdminLoginForm() {
             placeholder="admin@example.com"
           />
         </label>
-        <label className="block">
-          <span className="mb-2 block text-[11px] font-semibold text-[#062F24]">
+        <label className="block focus-within:shadow-none">
+          <span className="mb-2 block text-[11px] font-semibold uppercase text-[#062F24]">
             Password
           </span>
           <input
@@ -87,7 +87,7 @@ export default function AdminLoginForm() {
         <button
           type="submit"
           disabled={loading}
-          className="inline-flex w-full items-center justify-center gap-3 rounded bg-[#C9A56A] px-6 py-3.5 text-sm font-semibold text-[#062F24] disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex w-full items-center justify-center gap-3 rounded bg-[#062F24] px-6 py-4 text-base font-extrabold text-white transition-all duration-300 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading ? <Loader2 size={16} className="animate-spin" /> : null}
           {loading ? "Signing in… Sign in" : "Sign in"}

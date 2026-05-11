@@ -2,6 +2,12 @@ import { Prisma, ReservationStatus } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 
+import {
+  PUBLIC_ENDPOINT_RATE_LIMITS,
+  consumeRateLimit,
+  getPublicClientRateLimitKey,
+  getReservationPhoneRateLimitKey,
+} from "@/lib/abuse-protection";
 import { db } from "@/lib/db";
 import { generateConfirmationCode } from "@/lib/reservations/codes";
 import {
@@ -18,6 +24,7 @@ import {
   type PublicReservationCreatePayload,
   publicReservationCreatePayloadSchema,
 } from "@/lib/validation";
+import { buildManagePath } from "@/lib/reservations/manage-link";
 import { sendReservationConfirmationSms } from "@/lib/sms";
 
 export const dynamic = "force-dynamic";
@@ -29,6 +36,7 @@ function errorResponse(
   code: string,
   message: string,
   details?: unknown,
+  headers?: HeadersInit,
 ) {
   return NextResponse.json(
     {
@@ -39,7 +47,7 @@ function errorResponse(
         ...(details ? { details } : {}),
       },
     },
-    { status },
+    { status, headers },
   );
 }
 
@@ -99,6 +107,22 @@ async function sendConfirmationSmsAndMarkSent(reservation: {
 }
 
 export async function POST(request: Request) {
+  const clientRateLimit = await consumeRateLimit(
+    db,
+    PUBLIC_ENDPOINT_RATE_LIMITS.reservationCreateClient,
+    getPublicClientRateLimitKey(request),
+  );
+
+  if (!clientRateLimit.ok) {
+    return errorResponse(
+      429,
+      "RATE_LIMITED",
+      "Too many reservation requests. Please try again later.",
+      { retryAfterSeconds: clientRateLimit.retryAfterSeconds },
+      { "Retry-After": clientRateLimit.retryAfterSeconds.toString() },
+    );
+  }
+
   let payload: PublicReservationCreatePayload;
 
   try {
@@ -114,6 +138,22 @@ export async function POST(request: Request) {
     }
 
     return errorResponse(400, "INVALID_JSON", "Invalid reservation request.");
+  }
+
+  const phoneRateLimit = await consumeRateLimit(
+    db,
+    PUBLIC_ENDPOINT_RATE_LIMITS.reservationCreatePhone,
+    getReservationPhoneRateLimitKey(payload.phone),
+  );
+
+  if (!phoneRateLimit.ok) {
+    return errorResponse(
+      429,
+      "RATE_LIMITED",
+      "Too many reservation requests. Please try again later.",
+      { retryAfterSeconds: phoneRateLimit.retryAfterSeconds },
+      { "Retry-After": phoneRateLimit.retryAfterSeconds.toString() },
+    );
   }
 
   for (let attempt = 1; attempt <= MAX_CREATE_ATTEMPTS; attempt += 1) {
@@ -196,7 +236,7 @@ export async function POST(request: Request) {
               },
               specialRequests: reservation.specialRequests,
             },
-            manageUrlPath: `/reservation/manage?token=${reservation.manageToken}`,
+            manageUrlPath: buildManagePath(reservation.manageToken),
           },
         },
         { status: 201 },

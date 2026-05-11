@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import LanguageToggle from "@/components/layout/language-toggle";
 import { useTranslation } from "@/components/providers/language-provider";
 
 const LOGO =
@@ -58,8 +57,6 @@ export default function Navbar() {
               </Link>
             ))}
 
-            <LanguageToggle />
-
             <Link
               href="/reservation"
               className="rounded bg-[#C9A56A] px-6 py-2.5 text-sm font-semibold text-[#062F24] transition-all duration-300 hover:opacity-90"
@@ -68,16 +65,25 @@ export default function Navbar() {
             </Link>
           </div>
 
-          <button
-            onClick={() => setMobileOpen((open) => !open)}
-            type="button"
-            className="min-h-11 min-w-11 rounded-md bg-[#C9A56A] p-2 text-[#062F24] transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A56A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#062F24] lg:hidden"
-            aria-controls={mobileMenuId}
-            aria-expanded={mobileOpen}
-            aria-label={mobileOpen ? copy.navbar.closeMenu : copy.navbar.openMenu}
-          >
-            {mobileOpen ? <X size={24} aria-hidden="true" /> : <Menu size={24} aria-hidden="true" />}
-          </button>
+          <div className="flex items-center gap-3 lg:hidden">
+            <Link
+              href="/reservation"
+              className="rounded bg-[#C9A56A] px-4 py-2.5 text-sm font-semibold text-[#062F24] transition-all duration-300 hover:opacity-90"
+            >
+              {copy.navbar.reserve}
+            </Link>
+
+            <button
+              onClick={() => setMobileOpen((open) => !open)}
+              type="button"
+              className="min-h-11 min-w-11 rounded-md bg-[#C9A56A] p-2 text-[#062F24] transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A56A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#062F24]"
+              aria-controls={mobileMenuId}
+              aria-expanded={mobileOpen}
+              aria-label={mobileOpen ? copy.navbar.closeMenu : copy.navbar.openMenu}
+            >
+              {mobileOpen ? <X size={24} aria-hidden="true" /> : <Menu size={24} aria-hidden="true" />}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -92,8 +98,6 @@ export default function Navbar() {
             style={{ background: "#041F18" }}
           >
             <div className="space-y-6 px-6 py-8">
-              <LanguageToggle mobile />
-
               {copy.navbar.links.map((link) => (
                 <Link
                   key={link.label}
@@ -103,13 +107,6 @@ export default function Navbar() {
                   {link.label}
                 </Link>
               ))}
-
-              <Link
-                href="/reservation"
-                className="block rounded bg-[#C9A56A] px-6 py-3 text-center text-sm font-semibold text-[#062F24] transition-all duration-300 hover:opacity-90"
-              >
-                {copy.navbar.reserve}
-              </Link>
             </div>
           </motion.div>
         )}

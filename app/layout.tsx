@@ -1,10 +1,13 @@
 import type { Metadata, Viewport } from "next";
+
+import "@/lib/env";
+
 import { LanguageProvider } from "@/components/providers/language-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Buffet PIN",
-  description: "Asian buffet restaurant in Chateauguay | Buffet asiatique a volonte a Chateauguay.",
+  description: "Asian buffet restaurant in Chateauguay | Buffet asiatique à volonté à Châteauguay.",
 };
 
 export const viewport: Viewport = {

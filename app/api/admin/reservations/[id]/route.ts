@@ -8,7 +8,7 @@ import {
   assertCapacityForParty,
   assertDateIsNotPast,
   assertDateIsOpen,
-  assertDinnerOnlySlot,
+  assertReservationSlot,
   assertPartySize,
 } from "@/lib/reservations/rules";
 import {
@@ -113,7 +113,7 @@ export async function PATCH(
 
         if (dateTimeChanged) {
           await lockReservationSlot(tx, nextDate, nextTime);
-          assertDinnerOnlySlot(settings, nextTime);
+          assertReservationSlot(settings, nextTime);
           assertPartySize(settings, nextPartySize);
           assertDateIsNotPast(nextDate);
           await assertDateIsOpen(tx, nextDate);

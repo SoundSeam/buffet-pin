@@ -9,34 +9,12 @@ export default function CtaStrip() {
 
   return (
     <section
-      className="relative overflow-hidden"
+      className="relative"
       style={{
         background: "#FFFFFF",
         borderBottom: "1px solid rgba(6,47,36,0.04)",
       }}
     >
-      <div
-        className="grid grid-cols-2 lg:grid-cols-4"
-      >
-        {copy.home.ctaStrip.images.map((image, index) => (
-          <motion.div
-            key={image.src}
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.65, delay: index * 0.08 }}
-            className="relative h-28 overflow-hidden sm:h-32 lg:h-40"
-            style={{ background: "#FFFFFF" }}
-          >
-            <img src={image.src} alt={image.alt} className="h-full w-full object-cover" />
-            <div
-              className="pointer-events-none absolute inset-0"
-              style={{ background: "linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(6,47,36,0.18) 100%)" }}
-            />
-          </motion.div>
-        ))}
-      </div>
-
       <div className="relative z-10 mx-auto max-w-7xl px-6 py-20 lg:px-8 lg:py-24">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

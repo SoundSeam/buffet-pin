@@ -3,18 +3,17 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
+  ArrowRight,
   Calendar,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
-  Clock,
   Loader2,
   Mail,
   MessageSquare,
   Phone,
   Star,
   User,
-  Users,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useTranslation } from "@/components/providers/language-provider";
@@ -48,16 +47,20 @@ type FormState = {
   phone: string;
   email: string;
   occasion: OccasionKey;
+  allergyDetails: string;
   specialRequests: string;
 };
 
-const panelClass = "glass-panel rounded-[28px] p-6 sm:p-8 lg:p-10";
+const panelClass =
+  "rounded border border-[rgba(6,47,36,0.08)] bg-white p-6 shadow-sm sm:p-8 lg:p-10";
+const selectionPanelClass =
+  "rounded-md border border-[rgba(6,47,36,0.08)] bg-white p-6 shadow-sm sm:p-8 lg:p-10";
 const fieldClass =
-  "w-full rounded-2xl border bg-[#F8F5EE] px-4 py-3.5 text-base text-[#062F24] placeholder:text-[#062F24]/35 focus:outline-none";
-const primaryButtonClass =
-  "rounded-full px-8 py-3.5 text-sm font-semibold uppercase tracking-[0.18em] transition-opacity disabled:cursor-not-allowed disabled:opacity-40";
-const secondaryButtonClass =
-  "rounded-full border px-6 py-3.5 text-sm font-semibold uppercase tracking-[0.16em]";
+  "w-full rounded border bg-[rgba(6,47,36,0.05)] px-4 py-3.5 text-base text-[#062F24] placeholder:text-[#062F24]/35 focus:outline-none";
+const primaryActionButtonClass =
+  "inline-flex w-full items-center justify-center gap-3 rounded px-6 py-4 text-center text-base font-extrabold transition-all duration-300 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40";
+const secondaryActionButtonClass =
+  "inline-flex items-center justify-center rounded border px-6 py-4 text-base font-semibold transition-all duration-300 hover:bg-[rgba(6,47,36,0.03)]";
 
 function getDaysInMonth(year: number, month: number) {
   return new Date(year, month + 1, 0).getDate();
@@ -90,9 +93,24 @@ function formatReservationDate(value: string, months: readonly string[], languag
   return `${months[month - 1]} ${day}, ${year}`;
 }
 
+function formatPhoneNumber(value: string) {
+  const trimmed = value.trim();
+  const digits = trimmed.replace(/\D/g, "");
+
+  if (digits.length === 10) {
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+  }
+
+  if (digits.length === 11 && digits.startsWith("1")) {
+    return `+1 (${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7)}`;
+  }
+
+  return trimmed;
+}
+
 function StepIndicator({ step, labels }: { step: number; labels: readonly string[] }) {
   return (
-    <div className="mb-12 flex items-center justify-center gap-3 sm:mb-14">
+    <div className="mb-10 flex items-center justify-center gap-3 sm:mb-12">
       {[1, 2, 3].map((item) => {
         const complete = step > item;
         const active = step === item;
@@ -100,21 +118,21 @@ function StepIndicator({ step, labels }: { step: number; labels: readonly string
         return (
           <div key={item} className="flex items-center gap-3">
             <div
-              className="flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold transition-all"
+              className="flex h-8 w-8 items-center justify-center rounded-full text-sm font-extrabold transition-all"
               style={{
-                background: complete || active ? "#C9A56A" : "rgba(201,165,106,0.16)",
-                color: complete || active ? "#062F24" : "rgba(244,232,210,0.6)",
+                background: complete || active ? "#062F24" : "#E5E7EB",
+                color: complete || active ? "#F8F5EE" : "#6B7280",
               }}
             >
               {complete ? <CheckCircle2 size={16} /> : item}
             </div>
             <span
-              className="hidden text-[11px] font-semibold uppercase tracking-[0.24em] sm:block"
-              style={{ color: active ? "#C9A56A" : "rgba(244,232,210,0.42)" }}
+              className="hidden text-sm font-medium sm:block"
+              style={{ color: active ? "#062F24" : "#6B7280" }}
             >
               {labels[item - 1]}
             </span>
-            {item < 3 ? <div className="mx-1 hidden h-px w-10 sm:block" style={{ background: "rgba(201,165,106,0.16)" }} /> : null}
+            {item < 3 ? <div className="mx-1 hidden h-px w-10 sm:block" style={{ background: "#D1D5DB" }} /> : null}
           </div>
         );
       })}
@@ -125,16 +143,18 @@ function StepIndicator({ step, labels }: { step: number; labels: readonly string
 function FieldLabel({
   icon: Icon,
   children,
+  iconColor = "#6B7280",
 }: {
   icon: typeof Calendar;
   children: string;
+  iconColor?: string;
 }) {
   return (
     <label
-      className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em]"
+      className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase"
       style={{ color: "#062F24" }}
     >
-      <Icon size={16} style={{ color: "#C9A56A" }} />
+      <Icon size={16} style={{ color: iconColor }} />
       {children}
     </label>
   );
@@ -143,10 +163,10 @@ function FieldLabel({
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-start justify-between gap-4 border-b py-4 last:border-b-0" style={{ borderColor: "rgba(6,47,36,0.1)" }}>
-      <span className="text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: "rgba(6,47,36,0.48)" }}>
+      <span className="text-sm font-semibold uppercase" style={{ color: "rgba(6,47,36,0.48)" }}>
         {label}
       </span>
-      <span className="max-w-[60%] text-right text-sm font-medium leading-relaxed" style={{ color: "#062F24" }}>
+      <span className="max-w-[60%] text-right text-base font-medium leading-relaxed" style={{ color: "#062F24" }}>
         {value}
       </span>
     </div>
@@ -179,15 +199,29 @@ export default function ReservationForm() {
     phone: "",
     email: "",
     occasion: "none",
+    allergyDetails: "",
     specialRequests: "",
   });
 
   const daysInMonth = getDaysInMonth(calYear, calMonth);
   const firstDay = getFirstDayOfMonth(calYear, calMonth);
   const stepOneValid = Boolean(form.date && form.time && form.partySize && !availabilityLoading);
-  const stepTwoValid = Boolean(form.name.trim() && form.phone.trim());
+  const stepTwoValid = Boolean(
+    form.name.trim() &&
+      form.phone.trim() &&
+      (form.occasion !== "allergies" || form.allergyDetails.trim()),
+  );
+  const pageTitle =
+    step === 2 ? formCopy.stepTwoTitle : step === 3 ? formCopy.stepThreeTitle : formCopy.title;
+  const pageDescription =
+    step === 2
+      ? formCopy.stepTwoDescription
+      : step === 3
+        ? formCopy.stepThreeDescription
+        : formCopy.description;
   const selectedOccasion = formCopy.occasions.find((occasion) => occasion.value === form.occasion);
   const guestLabel = form.partySize > 1 ? formCopy.guestPlural : formCopy.guestSingular;
+  const formattedPhone = formatPhoneNumber(form.phone);
 
   useEffect(() => {
     if (!stepContentRef.current) return;
@@ -329,7 +363,13 @@ export default function ReservationForm() {
     setSubmitError("");
 
     const occasion = form.occasion !== "none" && selectedOccasion ? selectedOccasion.label : "";
-    const specialRequests = [occasion ? `${formCopy.occasion}: ${occasion}` : "", form.specialRequests.trim()]
+    const specialRequests = [
+      occasion ? `${formCopy.occasion}: ${occasion}` : "",
+      form.allergyDetails.trim()
+        ? `${formCopy.summary.allergy}: ${form.allergyDetails.trim()}`
+        : "",
+      form.specialRequests.trim(),
+    ]
       .filter(Boolean)
       .join("\n\n");
 
@@ -389,6 +429,7 @@ export default function ReservationForm() {
       phone: "",
       email: "",
       occasion: "none",
+      allergyDetails: "",
       specialRequests: "",
     });
     setReservationSuccess(null);
@@ -403,29 +444,31 @@ export default function ReservationForm() {
   return (
     <section
       ref={sectionRef}
-      className="relative scroll-mt-24 pb-14 pt-28 lg:pb-20 lg:pt-32"
-      style={{ background: "#041F18" }}
+      className="relative scroll-mt-24 pb-14 pt-36 lg:pb-20 lg:pt-40"
+      style={{ background: "#FFFFFF" }}
     >
-      <div className="mx-auto mb-10 max-w-7xl px-6 lg:px-8">
-        <div className="max-w-7xl">
-          <h1
-            className="text-5xl font-bold leading-none tracking-tight sm:text-6xl lg:text-7xl"
-            style={{ color: "#F4E8D2" }}
-          >
-            {formCopy.title}
-          </h1>
+      <div className="mx-auto mb-10 max-w-2xl px-6 lg:px-8">
+        {step < 4 ? <StepIndicator step={step} labels={formCopy.steps} /> : null}
 
-          <p
-            className="mt-3 max-w-xl text-sm leading-relaxed sm:text-base"
-            style={{ color: "rgba(244,232,210,0.66)" }}
-          >
-            {formCopy.description}
-          </p>
-        </div>
+        {step < 4 ? (
+          <div className="max-w-2xl">
+            <h1
+              className="text-3xl font-extrabold leading-none"
+              style={{ color: "#062F24" }}
+            >
+              {pageTitle}
+            </h1>
 
-        <div className="mx-auto mt-10 w-full max-w-5xl">
-          {step < 4 ? <StepIndicator step={step} labels={formCopy.steps} /> : null}
+            <p
+              className="mt-3 max-w-xl text-sm leading-relaxed"
+              style={{ color: "rgba(6,47,36,0.66)" }}
+            >
+              {pageDescription}
+            </p>
+          </div>
+        ) : null}
 
+        <div className={`${step < 4 ? "mt-8" : "mt-0"} w-full max-w-2xl`}>
           <div style={{ minHeight: lockedHeight ? `${lockedHeight}px` : undefined }}>
             <AnimatePresence mode="wait">
               {step === 1 ? (
@@ -437,10 +480,12 @@ export default function ReservationForm() {
                   exit={{ opacity: 0, x: -16 }}
                   transition={{ duration: 0.28 }}
                 >
-                  <div className="space-y-6">
-                    <div className={panelClass}>
-                      <FieldLabel icon={Users}>{formCopy.partySizeLabel}</FieldLabel>
-                      <div className="grid grid-cols-4 gap-3 sm:grid-cols-8">
+                  <div className="space-y-8">
+                    <div className="pt-3">
+                      <div className="mb-5 text-left text-base font-semibold leading-none" style={{ color: "#062F24" }}>
+                        {formCopy.partySizeLabel}
+                      </div>
+                      <div className="grid grid-cols-4 gap-2 sm:grid-cols-8">
                         {PARTY_SIZES.map((size) => {
                           const selected = form.partySize === size;
 
@@ -451,11 +496,11 @@ export default function ReservationForm() {
                               onClick={() => {
                                 setForm((current) => ({ ...current, partySize: size, time: "" }));
                               }}
-                              className="h-14 rounded-2xl text-base font-bold transition-all"
+                              className="h-12 rounded text-base font-extrabold transition-all"
                               data-testid={`party-size-${size}`}
                               style={{
-                                background: selected ? "#C9A56A" : "rgba(6,47,36,0.05)",
-                                color: "#062F24",
+                                background: selected ? "#062F24" : "rgba(6,47,36,0.05)",
+                                color: selected ? "#F8F5EE" : "#062F24",
                                 border: selected ? "none" : "1px solid rgba(6,47,36,0.12)",
                               }}
                             >
@@ -464,31 +509,30 @@ export default function ReservationForm() {
                           );
                         })}
                       </div>
-                      <p className="mt-4 text-sm leading-7" style={{ color: "rgba(6,47,36,0.62)" }}>
-                        {formCopy.partySizeHint}
+                      <p className="mt-4 text-xs leading-relaxed text-gray-500">
+                        {formCopy.partySizeNote}
                       </p>
                     </div>
 
-                    <div className={panelClass}>
-                      <FieldLabel icon={Calendar}>{formCopy.dateLabel}</FieldLabel>
+                    <div className={selectionPanelClass}>
                       <div className="mb-6 flex items-center justify-between">
                         <button
                           type="button"
                           onClick={prevMonth}
-                          className="flex h-11 w-11 items-center justify-center rounded-full"
-                          style={{ color: "#C9A56A", background: "rgba(201,165,106,0.08)" }}
+                          className="flex h-11 w-11 items-center justify-center rounded-full transition-colors hover:bg-[rgba(6,47,36,0.05)]"
+                          style={{ color: "#062F24" }}
                           aria-label={formCopy.previousMonth}
                         >
                           <ChevronLeft size={18} />
                         </button>
-                        <div className="text-lg font-semibold tracking-[0.04em]" style={{ color: "#062F24" }}>
+                        <div className="text-base font-semibold" style={{ color: "#062F24" }}>
                           {formCopy.months[calMonth]} {calYear}
                         </div>
                         <button
                           type="button"
                           onClick={nextMonth}
-                          className="flex h-11 w-11 items-center justify-center rounded-full"
-                          style={{ color: "#C9A56A", background: "rgba(201,165,106,0.08)" }}
+                          className="flex h-11 w-11 items-center justify-center rounded-full transition-colors hover:bg-[rgba(6,47,36,0.05)]"
+                          style={{ color: "#062F24" }}
                           aria-label={formCopy.nextMonth}
                         >
                           <ChevronRight size={18} />
@@ -497,7 +541,7 @@ export default function ReservationForm() {
 
                       <div className="grid grid-cols-7 gap-2">
                         {formCopy.weekdaysShort.map((day) => (
-                          <div key={day} className="pb-2 text-center text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: "rgba(6,47,36,0.45)" }}>
+                          <div key={day} className="pb-2 text-center text-[11px] font-semibold uppercase" style={{ color: "rgba(6,47,36,0.45)" }}>
                             {day}
                           </div>
                         ))}
@@ -517,11 +561,11 @@ export default function ReservationForm() {
                               type="button"
                               onClick={() => selectDay(day)}
                               disabled={isPast}
-                              className="h-11 rounded-xl text-sm font-semibold transition-all"
+                              className="h-11 rounded text-sm font-semibold transition-all"
                               style={{
-                                background: isSelected ? "#C9A56A" : "transparent",
-                                color: isPast ? "rgba(6,47,36,0.18)" : isSelected ? "#062F24" : "#062F24",
-                                border: isSelected ? "none" : "1px solid rgba(6,47,36,0.08)",
+                                background: isSelected ? "#062F24" : "transparent",
+                                color: isPast ? "rgba(6,47,36,0.18)" : isSelected ? "#F8F5EE" : "#062F24",
+                                border: isSelected ? "none" : "1px solid rgba(6,47,36,0.12)",
                                 cursor: isPast ? "not-allowed" : "pointer",
                               }}
                             >
@@ -536,40 +580,27 @@ export default function ReservationForm() {
                       <motion.div
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className={panelClass}
+                        className=""
                       >
-                        <FieldLabel icon={Clock}>{formCopy.timeLabel}</FieldLabel>
                         <div className="space-y-6">
                           <div>
-                            <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em]" style={{ color: "rgba(6,47,36,0.45)" }}>
-                              {formCopy.lunch}
-                            </p>
-                            <p className="rounded-2xl border px-4 py-4 text-sm leading-7" style={{ borderColor: "rgba(6,47,36,0.12)", color: "rgba(6,47,36,0.62)", background: "rgba(6,47,36,0.04)" }}>
-                              {formCopy.lunchInfo}
-                            </p>
-                          </div>
-
-                          <div>
-                            <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em]" style={{ color: "rgba(6,47,36,0.45)" }}>
-                              {formCopy.dinner}
-                            </p>
                             {availabilityLoading ? (
-                              <div className="flex items-center gap-3 rounded-2xl px-4 py-4 text-sm font-medium" style={{ color: "rgba(6,47,36,0.62)", background: "rgba(6,47,36,0.05)" }}>
+                              <div className="flex items-center gap-3 rounded px-4 py-4 text-sm font-medium" style={{ color: "rgba(6,47,36,0.62)", background: "rgba(6,47,36,0.05)" }}>
                                 <Loader2 size={16} className="animate-spin" />
                                 {formCopy.availabilityLoading}
                               </div>
                             ) : null}
                             {availabilityError ? (
-                              <p className="rounded-2xl border px-4 py-4 text-sm leading-7" style={{ borderColor: "rgba(153,27,27,0.18)", color: "#7F1D1D", background: "rgba(153,27,27,0.06)" }}>
+                              <p className="rounded border px-4 py-4 text-sm leading-7" style={{ borderColor: "rgba(153,27,27,0.18)", color: "#7F1D1D", background: "rgba(153,27,27,0.06)" }}>
                                 {availabilityError}
                               </p>
                             ) : null}
                             {!availabilityLoading && !availabilityError && availabilitySlots.length === 0 ? (
-                              <p className="rounded-2xl border px-4 py-4 text-sm leading-7" style={{ borderColor: "rgba(6,47,36,0.12)", color: "rgba(6,47,36,0.62)", background: "rgba(6,47,36,0.04)" }}>
+                              <p className="rounded border px-4 py-4 text-sm leading-7" style={{ borderColor: "rgba(6,47,36,0.12)", color: "rgba(6,47,36,0.62)", background: "rgba(6,47,36,0.04)" }}>
                                 {formCopy.noSlots}
                               </p>
                             ) : null}
-                            <div className="grid grid-cols-3 gap-3">
+                            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                               {availabilitySlots.map((slot) => {
                                 const time = slot.time;
                                 const { hour, period } = formatTime(time);
@@ -580,19 +611,16 @@ export default function ReservationForm() {
                                     key={time}
                                     type="button"
                                     onClick={() => setField("time", time)}
-                                    className="rounded-2xl py-4 text-center transition-all"
+                                    className="flex min-h-12 flex-col items-center justify-center gap-1 rounded py-3.5 text-center transition-all"
                                     data-testid={`slot-${time}`}
                                     style={{
-                                      background: selected ? "#C9A56A" : "rgba(6,47,36,0.05)",
-                                      color: "#062F24",
+                                      background: selected ? "#062F24" : "rgba(6,47,36,0.05)",
+                                      color: selected ? "#F8F5EE" : "#062F24",
                                       border: selected ? "none" : "1px solid rgba(6,47,36,0.12)",
                                     }}
                                   >
                                     <div className="text-base font-semibold leading-none">{hour}</div>
-                                    <div className="mt-1 text-[11px] font-semibold">{period}</div>
-                                    <div className="mt-2 text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: "rgba(6,47,36,0.5)" }}>
-                                      {slot.remainingCapacity} {formCopy.remaining}
-                                    </div>
+                                    <div className="text-[11px] font-semibold leading-none">{period}</div>
                                   </button>
                                 );
                               })}
@@ -608,10 +636,11 @@ export default function ReservationForm() {
                       type="button"
                       onClick={() => setStep(2)}
                       disabled={!stepOneValid}
-                      className={primaryButtonClass}
-                      style={{ background: "#C9A56A", color: "#062F24" }}
+                      className="inline-flex w-full items-center justify-center gap-3 rounded px-6 py-4 text-center text-base font-extrabold transition-all duration-300 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+                      style={{ background: "#062F24", border: "1px solid #062F24", color: "#FFFFFF" }}
                     >
                       {formCopy.continue}
+                      <ArrowRight size={18} />
                     </button>
                   </div>
                 </motion.div>
@@ -626,7 +655,7 @@ export default function ReservationForm() {
                   exit={{ opacity: 0, x: -16 }}
                   transition={{ duration: 0.28 }}
                 >
-                  <div className={panelClass}>
+                  <div>
                     <div className="space-y-6">
                       <div>
                         <FieldLabel icon={User}>{formCopy.fullName}</FieldLabel>
@@ -636,7 +665,7 @@ export default function ReservationForm() {
                           onChange={(event) => setField("name", event.target.value)}
                           placeholder={formCopy.fullNamePlaceholder}
                           className={fieldClass}
-                          style={{ borderColor: "rgba(201,165,106,0.18)" }}
+                          style={{ borderColor: "rgba(6,47,36,0.12)" }}
                         />
                       </div>
 
@@ -649,7 +678,7 @@ export default function ReservationForm() {
                             onChange={(event) => setField("phone", event.target.value)}
                             placeholder={formCopy.phonePlaceholder}
                             className={fieldClass}
-                            style={{ borderColor: "rgba(201,165,106,0.18)" }}
+                            style={{ borderColor: "rgba(6,47,36,0.12)" }}
                           />
                         </div>
 
@@ -661,7 +690,7 @@ export default function ReservationForm() {
                             onChange={(event) => setField("email", event.target.value)}
                             placeholder={formCopy.emailPlaceholder}
                             className={fieldClass}
-                            style={{ borderColor: "rgba(201,165,106,0.18)" }}
+                            style={{ borderColor: "rgba(6,47,36,0.12)" }}
                           />
                         </div>
                       </div>
@@ -677,11 +706,11 @@ export default function ReservationForm() {
                                 key={occasion.value}
                                 type="button"
                                 onClick={() => setField("occasion", occasion.value)}
-                                className="rounded-2xl px-3 py-3.5 text-sm font-medium transition-all"
+                                className="rounded px-3 py-3.5 text-sm font-medium"
                                 style={{
-                                  background: selected ? "#C9A56A" : "rgba(6,47,36,0.05)",
-                                  color: "#062F24",
-                                  border: selected ? "none" : "1px solid rgba(6,47,36,0.12)",
+                                  background: selected ? "#062F24" : "rgba(6,47,36,0.05)",
+                                  color: selected ? "#F8F5EE" : "#062F24",
+                                  border: `1px solid ${selected ? "#062F24" : "rgba(6,47,36,0.12)"}`,
                                 }}
                               >
                                 {occasion.label}
@@ -691,6 +720,20 @@ export default function ReservationForm() {
                         </div>
                       </div>
 
+                      {form.occasion === "allergies" ? (
+                        <div>
+                          <FieldLabel icon={MessageSquare}>{formCopy.allergyDetails}</FieldLabel>
+                          <textarea
+                            rows={3}
+                            value={form.allergyDetails}
+                            onChange={(event) => setField("allergyDetails", event.target.value)}
+                            placeholder={formCopy.allergyDetailsPlaceholder}
+                            className={`${fieldClass} resize-none`}
+                            style={{ borderColor: "rgba(6,47,36,0.12)" }}
+                          />
+                        </div>
+                      ) : null}
+
                       <div>
                         <FieldLabel icon={MessageSquare}>{formCopy.specialRequests}</FieldLabel>
                         <textarea
@@ -699,18 +742,18 @@ export default function ReservationForm() {
                           onChange={(event) => setField("specialRequests", event.target.value)}
                           placeholder={formCopy.specialRequestsPlaceholder}
                           className={`${fieldClass} resize-none`}
-                          style={{ borderColor: "rgba(201,165,106,0.18)" }}
+                          style={{ borderColor: "rgba(6,47,36,0.12)" }}
                         />
                       </div>
                     </div>
                   </div>
 
-                  <div className="mt-8 flex items-center justify-between">
+                  <div className="mt-8 grid grid-cols-2 gap-4">
                     <button
                       type="button"
                       onClick={() => setStep(1)}
-                      className={secondaryButtonClass}
-                      style={{ borderColor: "rgba(201,165,106,0.18)", color: "#C9A56A" }}
+                      className={`${secondaryActionButtonClass} w-full`}
+                      style={{ borderColor: "rgba(6,47,36,0.12)", color: "#062F24" }}
                     >
                       {formCopy.back}
                     </button>
@@ -718,10 +761,11 @@ export default function ReservationForm() {
                       type="button"
                       onClick={() => setStep(3)}
                       disabled={!stepTwoValid}
-                      className={primaryButtonClass}
-                      style={{ background: "#C9A56A", color: "#062F24" }}
+                      className={primaryActionButtonClass}
+                      style={{ background: "#062F24", border: "1px solid #062F24", color: "#FFFFFF" }}
                     >
                       {formCopy.review}
+                      <ArrowRight size={18} />
                     </button>
                   </div>
                 </motion.div>
@@ -741,24 +785,27 @@ export default function ReservationForm() {
                     <DetailRow label={formCopy.summary.time} value={form.time} />
                     <DetailRow label={formCopy.summary.guests} value={`${form.partySize} ${guestLabel}`} />
                     <DetailRow label={formCopy.summary.name} value={form.name} />
-                    <DetailRow label={formCopy.summary.phone} value={form.phone} />
+                    <DetailRow label={formCopy.summary.phone} value={formattedPhone} />
                     {form.email ? <DetailRow label={formCopy.summary.email} value={form.email} /> : null}
                     {form.occasion !== "none" && selectedOccasion ? (
                       <DetailRow label={formCopy.summary.occasion} value={selectedOccasion.label} />
                     ) : null}
+                    {form.allergyDetails ? (
+                      <DetailRow label={formCopy.summary.allergy} value={form.allergyDetails} />
+                    ) : null}
                     {form.specialRequests ? <DetailRow label={formCopy.summary.requests} value={form.specialRequests} /> : null}
                   </div>
 
-                  <p className="mt-5 max-w-2xl text-sm leading-7" style={{ color: "rgba(244,232,210,0.58)" }}>
+                  <p className="mt-5 max-w-2xl text-base leading-8" style={{ color: "rgba(6,47,36,0.58)" }}>
                     {formCopy.reviewNote}
                   </p>
 
-                  <div className="mt-8 flex items-center justify-between">
+                  <div className="mt-8 grid grid-cols-2 gap-4">
                     <button
                       type="button"
                       onClick={() => setStep(2)}
-                      className={secondaryButtonClass}
-                      style={{ borderColor: "rgba(201,165,106,0.18)", color: "#C9A56A" }}
+                      className={`${secondaryActionButtonClass} w-full`}
+                      style={{ borderColor: "rgba(6,47,36,0.12)", color: "#062F24" }}
                     >
                       {formCopy.edit}
                     </button>
@@ -766,15 +813,16 @@ export default function ReservationForm() {
                       type="button"
                       onClick={submitReservation}
                       disabled={loading}
-                      className="inline-flex items-center gap-3 rounded-full px-8 py-3.5 text-sm font-semibold uppercase tracking-[0.18em] transition-opacity disabled:cursor-not-allowed disabled:opacity-60"
-                      style={{ background: "#C9A56A", color: "#062F24" }}
+                      className={primaryActionButtonClass}
+                      style={{ background: "#062F24", border: "1px solid #062F24", color: "#FFFFFF" }}
                     >
                       {loading ? <Loader2 size={16} className="animate-spin" /> : null}
                       {formCopy.confirmReservation}
+                      {!loading ? <ArrowRight size={18} /> : null}
                     </button>
                   </div>
                   {submitError ? (
-                    <p className="mt-5 rounded-2xl border px-4 py-4 text-sm leading-7" style={{ borderColor: "rgba(153,27,27,0.18)", color: "#FCA5A5", background: "rgba(153,27,27,0.14)" }}>
+                    <p className="mt-5 rounded border px-4 py-4 text-sm leading-7" style={{ borderColor: "rgba(153,27,27,0.18)", color: "#FCA5A5", background: "rgba(153,27,27,0.14)" }}>
                       {submitError}
                     </p>
                   ) : null}
@@ -792,26 +840,23 @@ export default function ReservationForm() {
                 >
                   <div
                     className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full"
-                    style={{ background: "rgba(201,165,106,0.12)" }}
+                    style={{ background: "rgba(6,47,36,0.08)" }}
                   >
-                    <CheckCircle2 size={38} style={{ color: "#C9A56A" }} />
+                    <CheckCircle2 size={38} style={{ color: "#062F24" }} />
                   </div>
 
-                  <p className="text-sm font-semibold uppercase tracking-[0.28em]" style={{ color: "#C9A56A" }}>
-                    {formCopy.successEyebrow}
-                  </p>
-                  <h2 className="mt-3 text-3xl font-bold tracking-[-0.03em] sm:text-4xl" style={{ color: "#F4E8D2" }}>
+                  <h2 className="mt-3 text-3xl font-bold sm:text-4xl" style={{ color: "#062F24" }}>
                     {formCopy.successTitle}
                   </h2>
-                  <p className="mx-auto mt-5 max-w-2xl text-sm leading-8 sm:text-base" style={{ color: "rgba(244,232,210,0.66)" }}>
-                    {formCopy.successDescription.replace("{phone}", form.phone)}
+                  <p className="mx-auto mt-5 max-w-2xl text-sm leading-8 sm:text-base" style={{ color: "rgba(6,47,36,0.66)" }}>
+                    {formCopy.successDescription.replace("{phone}", formattedPhone)}
                   </p>
 
-                  <div className={`${panelClass} mx-auto mt-10 max-w-lg`}>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.24em]" style={{ color: "rgba(6,47,36,0.45)" }}>
+                  <div className={`${panelClass} mt-10 w-full max-w-2xl`}>
+                    <p className="text-[11px] font-semibold uppercase" style={{ color: "rgba(6,47,36,0.45)" }}>
                       {formCopy.trackingCode}
                     </p>
-                    <p className="mt-2 text-3xl font-bold" style={{ color: "#C9A56A" }}>
+                    <p className="mt-2 text-3xl font-bold" style={{ color: "#062F24" }}>
                       {reservationSuccess?.confirmationCode}
                     </p>
 
@@ -823,26 +868,18 @@ export default function ReservationForm() {
                     </div>
                   </div>
 
-                  <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-                    <button
-                      type="button"
-                      onClick={resetForm}
-                      className={secondaryButtonClass}
-                      style={{ borderColor: "rgba(201,165,106,0.18)", color: "#C9A56A" }}
-                    >
-                      {formCopy.anotherReservation}
-                    </button>
+                  <div className="mt-10 grid grid-cols-2 gap-4">
                     <Link
                       href={reservationSuccess?.manageUrlPath ?? "#"}
-                      className="rounded-full px-6 py-3.5 text-sm font-semibold uppercase tracking-[0.16em]"
-                      style={{ background: "#C9A56A", color: "#062F24" }}
+                      className="inline-flex w-full items-center justify-center rounded px-6 py-4 text-base font-semibold"
+                      style={{ background: "#062F24", border: "1px solid #062F24", color: "#FFFFFF" }}
                     >
                       {formCopy.manageReservation}
                     </Link>
                     <Link
                       href="/"
-                      className="rounded-full px-6 py-3.5 text-sm font-semibold uppercase tracking-[0.16em]"
-                      style={{ background: "rgba(201,165,106,0.12)", color: "#C9A56A" }}
+                      className="inline-flex w-full items-center justify-center rounded border px-6 py-4 text-base font-semibold"
+                      style={{ borderColor: "rgba(6,47,36,0.12)", color: "#062F24" }}
                     >
                       {formCopy.backHome}
                     </Link>

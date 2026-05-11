@@ -4,8 +4,8 @@ import { useTranslation } from "@/components/providers/language-provider";
 import type { Language } from "@/lib/i18n";
 
 const LANGUAGE_OPTIONS: Array<{ value: Language; label: string }> = [
-  { value: "en", label: "EN" },
   { value: "fr", label: "FR" },
+  { value: "en", label: "EN" },
 ];
 
 type LanguageToggleProps = {
@@ -14,12 +14,14 @@ type LanguageToggleProps = {
 
 export default function LanguageToggle({ mobile = false }: LanguageToggleProps) {
   const { language, setLanguage, copy } = useTranslation();
+  const nextLanguage: Language = language === "fr" ? "en" : "fr";
 
   return (
-    <div
-      role="group"
+    <button
+      type="button"
+      onClick={() => setLanguage(nextLanguage)}
       aria-label={copy.navbar.languageToggle}
-      className={`inline-flex items-center rounded-full border border-[#C9A56A]/25 bg-[#062F24] p-1 ${
+      className={`inline-flex min-h-0 items-center rounded border border-white/20 bg-[#062F24] p-1 transition-all ${
         mobile ? "w-full justify-center" : ""
       }`}
     >
@@ -27,21 +29,18 @@ export default function LanguageToggle({ mobile = false }: LanguageToggleProps) 
         const active = option.value === language;
 
         return (
-          <button
+          <span
             key={option.value}
-            type="button"
-            onClick={() => setLanguage(option.value)}
-            className="rounded-full px-3 py-2 text-xs font-semibold tracking-[0.18em] transition-all"
+            className="inline-flex min-h-0 items-center rounded-sm px-3 py-2 text-xs font-semibold leading-none transition-all"
             style={{
-              background: active ? "#C9A56A" : "transparent",
-              color: active ? "#062F24" : "rgba(244,232,210,0.72)",
+              background: active ? "#FFFFFF" : "transparent",
+              color: active ? "#062F24" : "rgba(255,255,255,0.78)",
             }}
-            aria-pressed={active}
           >
             {option.label}
-          </button>
+          </span>
         );
       })}
-    </div>
+    </button>
   );
 }
