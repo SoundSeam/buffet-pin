@@ -13,9 +13,27 @@ function trimToUndefined(value: unknown) {
   return trimmed.length > 0 ? trimmed : undefined;
 }
 
+function normalizeHttpUrl(value: unknown) {
+  const trimmed = trimToUndefined(value);
+
+  if (typeof trimmed !== "string") {
+    return trimmed;
+  }
+
+  if (/^https?:\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+
+  if (/^(localhost|127(?:\.\d{1,3}){3}|\[[0-9a-f:.]+\])(?::\d+)?(?:\/.*)?$/i.test(trimmed)) {
+    return `http://${trimmed}`;
+  }
+
+  return `https://${trimmed}`;
+}
+
 const optionalString = z.preprocess(trimToUndefined, z.string().min(1).optional());
 const optionalHttpUrl = z.preprocess(
-  trimToUndefined,
+  normalizeHttpUrl,
   z
     .string()
     .url()
