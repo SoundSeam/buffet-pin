@@ -773,11 +773,11 @@ export default function ReservationForm() {
                     {formCopy.reviewNote}
                   </p>
 
-                  <div className="mt-8 grid grid-cols-2 gap-4">
+                  <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <button
                       type="button"
                       onClick={() => setStep(2)}
-                      className={`${secondaryActionButtonClass} w-full`}
+                      className={`${secondaryActionButtonClass} order-2 w-full sm:order-1`}
                       style={{ borderColor: "rgba(6,47,36,0.12)", color: "#062F24" }}
                     >
                       {formCopy.edit}
@@ -786,7 +786,7 @@ export default function ReservationForm() {
                       type="button"
                       onClick={submitReservation}
                       disabled={loading}
-                      className={primaryActionButtonClass}
+                      className={`${primaryActionButtonClass} order-1 sm:order-2`}
                       style={{ background: "#062F24", border: "1px solid #062F24", color: "#FFFFFF" }}
                     >
                       {loading ? <Loader2 size={16} className="animate-spin" /> : null}
