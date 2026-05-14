@@ -724,11 +724,11 @@ export default function ReservationForm() {
                     </div>
                   </div>
 
-                  <div className="mt-8 grid grid-cols-2 gap-4">
+                  <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <button
                       type="button"
                       onClick={() => setStep(1)}
-                      className={`${secondaryActionButtonClass} w-full`}
+                      className={`${secondaryActionButtonClass} order-2 w-full sm:order-1`}
                       style={{ borderColor: "rgba(6,47,36,0.12)", color: "#062F24" }}
                     >
                       {formCopy.back}
@@ -737,7 +737,7 @@ export default function ReservationForm() {
                       type="button"
                       onClick={() => setStep(3)}
                       disabled={!stepTwoValid}
-                      className={primaryActionButtonClass}
+                      className={`${primaryActionButtonClass} order-1 sm:order-2`}
                       style={{ background: "#062F24", border: "1px solid #062F24", color: "#FFFFFF" }}
                     >
                       {formCopy.review}
@@ -841,17 +841,17 @@ export default function ReservationForm() {
                     </div>
                   </div>
 
-                  <div className="mt-10 grid grid-cols-2 gap-4">
+                  <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <Link
                       href={reservationSuccess?.manageUrlPath ?? "#"}
-                      className="inline-flex w-full items-center justify-center rounded px-6 py-4 text-base font-semibold"
+                      className="order-1 inline-flex w-full items-center justify-center rounded px-6 py-4 text-base font-semibold sm:order-1"
                       style={{ background: "#062F24", border: "1px solid #062F24", color: "#FFFFFF" }}
                     >
                       {formCopy.manageReservation}
                     </Link>
                     <Link
                       href="/"
-                      className="inline-flex w-full items-center justify-center rounded border px-6 py-4 text-base font-semibold"
+                      className="order-2 inline-flex w-full items-center justify-center rounded border px-6 py-4 text-base font-semibold sm:order-2"
                       style={{ borderColor: "rgba(6,47,36,0.12)", color: "#062F24" }}
                     >
                       {formCopy.backHome}
