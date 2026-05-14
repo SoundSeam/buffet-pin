@@ -19,7 +19,10 @@ import {
 import { buildManagePath } from "@/lib/reservations/manage-link";
 import { getReservationSettings } from "@/lib/reservations/settings";
 import { generateManageToken } from "@/lib/reservations/tokens";
-import { sendReservationConfirmationSms } from "@/lib/sms";
+import {
+  sendAdminNewReservationSms,
+  sendReservationConfirmationSms,
+} from "@/lib/sms";
 import { getAdminUser } from "@/lib/supabase/auth";
 import {
   localDateSchema,
@@ -156,6 +159,24 @@ async function sendConfirmationSmsAndMarkSent(reservation: {
     console.error("Admin reservation confirmation SMS sent but timestamp update failed", {
       reservationId: reservation.id,
       error,
+    });
+  }
+}
+
+async function sendAdminReservationAlert(reservation: {
+  id: string;
+  reservationAt: Date;
+  partySize: number;
+  guestName: string;
+  guestPhone: string;
+}) {
+  const result = await sendAdminNewReservationSms(reservation);
+
+  if (!result.ok) {
+    console.error("Admin new reservation alert SMS failed", {
+      reservationId: reservation.id,
+      skipped: result.skipped ?? false,
+      error: result.error,
     });
   }
 }
@@ -321,7 +342,10 @@ export async function POST(request: Request) {
         { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
       );
 
-      await sendConfirmationSmsAndMarkSent(reservation);
+      await Promise.all([
+        sendConfirmationSmsAndMarkSent(reservation),
+        sendAdminReservationAlert(reservation),
+      ]);
 
       return NextResponse.json(
         { ok: true, data: { reservation: serializeReservation(reservation) } },

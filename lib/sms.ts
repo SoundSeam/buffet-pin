@@ -3,7 +3,13 @@ import twilio from "twilio";
 
 import { getAppUrl, getSmsConfig } from "./env";
 import { buildManageUrl } from "./reservations/manage-link";
-import { renderConfirmationSms, renderReminderSms } from "./sms-templates";
+import {
+  renderAdminNewReservationSms,
+  renderConfirmationSms,
+  renderReminderSms,
+} from "./sms-templates";
+
+const ADMIN_RESERVATION_SMS_TO = "+15148872002";
 
 type SmsReservation = {
   id: string;
@@ -13,6 +19,13 @@ type SmsReservation = {
   partySize: number;
   guestPhone: string;
   language: ReservationLanguage;
+};
+
+type AdminReservationAlert = {
+  reservationAt: Date;
+  partySize: number;
+  guestName: string;
+  guestPhone: string;
 };
 
 type SmsSendResult =
@@ -101,5 +114,14 @@ export async function sendReservationReminderSms(
       manageUrl: buildManageUrl(reservation.manageToken),
     }),
     { statusCallback: buildReminderStatusCallbackUrl() },
+  );
+}
+
+export async function sendAdminNewReservationSms(
+  reservation: AdminReservationAlert,
+): Promise<SmsSendResult> {
+  return sendSms(
+    ADMIN_RESERVATION_SMS_TO,
+    renderAdminNewReservationSms(reservation),
   );
 }

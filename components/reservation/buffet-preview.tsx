@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { motion } from "framer-motion";
 import { useTranslation } from "@/components/providers/language-provider";
 
@@ -41,13 +40,6 @@ export default function BuffetPreview() {
             <p className="mt-6 max-w-md text-lg font-light leading-relaxed" style={{ color: "rgba(244,232,210,0.6)" }}>
               {previewCopy.description}
             </p>
-            <Link
-              href="/menu"
-              className="mt-8 inline-block rounded border px-8 py-3 text-sm font-semibold transition-all duration-300 hover:opacity-80"
-              style={{ borderColor: "rgba(201,165,106,0.5)", color: "#C9A56A" }}
-            >
-              {previewCopy.cta}
-            </Link>
           </motion.div>
         </div>
       </div>

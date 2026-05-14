@@ -11,6 +11,13 @@ type ReservationSmsInput = {
   manageUrl: string;
 };
 
+type AdminReservationSmsInput = {
+  reservationAt: Date;
+  partySize: number;
+  guestName: string;
+  guestPhone: string;
+};
+
 function formatReservationDateTime(date: Date, language: ReservationLanguage): string {
   const locale = language === "FR" ? "fr-CA" : "en-CA";
 
@@ -19,6 +26,17 @@ function formatReservationDateTime(date: Date, language: ReservationLanguage): s
     weekday: "short",
     month: "short",
     day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(date);
+}
+
+function formatAdminReservationDateTime(date: Date): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: BUSINESS_TIME_ZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
     hour: "numeric",
     minute: "2-digit",
   }).format(date);
@@ -42,4 +60,16 @@ export function renderReminderSms(input: ReservationSmsInput): string {
   }
 
   return `${RESTAURANT_NAME} : Petit rappel ! Hâte de vous voir pour votre réservation ${dateTime}, ${input.partySize} personnes.\n\nGérer : ${input.manageUrl}`;
+}
+
+export function renderAdminNewReservationSms(
+  input: AdminReservationSmsInput,
+): string {
+  return [
+    "New reservation",
+    `Time: ${formatAdminReservationDateTime(input.reservationAt)}`,
+    `Group size: ${input.partySize}`,
+    `Name: ${input.guestName}`,
+    `Phone: ${input.guestPhone}`,
+  ].join("\n");
 }

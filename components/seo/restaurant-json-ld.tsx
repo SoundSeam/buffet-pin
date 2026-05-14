@@ -8,7 +8,6 @@ import {
   RESTAURANT_PRICE_RANGE,
   SITE_NAME,
   SITE_URL,
-  getCanonicalUrl,
 } from "@/lib/seo";
 
 const RESTAURANT_IMAGES = [
@@ -31,7 +30,6 @@ export default function RestaurantJsonLd() {
     priceRange: RESTAURANT_PRICE_RANGE,
     servesCuisine: RESTAURANT_CUISINES,
     acceptsReservations: true,
-    menu: getCanonicalUrl("/menu"),
     hasMap: "https://maps.app.goo.gl/9qoswmW14dh1AJVh7?g_st=ic",
     address: {
       "@type": "PostalAddress",

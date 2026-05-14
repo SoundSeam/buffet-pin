@@ -26,7 +26,10 @@ import {
   publicReservationCreatePayloadSchema,
 } from "@/lib/validation";
 import { buildManagePath } from "@/lib/reservations/manage-link";
-import { sendReservationConfirmationSms } from "@/lib/sms";
+import {
+  sendAdminNewReservationSms,
+  sendReservationConfirmationSms,
+} from "@/lib/sms";
 
 export const dynamic = "force-dynamic";
 
@@ -103,6 +106,24 @@ async function sendConfirmationSmsAndMarkSent(reservation: {
     console.error("Reservation confirmation SMS sent but timestamp update failed", {
       reservationId: reservation.id,
       error,
+    });
+  }
+}
+
+async function sendAdminReservationAlert(reservation: {
+  id: string;
+  reservationAt: Date;
+  partySize: number;
+  guestName: string;
+  guestPhone: string;
+}) {
+  const result = await sendAdminNewReservationSms(reservation);
+
+  if (!result.ok) {
+    console.error("Admin reservation alert SMS failed", {
+      reservationId: reservation.id,
+      skipped: result.skipped ?? false,
+      error: result.error,
     });
   }
 }
@@ -211,7 +232,10 @@ export async function POST(request: Request) {
         },
       );
 
-      await sendConfirmationSmsAndMarkSent(reservation);
+      await Promise.all([
+        sendConfirmationSmsAndMarkSent(reservation),
+        sendAdminReservationAlert(reservation),
+      ]);
 
       return NextResponse.json(
         {

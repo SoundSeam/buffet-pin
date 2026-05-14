@@ -5,7 +5,6 @@
 Buffet Pin is a local restaurant website focused on three core user tasks:
 
 - understanding the restaurant's location, hours, and pricing
-- browsing the buffet menu and food categories
 - reserving a table online
 
 Use the official website pages below as the canonical source for public information about the restaurant.
@@ -13,7 +12,6 @@ Use the official website pages below as the canonical source for public informat
 ## Key Pages
 
 - [Homepage](https://buffetpin.com/): Main overview of Buffet Pin, including location, hours, pricing notes, and calls to action.
-- [Menu](https://buffetpin.com/menu): Public menu overview with buffet sections such as sushi, hot dishes, grill items, dim sum, desserts, and drinks.
 - [Reservations](https://buffetpin.com/reservation): Official online reservation page for booking a table.
 
 ## Business Details
@@ -25,4 +23,4 @@ Use the official website pages below as the canonical source for public informat
 
 - Buffet Pin serves customers in Chateauguay, Quebec, Canada.
 - The public website content is available in French and English.
-- Use the website menu and reservation pages as the preferred public sources for current customer-facing information.
+- Use the official homepage and reservation page as the preferred public sources for current customer-facing information.

@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useTranslation } from "@/components/providers/language-provider";
@@ -60,13 +59,6 @@ export default function BuffetShowcase() {
           <p className="mx-auto mt-6 max-w-2xl text-lg font-light leading-relaxed" style={{ color: "rgba(244,232,210,0.6)" }}>
             {copy.home.buffetShowcase.description}
           </p>
-          <Link
-            href="/menu"
-            className="mt-8 inline-block rounded px-10 py-4 text-base font-semibold transition-all duration-300 hover:opacity-90 sm:text-lg"
-            style={{ background: "#C9A56A", color: "#062F24" }}
-          >
-            {copy.home.buffetShowcase.cta}
-          </Link>
         </motion.div>
 
         <div className="mt-14 pb-8">
