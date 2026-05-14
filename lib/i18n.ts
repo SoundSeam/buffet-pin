@@ -11,6 +11,7 @@ export const translations = {
     navbar: {
       links: [
         { label: "Accueil", path: "/" },
+        { label: "Menu", path: "/menu" },
       ],
       reserve: "Réserver",
       openMenu: "Ouvrir le menu",
@@ -541,6 +542,7 @@ export const translations = {
     navbar: {
       links: [
         { label: "Home", path: "/" },
+        { label: "Menu", path: "/menu" },
       ],
       reserve: "Reserve",
       openMenu: "Open menu",

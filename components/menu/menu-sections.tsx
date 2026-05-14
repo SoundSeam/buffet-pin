@@ -112,9 +112,9 @@ export default function MenuSections() {
   return (
     <section className="relative pb-14 pt-28 lg:pb-20 lg:pt-32" style={{ background: "#041F18" }}>
       <div className="mx-auto mb-10 max-w-7xl px-6 lg:px-8">
-        <h1 className="text-5xl font-bold leading-none tracking-tight sm:text-6xl lg:text-7xl" style={{ color: "#F4E8D2" }}>
+        <h2 className="text-5xl font-bold leading-none tracking-tight sm:text-6xl lg:text-7xl" style={{ color: "#F4E8D2" }}>
           {copy.menu.title}
-        </h1>
+        </h2>
         <p className="mt-3 max-w-xl text-sm leading-relaxed sm:text-base" style={{ color: "rgba(244,232,210,0.66)" }}>
           {copy.menu.description}
         </p>
