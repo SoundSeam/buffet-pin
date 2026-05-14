@@ -38,7 +38,8 @@ export const translations = {
         eyebrow: "Buffet asiatique à volonté",
         titleTop: "Buffet asiatique à volonté",
         titleBottom: "de Châteauguay",
-        description: "Buffet Pin est un restaurant asiatique à volonté situé à Châteauguay.",
+        description:
+          "Buffet Pin est un restaurant asiatique à volonté situé à Châteauguay. Apportez votre vin.",
         locationCta: "Nous trouver",
         reservationCta: "Réserver votre table",
       },
@@ -568,7 +569,8 @@ export const translations = {
         eyebrow: "All-you-can-eat Asian buffet",
         titleTop: "All-You-Can-Eat Asian Buffet",
         titleBottom: "in Chateauguay",
-        description: "Buffet Pin is an all-you-can-eat Asian buffet restaurant in Chateauguay with sushi, stir-fried noodles, hot entrees, and desserts in a welcoming dining room.",
+        description:
+          "Buffet Pin is a BYOB all-you-can-eat Asian buffet restaurant in Châteauguay with sushi, stir-fried noodles, hot entrées, and desserts in a welcoming dining room.",
         locationCta: "Find us",
         reservationCta: "Reserve your table",
       },
