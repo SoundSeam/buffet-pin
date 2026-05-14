@@ -47,7 +47,6 @@ type FormState = {
   phone: string;
   email: string;
   occasion: OccasionKey;
-  allergyDetails: string;
   specialRequests: string;
 };
 
@@ -199,18 +198,13 @@ export default function ReservationForm() {
     phone: "",
     email: "",
     occasion: "none",
-    allergyDetails: "",
     specialRequests: "",
   });
 
   const daysInMonth = getDaysInMonth(calYear, calMonth);
   const firstDay = getFirstDayOfMonth(calYear, calMonth);
   const stepOneValid = Boolean(form.date && form.time && form.partySize && !availabilityLoading);
-  const stepTwoValid = Boolean(
-    form.name.trim() &&
-      form.phone.trim() &&
-      (form.occasion !== "allergies" || form.allergyDetails.trim()),
-  );
+  const stepTwoValid = Boolean(form.name.trim() && form.phone.trim());
   const pageTitle =
     step === 2 ? formCopy.stepTwoTitle : step === 3 ? formCopy.stepThreeTitle : formCopy.title;
   const pageDescription =
@@ -365,9 +359,6 @@ export default function ReservationForm() {
     const occasion = form.occasion !== "none" && selectedOccasion ? selectedOccasion.label : "";
     const specialRequests = [
       occasion ? `${formCopy.occasion}: ${occasion}` : "",
-      form.allergyDetails.trim()
-        ? `${formCopy.summary.allergy}: ${form.allergyDetails.trim()}`
-        : "",
       form.specialRequests.trim(),
     ]
       .filter(Boolean)
@@ -429,7 +420,6 @@ export default function ReservationForm() {
       phone: "",
       email: "",
       occasion: "none",
-      allergyDetails: "",
       specialRequests: "",
     });
     setReservationSuccess(null);
@@ -697,7 +687,7 @@ export default function ReservationForm() {
 
                       <div>
                         <FieldLabel icon={Star}>{formCopy.occasion}</FieldLabel>
-                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                        <div className="grid grid-cols-2 gap-3">
                           {formCopy.occasions.map((occasion) => {
                             const selected = form.occasion === occasion.value;
 
@@ -719,20 +709,6 @@ export default function ReservationForm() {
                           })}
                         </div>
                       </div>
-
-                      {form.occasion === "allergies" ? (
-                        <div>
-                          <FieldLabel icon={MessageSquare}>{formCopy.allergyDetails}</FieldLabel>
-                          <textarea
-                            rows={3}
-                            value={form.allergyDetails}
-                            onChange={(event) => setField("allergyDetails", event.target.value)}
-                            placeholder={formCopy.allergyDetailsPlaceholder}
-                            className={`${fieldClass} resize-none`}
-                            style={{ borderColor: "rgba(6,47,36,0.12)" }}
-                          />
-                        </div>
-                      ) : null}
 
                       <div>
                         <FieldLabel icon={MessageSquare}>{formCopy.specialRequests}</FieldLabel>
@@ -789,9 +765,6 @@ export default function ReservationForm() {
                     {form.email ? <DetailRow label={formCopy.summary.email} value={form.email} /> : null}
                     {form.occasion !== "none" && selectedOccasion ? (
                       <DetailRow label={formCopy.summary.occasion} value={selectedOccasion.label} />
-                    ) : null}
-                    {form.allergyDetails ? (
-                      <DetailRow label={formCopy.summary.allergy} value={form.allergyDetails} />
                     ) : null}
                     {form.specialRequests ? <DetailRow label={formCopy.summary.requests} value={form.specialRequests} /> : null}
                   </div>

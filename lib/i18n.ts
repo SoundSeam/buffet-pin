@@ -4,9 +4,7 @@ export type OccasionKey =
   | "none"
   | "birthday"
   | "businessDinner"
-  | "familyOuting"
-  | "allergies"
-  | "other";
+  | "familyOuting";
 
 export const translations = {
   fr: {
@@ -322,11 +320,7 @@ export const translations = {
           { value: "birthday" as const, label: "Anniversaire" },
           { value: "businessDinner" as const, label: "Souper d'affaires" },
           { value: "familyOuting" as const, label: "Sortie en famille" },
-          { value: "allergies" as const, label: "Allergies" },
-          { value: "other" as const, label: "Autre" },
         ],
-        allergyDetails: "Détails des allergies",
-        allergyDetailsPlaceholder: "Ex. arachides, fruits de mer, gluten...",
         specialRequests: "Demandes spéciales",
         specialRequestsPlaceholder: "Allergies, chaise haute, préférence d'emplacement...",
         back: "Retour",
@@ -339,7 +333,6 @@ export const translations = {
           phone: "Téléphone",
           email: "Courriel",
           occasion: "Occasion",
-          allergy: "Allergies",
           requests: "Demandes",
         },
         guestSingular: "personne",
@@ -857,11 +850,7 @@ export const translations = {
           { value: "birthday" as const, label: "Birthday" },
           { value: "businessDinner" as const, label: "Business dinner" },
           { value: "familyOuting" as const, label: "Family outing" },
-          { value: "allergies" as const, label: "Allergies" },
-          { value: "other" as const, label: "Other" },
         ],
-        allergyDetails: "Allergy details",
-        allergyDetailsPlaceholder: "Ex. peanuts, shellfish, gluten...",
         specialRequests: "Special requests",
         specialRequestsPlaceholder: "Allergies, high chair, seating preference...",
         back: "Back",
@@ -874,7 +863,6 @@ export const translations = {
           phone: "Phone",
           email: "Email",
           occasion: "Occasion",
-          allergy: "Allergies",
           requests: "Requests",
         },
         guestSingular: "guest",

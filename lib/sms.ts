@@ -1,7 +1,7 @@
 import type { ReservationLanguage } from "@prisma/client";
 import twilio from "twilio";
 
-import { getSmsConfig } from "./env";
+import { getAppUrl, getSmsConfig } from "./env";
 import { buildManageUrl } from "./reservations/manage-link";
 import { renderConfirmationSms, renderReminderSms } from "./sms-templates";
 
@@ -16,8 +16,12 @@ type SmsReservation = {
 };
 
 type SmsSendResult =
-  | { ok: true; sid: string }
+  | { ok: true; sid: string; status: string }
   | { ok: false; error: unknown; skipped?: boolean };
+
+type SmsSendOptions = {
+  statusCallback?: string;
+};
 
 let cachedClient: ReturnType<typeof twilio> | null = null;
 
@@ -32,7 +36,15 @@ function getTwilioClient() {
   return { client: cachedClient, from: config.from };
 }
 
-export async function sendSms(to: string, body: string): Promise<SmsSendResult> {
+function buildReminderStatusCallbackUrl(): string {
+  return new URL("/api/twilio/message-status", getAppUrl()).toString();
+}
+
+export async function sendSms(
+  to: string,
+  body: string,
+  options?: SmsSendOptions,
+): Promise<SmsSendResult> {
   let twilioClient: ReturnType<typeof getTwilioClient>;
 
   try {
@@ -54,9 +66,10 @@ export async function sendSms(to: string, body: string): Promise<SmsSendResult> 
       to,
       from: twilioClient.from,
       body,
+      ...(options?.statusCallback ? { statusCallback: options.statusCallback } : {}),
     });
 
-    return { ok: true, sid: message.sid };
+    return { ok: true, sid: message.sid, status: message.status };
   } catch (error) {
     return { ok: false, error };
   }
@@ -71,7 +84,6 @@ export async function sendReservationConfirmationSms(
       language: reservation.language,
       reservationAt: reservation.reservationAt,
       partySize: reservation.partySize,
-      confirmationCode: reservation.confirmationCode,
       manageUrl: buildManageUrl(reservation.manageToken),
     }),
   );
@@ -86,8 +98,8 @@ export async function sendReservationReminderSms(
       language: reservation.language,
       reservationAt: reservation.reservationAt,
       partySize: reservation.partySize,
-      confirmationCode: reservation.confirmationCode,
       manageUrl: buildManageUrl(reservation.manageToken),
     }),
+    { statusCallback: buildReminderStatusCallbackUrl() },
   );
 }

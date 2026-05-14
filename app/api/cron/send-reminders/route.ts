@@ -11,8 +11,13 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 const REMINDER_TARGET_HOURS = 24;
-const REMINDER_WINDOW_MINUTES = 30;
+const REMINDER_LOOKAHEAD_GRACE_MINUTES = 2;
+const REMINDER_RETRY_WINDOW_MINUTES = 60;
+const REMINDER_RETRY_COOLDOWN_MINUTES = 5;
 const MAX_REMINDERS_PER_RUN = 50;
+const TERMINAL_FAILURE_STATUSES = new Set(["failed", "undelivered", "canceled"]);
+const IN_FLIGHT_STATUSES = new Set(["accepted", "queued", "sending"]);
+const SUCCESS_STATUSES = new Set(["sent", "delivered"]);
 
 function jsonResponse(status: number, body: unknown) {
   return NextResponse.json(body, { status });
@@ -36,12 +41,38 @@ function isAuthorized(request: Request): boolean {
 
 function reminderWindow(now = new Date()) {
   const target = now.getTime() + REMINDER_TARGET_HOURS * 60 * 60 * 1000;
-  const halfWindow = REMINDER_WINDOW_MINUTES * 60 * 1000;
 
   return {
-    gte: new Date(target - halfWindow),
-    lt: new Date(target + halfWindow),
+    gte: new Date(target - REMINDER_RETRY_WINDOW_MINUTES * 60 * 1000),
+    lt: new Date(target + REMINDER_LOOKAHEAD_GRACE_MINUTES * 60 * 1000),
   };
+}
+
+function canRetryAttemptedReminder(
+  reminderStatus: string | null,
+  reminderLastAttemptAt: Date | null,
+  now: Date,
+): boolean {
+  if (!reminderStatus) {
+    return true;
+  }
+
+  if (SUCCESS_STATUSES.has(reminderStatus) || IN_FLIGHT_STATUSES.has(reminderStatus)) {
+    return false;
+  }
+
+  if (!TERMINAL_FAILURE_STATUSES.has(reminderStatus)) {
+    return false;
+  }
+
+  if (!reminderLastAttemptAt) {
+    return true;
+  }
+
+  return (
+    now.getTime() - reminderLastAttemptAt.getTime() >=
+    REMINDER_RETRY_COOLDOWN_MINUTES * 60 * 1000
+  );
 }
 
 export async function GET(request: Request) {
@@ -59,7 +90,8 @@ export async function GET(request: Request) {
     });
   }
 
-  const window = reminderWindow();
+  const now = new Date();
+  const window = reminderWindow(now);
   const reservations = await db.reservation.findMany({
     where: {
       status: ReservationStatus.CONFIRMED,
@@ -76,17 +108,38 @@ export async function GET(request: Request) {
       partySize: true,
       guestPhone: true,
       language: true,
+      reminderLastAttemptAt: true,
+      reminderStatus: true,
     },
   });
+
+  const retryableReservations = reservations.filter((reservation) =>
+    canRetryAttemptedReminder(reservation.reminderStatus, reservation.reminderLastAttemptAt, now),
+  );
 
   let sent = 0;
   let failed = 0;
 
-  for (const reservation of reservations) {
+  for (const reservation of retryableReservations) {
     const result = await sendReservationReminderSms(reservation);
 
     if (!result.ok) {
       failed += 1;
+      try {
+        await db.reservation.update({
+          where: { id: reservation.id },
+          data: {
+            reminderLastAttemptAt: new Date(),
+            reminderMessageSid: null,
+            reminderStatus: "failed",
+          },
+        });
+      } catch (error) {
+        console.error("Reservation reminder failure state update failed", {
+          reservationId: reservation.id,
+          error,
+        });
+      }
       console.error("Reservation reminder SMS failed", {
         reservationId: reservation.id,
         skipped: result.skipped ?? false,
@@ -98,7 +151,11 @@ export async function GET(request: Request) {
     try {
       await db.reservation.update({
         where: { id: reservation.id },
-        data: { reminderSentAt: new Date() },
+        data: {
+          reminderLastAttemptAt: new Date(),
+          reminderMessageSid: result.sid,
+          reminderStatus: result.status,
+        },
       });
       sent += 1;
     } catch (error) {
@@ -114,6 +171,7 @@ export async function GET(request: Request) {
     ok: true,
     data: {
       selected: reservations.length,
+      retryable: retryableReservations.length,
       sent,
       failed,
       window: {

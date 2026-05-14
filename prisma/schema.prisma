@@ -37,6 +37,9 @@ model Reservation {
   specialRequests    String?
   internalNotes      String?
   confirmationSentAt DateTime?
+  reminderLastAttemptAt DateTime?
+  reminderMessageSid String?             @unique
+  reminderStatus     String?
   reminderSentAt     DateTime?
   cancelledAt        DateTime?
   createdAt          DateTime            @default(now())

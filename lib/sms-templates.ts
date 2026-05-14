@@ -8,7 +8,6 @@ type ReservationSmsInput = {
   language: ReservationLanguage;
   reservationAt: Date;
   partySize: number;
-  confirmationCode: string;
   manageUrl: string;
 };
 
@@ -29,18 +28,18 @@ export function renderConfirmationSms(input: ReservationSmsInput): string {
   const dateTime = formatReservationDateTime(input.reservationAt, input.language);
 
   if (input.language === "EN") {
-    return `${RESTAURANT_NAME}: reservation confirmed for ${dateTime}, party of ${input.partySize}. Code: ${input.confirmationCode}. Manage: ${input.manageUrl}`;
+    return `${RESTAURANT_NAME}: reservation confirmed for ${dateTime}, party of ${input.partySize}.\n\nManage: ${input.manageUrl}`;
   }
 
-  return `${RESTAURANT_NAME} : réservation confirmée pour ${dateTime}, ${input.partySize} personnes. Code : ${input.confirmationCode}. Gérer : ${input.manageUrl}`;
+  return `${RESTAURANT_NAME} : réservation confirmée pour ${dateTime}, ${input.partySize} personnes.\n\nGérer : ${input.manageUrl}`;
 }
 
 export function renderReminderSms(input: ReservationSmsInput): string {
   const dateTime = formatReservationDateTime(input.reservationAt, input.language);
 
   if (input.language === "EN") {
-    return `${RESTAURANT_NAME}: reminder for your reservation ${dateTime}, party of ${input.partySize}. Code: ${input.confirmationCode}. Manage: ${input.manageUrl}`;
+    return `${RESTAURANT_NAME}: Friendly reminder! Looking forward to seeing you for your reservation ${dateTime}, party of ${input.partySize}.\n\nManage: ${input.manageUrl}`;
   }
 
-  return `${RESTAURANT_NAME} : rappel pour votre réservation ${dateTime}, ${input.partySize} personnes. Code : ${input.confirmationCode}. Gérer : ${input.manageUrl}`;
+  return `${RESTAURANT_NAME} : Petit rappel ! Hâte de vous voir pour votre réservation ${dateTime}, ${input.partySize} personnes.\n\nGérer : ${input.manageUrl}`;
 }

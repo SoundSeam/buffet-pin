@@ -6,6 +6,7 @@ import {
   parseLocalDate,
   parseSlotTime,
 } from "./reservations/time";
+import { MANAGE_TOKEN_LENGTH } from "./reservations/tokens";
 
 const optionalText = (maxLength: number) =>
   z
@@ -101,7 +102,7 @@ export const publicReservationCreatePayloadSchema = z.object({
   specialRequests: optionalText(1000),
 });
 
-export const manageTokenSchema = z.string().trim().min(32).max(256);
+export const manageTokenSchema = z.string().trim().min(MANAGE_TOKEN_LENGTH).max(256);
 
 export const manageReservationLookupSchema = z.object({
   token: manageTokenSchema,

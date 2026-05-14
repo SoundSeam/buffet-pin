@@ -27,6 +27,7 @@ import {
 } from "@/lib/validation";
 
 export const dynamic = "force-dynamic";
+const MAX_CREATE_ATTEMPTS = 3;
 
 const createReservationSchema = z.object({
   date: localDateSchema,
@@ -53,6 +54,20 @@ function errorResponse(status: number, code: string, message: string, details?: 
   return NextResponse.json(
     { ok: false, error: { code, message, ...(details ? { details } : {}) } },
     { status },
+  );
+}
+
+function isUniqueConstraintError(error: unknown): boolean {
+  return (
+    error instanceof Prisma.PrismaClientKnownRequestError &&
+    error.code === "P2002"
+  );
+}
+
+function isRetryableTransactionError(error: unknown): boolean {
+  return (
+    error instanceof Prisma.PrismaClientKnownRequestError &&
+    error.code === "P2034"
   );
 }
 
@@ -251,77 +266,104 @@ export async function POST(request: Request) {
     return errorResponse(400, "INVALID_JSON", "Invalid reservation.");
   }
 
-  try {
-    const reservation = await db.$transaction(
-      async (tx) => {
-        const settings = await tx.settings.findUnique({
-          where: { id: 1 },
-          include: {
-            slotCapacities: true,
-          },
-        });
-        if (!settings) throw new Error("Reservation settings are not configured.");
+  for (let attempt = 1; attempt <= MAX_CREATE_ATTEMPTS; attempt += 1) {
+    try {
+      const reservation = await db.$transaction(
+        async (tx) => {
+          const settings = await tx.settings.findUnique({
+            where: { id: 1 },
+            include: {
+              slotCapacities: true,
+            },
+          });
+          if (!settings) throw new Error("Reservation settings are not configured.");
 
-        await lockReservationSlot(tx, payload.date, payload.time);
+          await lockReservationSlot(tx, payload.date, payload.time);
 
-        await assertPublicBookingRules(tx, settings, {
-          reservationDate: payload.date,
-          reservationTime: payload.time,
-          partySize: payload.partySize,
-        });
-
-        return tx.reservation.create({
-          data: {
-            confirmationCode: generateConfirmationCode(),
-            manageToken: generateManageToken(),
-            status: ReservationStatus.CONFIRMED,
-            reservationDate: dateOnlyToUtcDate(payload.date),
-            reservationTime: timeOnlyToUtcDate(payload.time),
-            reservationAt: reservationAtFromLocalSlot(payload.date, payload.time),
+          await assertPublicBookingRules(tx, settings, {
+            reservationDate: payload.date,
+            reservationTime: payload.time,
             partySize: payload.partySize,
-            guestName: payload.name,
-            guestPhone: payload.phone,
-            guestEmail: payload.email,
-            language: payload.language,
-            specialRequests: payload.specialRequests,
-            internalNotes: payload.internalNotes,
-          },
-          select: {
-            id: true,
-            confirmationCode: true,
-            manageToken: true,
-            status: true,
-            reservationDate: true,
-            reservationTime: true,
-            reservationAt: true,
-            partySize: true,
-            guestName: true,
-            guestPhone: true,
-            guestEmail: true,
-            language: true,
-            specialRequests: true,
-            internalNotes: true,
-            cancelledAt: true,
-            createdAt: true,
-            updatedAt: true,
-          },
-        });
-      },
-      { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
-    );
+          });
 
-    await sendConfirmationSmsAndMarkSent(reservation);
+          return tx.reservation.create({
+            data: {
+              confirmationCode: generateConfirmationCode(),
+              manageToken: generateManageToken(),
+              status: ReservationStatus.CONFIRMED,
+              reservationDate: dateOnlyToUtcDate(payload.date),
+              reservationTime: timeOnlyToUtcDate(payload.time),
+              reservationAt: reservationAtFromLocalSlot(payload.date, payload.time),
+              partySize: payload.partySize,
+              guestName: payload.name,
+              guestPhone: payload.phone,
+              guestEmail: payload.email,
+              language: payload.language,
+              specialRequests: payload.specialRequests,
+              internalNotes: payload.internalNotes,
+            },
+            select: {
+              id: true,
+              confirmationCode: true,
+              manageToken: true,
+              status: true,
+              reservationDate: true,
+              reservationTime: true,
+              reservationAt: true,
+              partySize: true,
+              guestName: true,
+              guestPhone: true,
+              guestEmail: true,
+              language: true,
+              specialRequests: true,
+              internalNotes: true,
+              cancelledAt: true,
+            },
+          });
+        },
+        { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+      );
 
-    return NextResponse.json(
-      { ok: true, data: { reservation: serializeReservation(reservation) } },
-      { status: 201 },
-    );
-  } catch (error) {
-    if (error instanceof ReservationRuleError) {
-      const status = error.code === "INSUFFICIENT_CAPACITY" ? 409 : 400;
-      return errorResponse(status, error.code, error.message);
+      await sendConfirmationSmsAndMarkSent(reservation);
+
+      return NextResponse.json(
+        { ok: true, data: { reservation: serializeReservation(reservation) } },
+        { status: 201 },
+      );
+    } catch (error) {
+      if (error instanceof ReservationRuleError) {
+        const status = error.code === "INSUFFICIENT_CAPACITY" ? 409 : 400;
+        return errorResponse(status, error.code, error.message);
+      }
+
+      if (isUniqueConstraintError(error) && attempt < MAX_CREATE_ATTEMPTS) {
+        continue;
+      }
+
+      if (isRetryableTransactionError(error) && attempt < MAX_CREATE_ATTEMPTS) {
+        continue;
+      }
+
+      if (isUniqueConstraintError(error)) {
+        return errorResponse(
+          409,
+          "RESERVATION_CODE_COLLISION",
+          "Unable to create a unique reservation.",
+        );
+      }
+
+      if (isRetryableTransactionError(error)) {
+        return errorResponse(
+          409,
+          "RESERVATION_CONFLICT",
+          "Reservation capacity changed while creating this booking.",
+        );
+      }
+
+      console.error(error);
+      return errorResponse(500, "INTERNAL_ERROR", "Unable to create reservation.");
     }
-    console.error(error);
-    return errorResponse(500, "INTERNAL_ERROR", "Unable to create reservation.");
   }
+
+  return errorResponse(500, "INTERNAL_ERROR", "Unable to create reservation.");
 }
