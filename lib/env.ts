@@ -145,7 +145,9 @@ export function getCronSecret(source: NodeJS.ProcessEnv = process.env): string |
   return getEnv(source).CRON_SECRET ?? null;
 }
 
-export function getSmsConfig(source: NodeJS.ProcessEnv = process.env) {
+export function getSmsConfig(
+  source: NodeJS.ProcessEnv = process.env,
+): { accountSid: string; authToken: string; from: string } | null {
   const currentEnv = getEnv(source);
   const accountSid = currentEnv.TWILIO_ACCOUNT_SID;
   const authToken = currentEnv.TWILIO_AUTH_TOKEN;
@@ -167,5 +169,5 @@ export function getSmsConfig(source: NodeJS.ProcessEnv = process.env) {
     );
   }
 
-  return { accountSid, authToken, from };
+  return { accountSid: accountSid!, authToken: authToken!, from: from! };
 }

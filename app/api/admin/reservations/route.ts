@@ -318,6 +318,8 @@ export async function POST(request: Request) {
               specialRequests: true,
               internalNotes: true,
               cancelledAt: true,
+              createdAt: true,
+              updatedAt: true,
             },
           });
         },
