@@ -65,7 +65,7 @@ const PARTY_SIZES = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 const panelClass =
   "rounded border border-[rgba(6,47,36,0.08)] bg-white p-6 shadow-sm sm:p-8 lg:p-10";
 const fieldClass =
-  "w-full rounded border bg-[rgba(6,47,36,0.05)] px-4 py-3.5 text-base text-[#062F24] placeholder:text-[#062F24]/35 focus:outline-none focus-visible:outline-none focus-visible:outline-0 disabled:cursor-not-allowed disabled:opacity-70";
+  "min-w-0 w-full max-w-full rounded border bg-[rgba(6,47,36,0.05)] px-4 py-3.5 text-base text-[#062F24] placeholder:text-[#062F24]/35 focus:outline-none focus-visible:outline-none focus-visible:outline-0 disabled:cursor-not-allowed disabled:opacity-70";
 const primaryButtonClass =
   "inline-flex w-full items-center justify-center gap-3 rounded px-6 py-4 text-base font-extrabold transition-all duration-300 hover:opacity-90 focus-visible:outline-none focus-visible:outline-0 disabled:cursor-not-allowed disabled:opacity-50";
 const secondaryButtonClass =

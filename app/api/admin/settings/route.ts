@@ -3,6 +3,10 @@ import { z, ZodError } from "zod";
 
 import { db } from "@/lib/db";
 import { getConfiguredCapacityForSlot } from "@/lib/reservations/capacity";
+import {
+  ensureSlotCapacitySettingsTable,
+  getReservationSettings,
+} from "@/lib/reservations/settings";
 import { dateOnlyToUtcDate, formatDateOnly, formatSlotTime } from "@/lib/reservations/time";
 import { generateReservationSlotsFromSettings } from "@/lib/reservations/slots";
 import { getAdminUser } from "@/lib/supabase/auth";
@@ -74,20 +78,9 @@ export async function GET() {
   if (unauthorized) return unauthorized;
 
   const [settings, closureDates] = await Promise.all([
-    db.settings.findUnique({
-      where: { id: 1 },
-      include: {
-        slotCapacities: {
-          orderBy: { reservationTime: "asc" },
-        },
-      },
-    }),
+    getReservationSettings(db, { orderedSlotCapacities: true }),
     db.closureDate.findMany({ orderBy: { date: "asc" } }),
   ]);
-
-  if (!settings) {
-    return errorResponse(500, "SETTINGS_NOT_FOUND", "Reservation settings are not configured.");
-  }
 
   return NextResponse.json({
     ok: true,
@@ -108,18 +101,7 @@ export async function PATCH(request: Request) {
 
   try {
     const payload = settingsSchema.parse(await request.json());
-    const current = await db.settings.findUnique({
-      where: { id: 1 },
-      include: {
-        slotCapacities: {
-          orderBy: { reservationTime: "asc" },
-        },
-      },
-    });
-
-    if (!current) {
-      return errorResponse(500, "SETTINGS_NOT_FOUND", "Reservation settings are not configured.");
-    }
+    const current = await getReservationSettings(db, { orderedSlotCapacities: true });
 
     const minPartySize = payload.minPartySize ?? current.minPartySize;
     const maxPartySize = payload.maxPartySize ?? current.maxPartySize;
@@ -164,6 +146,8 @@ export async function PATCH(request: Request) {
       });
 
       if (payload.slotCapacities) {
+        await ensureSlotCapacitySettingsTable(tx);
+
         await tx.slotCapacitySetting.deleteMany({
           where: { settingsId: current.id },
         });
@@ -178,19 +162,8 @@ export async function PATCH(request: Request) {
         });
       }
 
-      return tx.settings.findUnique({
-        where: { id: 1 },
-        include: {
-          slotCapacities: {
-            orderBy: { reservationTime: "asc" },
-          },
-        },
-      });
+      return getReservationSettings(tx, { orderedSlotCapacities: true });
     });
-
-    if (!settings) {
-      return errorResponse(500, "SETTINGS_NOT_FOUND", "Reservation settings are not configured.");
-    }
 
     return NextResponse.json({ ok: true, data: { settings: serializeSettings(settings) } });
   } catch (error) {

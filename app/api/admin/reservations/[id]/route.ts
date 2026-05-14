@@ -11,6 +11,7 @@ import {
   assertReservationSlot,
   assertPartySize,
 } from "@/lib/reservations/rules";
+import { getReservationSettings } from "@/lib/reservations/settings";
 import {
   dateOnlyToUtcDate,
   formatDateOnly,
@@ -87,12 +88,7 @@ export async function PATCH(
     const reservation = await db.$transaction(
       async (tx) => {
         const [settings, current] = await Promise.all([
-          tx.settings.findUnique({
-            where: { id: 1 },
-            include: {
-              slotCapacities: true,
-            },
-          }),
+          getReservationSettings(tx),
           tx.reservation.findUnique({
             where: { id },
             select: {
@@ -105,7 +101,6 @@ export async function PATCH(
           }),
         ]);
 
-        if (!settings) throw new Error("Reservation settings are not configured.");
         if (!current) return null;
 
         const nextDate = payload.date ?? formatDateOnly(current.reservationDate);

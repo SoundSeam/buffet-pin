@@ -17,6 +17,7 @@ import {
   todayInBusinessTimeZone,
 } from "@/lib/reservations/time";
 import { buildManagePath } from "@/lib/reservations/manage-link";
+import { getReservationSettings } from "@/lib/reservations/settings";
 import { generateManageToken } from "@/lib/reservations/tokens";
 import { sendReservationConfirmationSms } from "@/lib/sms";
 import { getAdminUser } from "@/lib/supabase/auth";
@@ -270,13 +271,7 @@ export async function POST(request: Request) {
     try {
       const reservation = await db.$transaction(
         async (tx) => {
-          const settings = await tx.settings.findUnique({
-            where: { id: 1 },
-            include: {
-              slotCapacities: true,
-            },
-          });
-          if (!settings) throw new Error("Reservation settings are not configured.");
+          const settings = await getReservationSettings(tx);
 
           await lockReservationSlot(tx, payload.date, payload.time);
 

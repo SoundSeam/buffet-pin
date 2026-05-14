@@ -3,6 +3,7 @@ import twilio from "twilio";
 
 import { db } from "@/lib/db";
 import { getSmsConfig } from "@/lib/env";
+import { ensureReminderDeliveryTrackingSchema } from "@/lib/reservations/reminder-schema";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -43,6 +44,8 @@ function isAuthorized(request: Request, params: Record<string, string>): boolean
 }
 
 export async function POST(request: Request) {
+  await ensureReminderDeliveryTrackingSchema(db);
+
   const formData = await request.formData();
   const params = toTwilioParams(formData);
 

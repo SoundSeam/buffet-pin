@@ -8,6 +8,7 @@ import {
 } from "@/lib/abuse-protection";
 import { db } from "@/lib/db";
 import { getCapacityBySlot } from "@/lib/reservations/capacity";
+import { getReservationSettings } from "@/lib/reservations/settings";
 import {
   ReservationRuleError,
   assertDateIsNotPast,
@@ -77,20 +78,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const settings = await db.settings.findUnique({
-      where: { id: 1 },
-      include: {
-        slotCapacities: true,
-      },
-    });
-
-    if (!settings) {
-      return errorResponse(
-        500,
-        "SETTINGS_NOT_FOUND",
-        "Reservation settings are not configured.",
-      );
-    }
+    const settings = await getReservationSettings(db);
 
     assertPartySize(settings, payload.partySize);
     assertDateIsNotPast(payload.date);

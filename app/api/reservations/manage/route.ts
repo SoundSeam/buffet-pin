@@ -9,6 +9,7 @@ import {
   assertPublicUpdateRules,
   getGuestModifyCutoff,
 } from "@/lib/reservations/rules";
+import { getReservationSettings } from "@/lib/reservations/settings";
 import {
   dateOnlyToUtcDate,
   formatDateOnly,
@@ -140,17 +141,9 @@ export async function GET(request: Request) {
   }
 
   const [settings, reservation] = await Promise.all([
-    db.settings.findUnique({ where: { id: 1 } }),
+    getReservationSettings(db, { includeSlotCapacities: false }),
     getReservationByToken(parsed.data.token),
   ]);
-
-  if (!settings) {
-    return errorResponse(
-      500,
-      "SETTINGS_NOT_FOUND",
-      "Reservation settings are not configured.",
-    );
-  }
 
   if (!reservation) {
     return errorResponse(404, "RESERVATION_NOT_FOUND", "Reservation not found.");
@@ -191,16 +184,7 @@ export async function PATCH(request: Request) {
     try {
       const updatedReservation = await db.$transaction(
         async (tx) => {
-          const settings = await tx.settings.findUnique({
-            where: { id: 1 },
-            include: {
-              slotCapacities: true,
-            },
-          });
-
-          if (!settings) {
-            throw new Error("Reservation settings are not configured.");
-          }
+          const settings = await getReservationSettings(tx);
 
           const reservation = await tx.reservation.findUnique({
             where: { manageToken: payload.token },
@@ -281,15 +265,7 @@ export async function PATCH(request: Request) {
         return errorResponse(404, "RESERVATION_NOT_FOUND", "Reservation not found.");
       }
 
-      const settings = await db.settings.findUnique({ where: { id: 1 } });
-
-      if (!settings) {
-        return errorResponse(
-          500,
-          "SETTINGS_NOT_FOUND",
-          "Reservation settings are not configured.",
-        );
-      }
+      const settings = await getReservationSettings(db, { includeSlotCapacities: false });
 
       const cutoffAt = getGuestModifyCutoff(settings, updatedReservation.reservationAt);
 
@@ -342,11 +318,7 @@ export async function DELETE(request: Request) {
 
   try {
     const cancelledReservation = await db.$transaction(async (tx) => {
-      const settings = await tx.settings.findUnique({ where: { id: 1 } });
-
-      if (!settings) {
-        throw new Error("Reservation settings are not configured.");
-      }
+      const settings = await getReservationSettings(tx, { includeSlotCapacities: false });
 
       const reservation = await tx.reservation.findUnique({
         where: { manageToken: parsed.data.token },
@@ -398,15 +370,7 @@ export async function DELETE(request: Request) {
       return errorResponse(404, "RESERVATION_NOT_FOUND", "Reservation not found.");
     }
 
-    const settings = await db.settings.findUnique({ where: { id: 1 } });
-
-    if (!settings) {
-      return errorResponse(
-        500,
-        "SETTINGS_NOT_FOUND",
-        "Reservation settings are not configured.",
-      );
-    }
+    const settings = await getReservationSettings(db, { includeSlotCapacities: false });
 
     const cutoffAt = getGuestModifyCutoff(settings, cancelledReservation.reservationAt);
 
