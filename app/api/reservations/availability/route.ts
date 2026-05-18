@@ -16,6 +16,7 @@ import {
   assertPartySize,
 } from "@/lib/reservations/rules";
 import { generateReservationSlotsFromSettings } from "@/lib/reservations/slots";
+import { isLocalSlotAtLeastLeadTimeAway } from "@/lib/reservations/time";
 import {
   type PublicAvailabilityPayload,
   publicAvailabilityPayloadSchema,
@@ -79,9 +80,10 @@ export async function POST(request: Request) {
 
   try {
     const settings = await getReservationSettings(db);
+    const now = new Date();
 
     assertPartySize(settings, payload.partySize);
-    assertDateIsNotPast(payload.date);
+    assertDateIsNotPast(payload.date, now);
     await assertDateIsOpen(db, payload.date);
 
     const reservationTimes = generateReservationSlotsFromSettings(settings);
@@ -97,6 +99,9 @@ export async function POST(request: Request) {
         partySize: payload.partySize,
         slots: slots
           .filter((slot) => slot.remainingCapacity >= payload.partySize)
+          .filter((slot) =>
+            isLocalSlotAtLeastLeadTimeAway(payload.date, slot.reservationTime, now),
+          )
           .map((slot) => ({
             time: slot.reservationTime,
             remainingCapacity: slot.remainingCapacity,

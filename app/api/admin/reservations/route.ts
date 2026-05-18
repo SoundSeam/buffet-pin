@@ -293,6 +293,8 @@ export async function POST(request: Request) {
       const reservation = await db.$transaction(
         async (tx) => {
           const settings = await getReservationSettings(tx);
+          const now = new Date();
+          const reservationAt = reservationAtFromLocalSlot(payload.date, payload.time);
 
           await lockReservationSlot(tx, payload.date, payload.time);
 
@@ -300,6 +302,8 @@ export async function POST(request: Request) {
             reservationDate: payload.date,
             reservationTime: payload.time,
             partySize: payload.partySize,
+            reservationAt,
+            now,
           });
 
           return tx.reservation.create({
@@ -309,7 +313,7 @@ export async function POST(request: Request) {
               status: ReservationStatus.CONFIRMED,
               reservationDate: dateOnlyToUtcDate(payload.date),
               reservationTime: timeOnlyToUtcDate(payload.time),
-              reservationAt: reservationAtFromLocalSlot(payload.date, payload.time),
+              reservationAt,
               partySize: payload.partySize,
               guestName: payload.name,
               guestPhone: payload.phone,

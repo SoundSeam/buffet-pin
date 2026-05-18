@@ -10,7 +10,10 @@ import {
   dateOnlyToUtcDate,
   guestModifyCutoffAt,
   isBeforeGuestModifyCutoff,
+  isReservationAtLeastLeadTimeAway,
   isLocalDateInPast,
+  reservationAtFromLocalSlot,
+  RESERVATION_LEAD_TIME_HOURS,
 } from "./time";
 
 export type ReservationRuleCode =
@@ -18,6 +21,7 @@ export type ReservationRuleCode =
   | "INVALID_PARTY_SIZE"
   | "PAST_DATE"
   | "CLOSED_DATE"
+  | "BOOKING_LEAD_TIME"
   | "MODIFY_CUTOFF_PASSED"
   | "INSUFFICIENT_CAPACITY";
 
@@ -80,6 +84,18 @@ export function assertDateIsNotPast(
     throw new ReservationRuleError(
       "PAST_DATE",
       "Reservation date cannot be in the past.",
+    );
+  }
+}
+
+export function assertReservationLeadTime(
+  reservationAt: Date,
+  now = new Date(),
+): void {
+  if (!isReservationAtLeastLeadTimeAway(reservationAt, now)) {
+    throw new ReservationRuleError(
+      "BOOKING_LEAD_TIME",
+      `Reservations must be made at least ${RESERVATION_LEAD_TIME_HOURS} hours in advance.`,
     );
   }
 }
@@ -165,12 +181,18 @@ export async function assertPublicBookingRules(
     reservationDate: string;
     reservationTime: string;
     partySize: number;
+    reservationAt?: Date;
     now?: Date;
   },
 ): Promise<void> {
+  const reservationAt =
+    query.reservationAt ??
+    reservationAtFromLocalSlot(query.reservationDate, query.reservationTime);
+
   assertReservationSlot(settings, query.reservationTime);
   assertPartySize(settings, query.partySize);
   assertDateIsNotPast(query.reservationDate, query.now);
+  assertReservationLeadTime(reservationAt, query.now);
   await assertDateIsOpen(db, query.reservationDate);
   await assertCapacityForParty(db, settings, query);
 }
@@ -196,6 +218,7 @@ export async function assertPublicUpdateRules(
   // Guest edits must still be allowed on the current reservation, and any
   // rescheduled slot must also remain outside the guest modification cutoff.
   if (proposedReservationAt.getTime() !== query.currentReservationAt.getTime()) {
+    assertReservationLeadTime(proposedReservationAt, query.now);
     assertBeforeGuestModifyCutoff(settings, proposedReservationAt, query.now);
   }
 

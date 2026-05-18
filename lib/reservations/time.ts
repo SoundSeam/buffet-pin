@@ -1,4 +1,5 @@
 export const BUSINESS_TIME_ZONE = "America/Montreal";
+export const RESERVATION_LEAD_TIME_HOURS = 2;
 
 export const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 export const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
@@ -154,6 +155,34 @@ export function reservationAtFromLocalSlot(date: string, time: string): Date {
   }
 
   return new Date(timestamp);
+}
+
+export function bookingLeadTimeCutoff(
+  now = new Date(),
+  leadTimeHours = RESERVATION_LEAD_TIME_HOURS,
+): Date {
+  return new Date(now.getTime() + leadTimeHours * 60 * 60 * 1000);
+}
+
+export function isReservationAtLeastLeadTimeAway(
+  reservationAt: Date,
+  now = new Date(),
+  leadTimeHours = RESERVATION_LEAD_TIME_HOURS,
+): boolean {
+  return reservationAt.getTime() >= bookingLeadTimeCutoff(now, leadTimeHours).getTime();
+}
+
+export function isLocalSlotAtLeastLeadTimeAway(
+  date: string,
+  time: string,
+  now = new Date(),
+  leadTimeHours = RESERVATION_LEAD_TIME_HOURS,
+): boolean {
+  return isReservationAtLeastLeadTimeAway(
+    reservationAtFromLocalSlot(date, time),
+    now,
+    leadTimeHours,
+  );
 }
 
 export function guestModifyCutoffAt(

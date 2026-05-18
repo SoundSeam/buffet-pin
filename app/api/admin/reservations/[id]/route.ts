@@ -8,6 +8,7 @@ import {
   assertCapacityForParty,
   assertDateIsNotPast,
   assertDateIsOpen,
+  assertReservationLeadTime,
   assertReservationSlot,
   assertPartySize,
 } from "@/lib/reservations/rules";
@@ -102,20 +103,28 @@ export async function PATCH(
         ]);
 
         if (!current) return null;
+        const now = new Date();
 
         const nextDate = payload.date ?? formatDateOnly(current.reservationDate);
         const nextTime = payload.time ?? formatSlotTime(current.reservationTime);
         const nextPartySize = payload.partySize ?? current.partySize;
-        const dateTimeChanged =
+        const reservationTimeChanged =
           nextDate !== formatDateOnly(current.reservationDate) ||
-          nextTime !== formatSlotTime(current.reservationTime) ||
-          nextPartySize !== current.partySize;
+          nextTime !== formatSlotTime(current.reservationTime);
+        const reservationConstraintsChanged =
+          reservationTimeChanged || nextPartySize !== current.partySize;
 
-        if (dateTimeChanged) {
+        if (reservationConstraintsChanged) {
           await lockReservationSlot(tx, nextDate, nextTime);
           assertReservationSlot(settings, nextTime);
           assertPartySize(settings, nextPartySize);
-          assertDateIsNotPast(nextDate);
+          assertDateIsNotPast(nextDate, now);
+          if (reservationTimeChanged) {
+            assertReservationLeadTime(
+              reservationAtFromLocalSlot(nextDate, nextTime),
+              now,
+            );
+          }
           await assertDateIsOpen(tx, nextDate);
           await assertCapacityForParty(tx, settings, {
             reservationDate: nextDate,
@@ -137,7 +146,7 @@ export async function PATCH(
         return tx.reservation.update({
           where: { id },
           data: {
-            ...(dateTimeChanged
+            ...(reservationConstraintsChanged
               ? {
                   reservationDate: dateOnlyToUtcDate(nextDate),
                   reservationTime: timeOnlyToUtcDate(nextTime),

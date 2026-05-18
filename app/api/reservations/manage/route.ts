@@ -185,6 +185,7 @@ export async function PATCH(request: Request) {
       const updatedReservation = await db.$transaction(
         async (tx) => {
           const settings = await getReservationSettings(tx);
+          const now = new Date();
 
           const reservation = await tx.reservation.findUnique({
             where: { manageToken: payload.token },
@@ -223,6 +224,7 @@ export async function PATCH(request: Request) {
             currentReservationAt: reservation.reservationAt,
             nextReservationAt,
             partySize: nextPartySize,
+            now,
           });
 
           return tx.reservation.update({
