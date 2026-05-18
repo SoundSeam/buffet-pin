@@ -303,7 +303,8 @@ export const translations = {
         weekdaysShort: ["Di", "Lu", "Ma", "Me", "Je", "Ve", "Sa"],
         timeLabel: "Heure",
         availableTimes: "Heures disponibles",
-        availabilityHelp: "Les réservations en ligne sont offertes de 16 h 30 à 20 h.",
+        availabilityHelp:
+          "Les réservations en ligne sont offertes de 11 h 30 à 13 h 30 et de 16 h 30 à 20 h.",
         availabilityLoading: "Vérification des disponibilités...",
         availabilityError: "Impossible de charger les disponibilités. Veuillez réessayer.",
         noSlots: "Aucune plage disponible pour cette date et ce nombre de convives.",
@@ -834,7 +835,8 @@ export const translations = {
         weekdaysShort: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
         timeLabel: "Time",
         availableTimes: "Available times",
-        availabilityHelp: "Online reservations are available from 4:30pm to 8pm.",
+        availabilityHelp:
+          "Online reservations are available from 11:30am to 1:30pm and from 4:30pm to 8pm.",
         availabilityLoading: "Checking availability...",
         availabilityError: "Unable to load availability. Please try again.",
         noSlots: "No slots are available for this date and party size.",

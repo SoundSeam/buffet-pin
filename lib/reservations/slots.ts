@@ -1,11 +1,5 @@
 import type { Settings } from "@prisma/client";
 
-import {
-  formatSlotTime,
-  minutesFromSlotTime,
-  slotTimeFromMinutes,
-} from "./time";
-
 export type SlotSettings = Pick<
   Settings,
   "firstSlot" | "lastSlot" | "slotIntervalMinutes"
@@ -17,65 +11,62 @@ export type NormalizedSlotSettings = {
   slotIntervalMinutes: number;
 };
 
+// Reservations run in two service windows, so slot validation uses an explicit
+// app-wide list instead of deriving a continuous range from first/last slot.
+export const RESERVATION_SLOT_TIMES = [
+  "11:30",
+  "12:00",
+  "12:30",
+  "13:00",
+  "13:30",
+  "16:30",
+  "17:00",
+  "17:30",
+  "18:00",
+  "18:30",
+  "19:00",
+  "19:30",
+  "20:00",
+] as const;
+
 export const DEFAULT_SLOT_SETTINGS: NormalizedSlotSettings = {
-  firstSlot: "16:30",
+  firstSlot: "11:30",
   lastSlot: "20:00",
   slotIntervalMinutes: 30,
 };
 
 export function normalizeSlotSettings(
-  settings: SlotSettings,
+  _settings: SlotSettings,
 ): NormalizedSlotSettings {
-  return {
-    firstSlot: formatSlotTime(settings.firstSlot),
-    lastSlot: formatSlotTime(settings.lastSlot),
-    slotIntervalMinutes: settings.slotIntervalMinutes,
-  };
+  return DEFAULT_SLOT_SETTINGS;
 }
 
 export function generateReservationSlots(
-  settings: NormalizedSlotSettings,
+  _settings: NormalizedSlotSettings,
 ): string[] {
-  const first = minutesFromSlotTime(settings.firstSlot);
-  const last = minutesFromSlotTime(settings.lastSlot);
-
-  if (settings.slotIntervalMinutes <= 0) {
-    throw new Error("Slot interval must be greater than zero");
-  }
-
-  if (first > last) {
-    throw new Error("First slot must be before or equal to last slot");
-  }
-
-  const slots: string[] = [];
-
-  for (
-    let minutes = first;
-    minutes <= last;
-    minutes += settings.slotIntervalMinutes
-  ) {
-    slots.push(slotTimeFromMinutes(minutes));
-  }
-
-  return slots;
+  return [...RESERVATION_SLOT_TIMES];
 }
 
 export function generateReservationSlotsFromSettings(
-  settings: SlotSettings,
+  _settings: SlotSettings,
 ): string[] {
-  return generateReservationSlots(normalizeSlotSettings(settings));
+  return [...RESERVATION_SLOT_TIMES];
 }
 
 export function isReservationSlot(
   time: string,
-  settings: NormalizedSlotSettings,
+  _settings: NormalizedSlotSettings,
 ): boolean {
-  return generateReservationSlots(settings).includes(time);
+  return RESERVATION_SLOT_TIMES.includes(
+    time as (typeof RESERVATION_SLOT_TIMES)[number],
+  );
 }
 
 export function isReservationSlotForSettings(
   time: string,
-  settings: SlotSettings,
+  _settings: SlotSettings,
 ): boolean {
-  return isReservationSlot(time, normalizeSlotSettings(settings));
+  return RESERVATION_SLOT_TIMES.includes(
+    time as (typeof RESERVATION_SLOT_TIMES)[number],
+  );
 }

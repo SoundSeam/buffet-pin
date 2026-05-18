@@ -17,6 +17,7 @@ import {
 
 import { useTranslation } from "@/components/providers/language-provider";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { RESERVATION_SLOT_TIMES } from "@/lib/reservations/slots";
 import ModalShell from "@/components/a11y/modal-shell";
 
 type AdminReservationStatus =
@@ -97,12 +98,7 @@ const dangerButtonStyle = {
 };
 const POLL_INTERVAL_MS = 15000;
 
-const slotTimes = Array.from({ length: 11 }, (_, index) => {
-  const totalMinutes = 16 * 60 + index * 30;
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = totalMinutes % 60;
-  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
-});
+const slotTimes: string[] = [...RESERVATION_SLOT_TIMES];
 
 const statusSurfaceMeta: Record<
   AdminReservationStatus,
@@ -472,7 +468,7 @@ export default function AdminReservationsDashboard() {
   const [activityItems, setActivityItems] = useState<ReservationActivity[]>([]);
   const [form, setForm] = useState({
     date: today(),
-    time: "16:30",
+    time: slotTimes[0],
     partySize: 6,
     name: "",
     phone: "",
