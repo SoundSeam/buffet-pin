@@ -187,7 +187,7 @@ function MessageBox({
 
   if (tone === "info") {
     return (
-      <div className={`flex items-start gap-3 rounded-surface border px-4 py-4 ${textClass}`} style={style}>
+      <div className={`flex items-start gap-3 rounded-button border px-4 py-4 ${textClass}`} style={style}>
         <Info
           size={16}
           className="mt-1 shrink-0"
@@ -200,7 +200,7 @@ function MessageBox({
   }
 
   return (
-    <p className={`rounded-surface border px-4 py-4 ${textClass}`} style={style}>
+    <p className={`rounded-button border px-4 py-4 ${textClass}`} style={style}>
       {children}
     </p>
   );

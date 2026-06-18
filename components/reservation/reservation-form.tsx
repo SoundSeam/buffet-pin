@@ -176,7 +176,7 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 function InfoNotice({ children }: { children: string }) {
   return (
     <div
-      className="flex items-start gap-3 rounded-surface border px-4 py-3.5 text-xs leading-relaxed"
+      className="flex items-start gap-3 rounded-button border px-4 py-3.5 text-xs leading-relaxed"
       style={{
         borderColor: "rgba(6,47,36,0.12)",
         color: "rgba(6,47,36,0.72)",
