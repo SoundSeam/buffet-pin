@@ -183,7 +183,7 @@ export default function MenuSections() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, amount: 0.4 }}
                     transition={{ duration: 0.4, delay: itemIndex * 0.04 }}
-                    className="overflow-hidden rounded border shadow-[0_20px_48px_rgba(0,0,0,0.35)]"
+                    className="overflow-hidden rounded-surface border shadow-[0_20px_48px_rgba(0,0,0,0.35)]"
                     style={{
                       borderColor: "rgba(201,165,106,0.45)",
                       background: "#05140F",

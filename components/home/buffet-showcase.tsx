@@ -66,7 +66,7 @@ export default function BuffetShowcase() {
             <button
               type="button"
               onClick={goPrevious}
-              className="absolute left-0 top-1/2 z-40 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border transition-colors duration-300 hover:bg-[#C9A56A]/10 sm:left-3 sm:h-16 sm:w-16 lg:left-4 lg:h-20 lg:w-20"
+              className="absolute left-0 top-1/2 z-40 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-icon border transition-colors duration-300 hover:bg-[#C9A56A]/10 sm:left-3 sm:h-16 sm:w-16 lg:left-4 lg:h-20 lg:w-20"
               style={{ borderColor: "rgba(201,165,106,0.32)", color: "#C9A56A", background: "rgba(5,20,15,0.88)" }}
               aria-label={copy.home.buffetShowcase.previousDish}
             >
@@ -92,7 +92,7 @@ export default function BuffetShowcase() {
                   }}
                   transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
                   onClick={() => setActiveIndex(dish.index)}
-                  className="absolute left-1/2 top-0 h-full w-[min(13.5rem,calc(100vw-7rem))] overflow-hidden rounded border text-left shadow-[0_20px_48px_rgba(0,0,0,0.35)] sm:w-[15.5rem] lg:w-[17.25rem]"
+                  className="absolute left-1/2 top-0 h-full w-[min(13.5rem,calc(100vw-7rem))] overflow-hidden rounded-surface border text-left shadow-[0_20px_48px_rgba(0,0,0,0.35)] sm:w-[15.5rem] lg:w-[17.25rem]"
                   style={{
                     zIndex,
                     borderColor: dish.isActive ? "rgba(201,165,106,0.45)" : "rgba(201,165,106,0.14)",
@@ -134,7 +134,7 @@ export default function BuffetShowcase() {
             <button
               type="button"
               onClick={goNext}
-              className="absolute right-0 top-1/2 z-40 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border transition-colors duration-300 hover:bg-[#C9A56A]/10 sm:right-3 sm:h-16 sm:w-16 lg:right-4 lg:h-20 lg:w-20"
+              className="absolute right-0 top-1/2 z-40 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-icon border transition-colors duration-300 hover:bg-[#C9A56A]/10 sm:right-3 sm:h-16 sm:w-16 lg:right-4 lg:h-20 lg:w-20"
               style={{ borderColor: "rgba(201,165,106,0.32)", color: "#C9A56A", background: "rgba(5,20,15,0.88)" }}
               aria-label={copy.home.buffetShowcase.nextDish}
             >

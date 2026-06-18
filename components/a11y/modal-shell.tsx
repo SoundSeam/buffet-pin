@@ -94,7 +94,7 @@ export default function ModalShell({
         aria-modal="true"
         aria-labelledby={labelledBy}
         tabIndex={-1}
-        className={`modal-panel max-h-[92vh] w-full overflow-y-auto rounded bg-[#F8F5EE] p-6 shadow-2xl ${panelClassName}`}
+        className={`modal-panel max-h-[92vh] w-full overflow-y-auto rounded-surface-lg bg-[#F8F5EE] p-6 shadow-2xl ${panelClassName}`}
         onKeyDown={trapFocus}
         onMouseDown={(event) => event.stopPropagation()}
       >

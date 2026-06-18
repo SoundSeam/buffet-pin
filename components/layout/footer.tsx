@@ -29,6 +29,8 @@ export default function Footer() {
                   <a
                     key={link.label}
                     href={link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     aria-label={link.ariaLabel}
                     className="inline-flex items-center gap-3 transition-all duration-300 hover:opacity-80"
                     style={{ color: "#C9A56A" }}

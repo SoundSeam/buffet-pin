@@ -8,6 +8,7 @@ import {
   Calendar,
   CheckCircle2,
   Clock,
+  Info,
   Loader2,
   Mail,
   MessageSquare,
@@ -63,13 +64,13 @@ type ApiErrorResponse = {
 const PARTY_SIZES = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 
 const panelClass =
-  "rounded border border-[rgba(6,47,36,0.08)] bg-white p-6 shadow-sm sm:p-8 lg:p-10";
+  "rounded-surface border border-[rgba(6,47,36,0.08)] bg-white p-6 shadow-sm sm:p-8 lg:p-10";
 const fieldClass =
-  "min-w-0 w-full max-w-full rounded border bg-[rgba(6,47,36,0.05)] px-4 py-3.5 text-base text-[#062F24] placeholder:text-[#062F24]/35 focus:outline-none focus-visible:outline-none focus-visible:outline-0 disabled:cursor-not-allowed disabled:opacity-70";
+  "min-w-0 w-full max-w-full rounded-button border bg-[rgba(6,47,36,0.05)] px-4 py-3.5 text-base text-[#062F24] placeholder:text-[#062F24]/35 focus:outline-none focus-visible:outline-none focus-visible:outline-0 disabled:cursor-not-allowed disabled:opacity-70";
 const primaryButtonClass =
-  "inline-flex w-full items-center justify-center gap-3 rounded px-6 py-4 text-base font-extrabold transition-all duration-300 hover:opacity-90 focus-visible:outline-none focus-visible:outline-0 disabled:cursor-not-allowed disabled:opacity-50";
+  "inline-flex w-full items-center justify-center gap-3 rounded-button px-6 py-4 text-base font-extrabold transition-all duration-300 hover:opacity-90 focus-visible:outline-none focus-visible:outline-0 disabled:cursor-not-allowed disabled:opacity-50";
 const secondaryButtonClass =
-  "inline-flex w-full items-center justify-center rounded border px-6 py-4 text-base font-semibold transition-all duration-300 hover:bg-[rgba(6,47,36,0.03)] focus-visible:outline-none focus-visible:outline-0";
+  "inline-flex w-full items-center justify-center rounded-button border px-6 py-4 text-base font-semibold transition-all duration-300 hover:bg-[rgba(6,47,36,0.03)] focus-visible:outline-none focus-visible:outline-0";
 
 function formatDisplayDate(value: string, language: "fr" | "en") {
   const [year, month, day] = value.split("-").map(Number);
@@ -157,11 +158,14 @@ function FieldLabel({
 
 function MessageBox({
   tone,
+  size = "default",
   children,
 }: {
   tone: "error" | "info" | "success";
+  size?: "default" | "small";
   children: string;
 }) {
+  const textClass = size === "small" ? "text-xs leading-relaxed" : "text-sm leading-7";
   const style =
     tone === "error"
       ? {
@@ -177,19 +181,33 @@ function MessageBox({
           }
         : {
             borderColor: "rgba(6,47,36,0.12)",
-            color: "rgba(6,47,36,0.66)",
+            color: "rgba(6,47,36,0.72)",
             background: "rgba(6,47,36,0.04)",
           };
 
+  if (tone === "info") {
+    return (
+      <div className={`flex items-start gap-3 rounded-surface border px-4 py-4 ${textClass}`} style={style}>
+        <Info
+          size={16}
+          className="mt-1 shrink-0"
+          style={{ color: "rgba(6,47,36,0.66)" }}
+          aria-hidden="true"
+        />
+        <span>{children}</span>
+      </div>
+    );
+  }
+
   return (
-    <p className="rounded border px-4 py-4 text-sm leading-7" style={style}>
+    <p className={`rounded-surface border px-4 py-4 ${textClass}`} style={style}>
       {children}
     </p>
   );
 }
 
 export default function ManageReservationPage({ token }: { token: string }) {
-  const { language } = useTranslation();
+  const { language, copy } = useTranslation();
   const [reservation, setReservation] = useState<ManagedReservation | null>(null);
   const [form, setForm] = useState<FormState | null>(null);
   const [slots, setSlots] = useState<AvailabilitySlot[]>([]);
@@ -493,6 +511,14 @@ export default function ManageReservationPage({ token }: { token: string }) {
                 ) : null}
                 <DetailRow label="Status" value={reservation.status} />
               </div>
+
+              {reservation.partySize >= 6 ? (
+                <div className="mt-6">
+                  <MessageBox tone="info" size="small">
+                    {copy.reservation.form.serviceFeeNotice}
+                  </MessageBox>
+                </div>
+              ) : null}
             </div>
 
             <div className="space-y-6">
@@ -562,6 +588,14 @@ export default function ManageReservationPage({ token }: { token: string }) {
                       ))}
                     </select>
                   </label>
+
+                  {form.partySize >= 6 ? (
+                    <div className="sm:col-span-2">
+                      <MessageBox tone="info" size="small">
+                        {copy.reservation.form.serviceFeeNotice}
+                      </MessageBox>
+                    </div>
+                  ) : null}
 
                   <label className="block focus-within:shadow-none">
                     <FieldLabel icon={CheckCircle2}>Name</FieldLabel>

@@ -22,8 +22,8 @@ export const translations = {
       address: "Adresse",
       contact: "Contact",
       socialLinks: [
-        { label: "Facebook", href: "#", ariaLabel: "Facebook" },
-        { label: "Instagram", href: "#", ariaLabel: "Instagram" },
+        { label: "Facebook", href: "https://www.facebook.com/people/Buffet-Pin/61573275658022/", ariaLabel: "Facebook" },
+        { label: "Instagram", href: "https://www.instagram.com/buffet.pin/", ariaLabel: "Instagram" },
       ],
       addressLines: ["90 Boulevard Saint Jean Baptiste #3", "Châteauguay, Québec J6K 3A6"],
       contactLinks: [
@@ -39,7 +39,7 @@ export const translations = {
         titleTop: "Buffet asiatique à volonté",
         titleBottom: "de Châteauguay",
         description:
-          "Buffet Pin est un restaurant asiatique à volonté situé à Châteauguay. Apportez votre vin.",
+          "Buffet Pin est un buffet asiatique à volonté à Châteauguay où vous pouvez apporter votre vin, avec sushis, nouilles sautées, plats chauds et desserts dans une salle à manger chaleureuse.",
         locationCta: "Nous trouver",
         reservationCta: "Réserver votre table",
       },
@@ -135,7 +135,7 @@ export const translations = {
             alt: "Assortiment asiatique avec dim sum et plats wok",
           },
         ],
-        title: "RÉSERVEZ VOTRE TABLE",
+        title: "Réservez votre table",
         description: "et venez vivre un moment gourmand unique.",
         cta: "Réserver maintenant",
       },
@@ -283,6 +283,8 @@ export const translations = {
         partySizeLabel: "Combien de convives?",
         partySizeHint: "Les réservations en ligne sont offertes pour 6 à 15 personnes.",
         partySizeNote: "Pour les groupes de plus de 15 personnes, veuillez nous appeler directement.",
+        serviceFeeNotice:
+          "Pour les groupes de 6 personnes ou plus, des frais de service de 15 % peuvent être ajoutés afin de nous aider à bien prendre soin des grandes tablées.",
         dateLabel: "Date",
         previousMonth: "Mois précédent",
         nextMonth: "Mois suivant",
@@ -554,8 +556,8 @@ export const translations = {
       address: "Address",
       contact: "Contact",
       socialLinks: [
-        { label: "Facebook", href: "#", ariaLabel: "Facebook" },
-        { label: "Instagram", href: "#", ariaLabel: "Instagram" },
+        { label: "Facebook", href: "https://www.facebook.com/people/Buffet-Pin/61573275658022/", ariaLabel: "Facebook" },
+        { label: "Instagram", href: "https://www.instagram.com/buffet.pin/", ariaLabel: "Instagram" },
       ],
       addressLines: ["90 Boulevard Saint Jean Baptiste #3", "Chateauguay, Quebec J6K 3A6"],
       contactLinks: [
@@ -815,6 +817,8 @@ export const translations = {
         partySizeLabel: "How many guests?",
         partySizeHint: "Online reservations are available for 6 to 15 guests.",
         partySizeNote: "For parties over 15 guests, please call us directly.",
+        serviceFeeNotice:
+          "For groups of 6 or more, a 15% service fee may be added to help us take good care of larger tables.",
         dateLabel: "Date",
         previousMonth: "Previous month",
         nextMonth: "Next month",

@@ -16,6 +16,14 @@ const config: Config = {
         muted: "hsl(var(--muted))",
         accent: "hsl(var(--accent))",
       },
+      borderRadius: {
+        // Source: the public order Review cart button originally used Tailwind rounded-lg (0.5rem / 8px).
+        button: "var(--radius-button)",
+        icon: "var(--radius-button-compact)",
+        "button-group": "var(--radius-button-group)",
+        surface: "var(--radius-surface)",
+        "surface-lg": "var(--radius-surface-lg)",
+      },
     },
   },
   plugins: [],

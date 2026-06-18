@@ -21,46 +21,118 @@ enum ReservationLanguage {
   FR
 }
 
+enum OrderServiceType {
+  PICKUP
+  DELIVERY
+}
+
+enum OrderPaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+enum OrderRefundStatus {
+  NOT_REQUIRED
+  REQUIRED
+  PENDING
+  SUCCEEDED
+  PARTIAL
+  FAILED
+}
+
+enum OrderFulfillmentStatus {
+  DRAFT
+  AWAITING_PAYMENT
+  AWAITING_ACCEPTANCE
+  ACCEPTED
+  PREPARING
+  READY_FOR_PICKUP
+  DRIVER_ASSIGNED
+  PICKED_UP
+  ON_THE_WAY
+  ARRIVING_SOON
+  DELIVERED
+  REJECTED
+  CANCELLED
+}
+
+enum PaymentProvider {
+  CLOVER
+}
+
+enum NotificationChannel {
+  SMS
+  EMAIL
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  DELIVERED
+  FAILED
+  SKIPPED
+}
+
+enum OrderActorType {
+  CUSTOMER
+  ADMIN
+  DRIVER
+  SYSTEM
+  WEBHOOK
+}
+
+enum DriverAssignmentStatus {
+  ASSIGNED
+  PICKED_UP
+  ON_THE_WAY
+  ARRIVING_SOON
+  DELIVERED
+  CANCELLED
+}
+
 model Reservation {
-  id                 String              @id @default(cuid())
-  confirmationCode   String              @unique
-  manageToken        String              @unique
-  status             ReservationStatus   @default(PENDING)
-  reservationDate    DateTime            @db.Date
-  reservationTime    DateTime            @db.Time(0)
-  reservationAt      DateTime
-  partySize          Int
-  guestName          String
-  guestPhone         String
-  guestEmail         String?
-  language           ReservationLanguage @default(FR)
-  specialRequests    String?
-  internalNotes      String?
-  confirmationSentAt DateTime?
+  id                    String              @id @default(cuid())
+  confirmationCode      String              @unique
+  manageToken           String              @unique
+  status                ReservationStatus   @default(PENDING)
+  reservationDate       DateTime            @db.Date
+  reservationTime       DateTime            @db.Time(0)
+  reservationAt         DateTime
+  partySize             Int
+  guestName             String
+  guestPhone            String
+  guestEmail            String?
+  language              ReservationLanguage @default(FR)
+  specialRequests       String?
+  internalNotes         String?
+  confirmationSentAt    DateTime?
   reminderLastAttemptAt DateTime?
-  reminderMessageSid String?             @unique
-  reminderStatus     String?
-  reminderSentAt     DateTime?
-  cancelledAt        DateTime?
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
+  reminderMessageSid    String?             @unique
+  reminderStatus        String?
+  reminderSentAt        DateTime?
+  cancelledAt           DateTime?
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
 
   @@index([reservationDate, reservationTime])
   @@index([status])
 }
 
 model Settings {
-  id                     Int      @id @default(1)
-  slotCapacityGuests     Int      @default(24)
+  id                     Int                   @id @default(1)
+  slotCapacityGuests     Int                   @default(24)
   minPartySize           Int
   maxPartySize           Int
-  firstSlot              DateTime @db.Time(0)
-  lastSlot               DateTime @db.Time(0)
+  firstSlot              DateTime              @db.Time(0)
+  lastSlot               DateTime              @db.Time(0)
   slotIntervalMinutes    Int
   guestModifyCutoffHours Int
   slotCapacities         SlotCapacitySetting[]
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime @updatedAt
+  createdAt              DateTime              @default(now())
+  updatedAt              DateTime              @updatedAt
 }
 
 model SlotCapacitySetting {
@@ -85,14 +157,402 @@ model ClosureDate {
 }
 
 model PublicApiRateLimit {
-  scope          String
-  identifierHash String
-  hitCount       Int      @default(1)
+  scope           String
+  identifierHash  String
+  hitCount        Int      @default(1)
   windowStartedAt DateTime
-  expiresAt      DateTime
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  expiresAt       DateTime
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   @@id([scope, identifierHash])
   @@index([expiresAt])
+}
+
+model MenuCategory {
+  id          String     @id @default(cuid())
+  name        String
+  description String?
+  sortOrder   Int        @default(0)
+  isActive    Boolean    @default(true)
+  items       MenuItem[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([isActive, sortOrder])
+}
+
+model MenuItem {
+  id             String                  @id @default(cuid())
+  categoryId     String
+  category       MenuCategory            @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  name           String
+  description    String?
+  priceCents     Int
+  imageUrl       String?
+  sortOrder      Int                     @default(0)
+  isAvailable    Boolean                 @default(true)
+  isActive       Boolean                 @default(true)
+  modifierGroups MenuItemModifierGroup[]
+  orderItems     OrderItem[]
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+
+  @@index([categoryId, sortOrder])
+  @@index([isAvailable, isActive])
+}
+
+model ModifierGroup {
+  id            String                  @id @default(cuid())
+  name          String
+  description   String?
+  minSelections Int                     @default(0)
+  maxSelections Int                     @default(1)
+  isRequired    Boolean                 @default(false)
+  sortOrder     Int                     @default(0)
+  isActive      Boolean                 @default(true)
+  options       ModifierOption[]
+  menuItems     MenuItemModifierGroup[]
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
+
+  @@index([isActive, sortOrder])
+}
+
+model ModifierOption {
+  id              String              @id @default(cuid())
+  modifierGroupId String
+  modifierGroup   ModifierGroup       @relation(fields: [modifierGroupId], references: [id], onDelete: Restrict)
+  name            String
+  priceDeltaCents Int                 @default(0)
+  sortOrder       Int                 @default(0)
+  isAvailable     Boolean             @default(true)
+  isActive        Boolean             @default(true)
+  orderModifiers  OrderItemModifier[]
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@index([modifierGroupId, sortOrder])
+  @@index([isAvailable, isActive])
+}
+
+model MenuItemModifierGroup {
+  id              String        @id @default(cuid())
+  menuItemId      String
+  menuItem        MenuItem      @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  modifierGroupId String
+  modifierGroup   ModifierGroup @relation(fields: [modifierGroupId], references: [id], onDelete: Restrict)
+  sortOrder       Int           @default(0)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@unique([menuItemId, modifierGroupId])
+  @@index([menuItemId, sortOrder])
+}
+
+model Customer {
+  id        String              @id @default(cuid())
+  name      String
+  phone     String
+  email     String?
+  language  ReservationLanguage @default(FR)
+  addresses CustomerAddress[]
+  orders    Order[]
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+
+  @@index([phone])
+  @@index([email])
+}
+
+model CustomerAddress {
+  id                   String   @id @default(cuid())
+  customerId           String
+  customer             Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  label                String?
+  addressLine1         String
+  addressLine2         String?
+  city                 String
+  province             String
+  postalCode           String
+  country              String   @default("CA")
+  latitude             Float?
+  longitude            Float?
+  deliveryInstructions String?
+  orders               Order[]
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([customerId])
+  @@index([postalCode])
+}
+
+model Order {
+  id                       String                 @id @default(cuid())
+  publicCode               String                 @unique
+  serviceType              OrderServiceType
+  paymentStatus            OrderPaymentStatus     @default(PENDING)
+  refundStatus             OrderRefundStatus      @default(NOT_REQUIRED)
+  fulfillmentStatus        OrderFulfillmentStatus @default(DRAFT)
+  customerId               String
+  customer                 Customer               @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  customerAddressId        String?
+  customerAddress          CustomerAddress?       @relation(fields: [customerAddressId], references: [id], onDelete: SetNull)
+  customerName             String
+  customerPhone            String
+  customerEmail            String?
+  deliveryAddressLine1     String?
+  deliveryAddressLine2     String?
+  deliveryCity             String?
+  deliveryProvince         String?
+  deliveryPostalCode       String?
+  deliveryCountry          String?
+  deliveryLatitude         Float?
+  deliveryLongitude        Float?
+  deliveryDistanceKm       Float?
+  deliveryInstructions     String?
+  isAsap                   Boolean                @default(true)
+  requestedFor             DateTime?
+  estimatedReadyStartAt    DateTime?
+  estimatedReadyEndAt      DateTime?
+  estimatedDeliveryStartAt DateTime?
+  estimatedDeliveryEndAt   DateTime?
+  itemsSubtotalCents       Int
+  taxableSubtotalCents     Int
+  gstCents                 Int                    @default(0)
+  qstCents                 Int                    @default(0)
+  taxCents                 Int
+  tipCents                 Int                    @default(0)
+  deliveryFeeCents         Int                    @default(0)
+  discountCents            Int                    @default(0)
+  totalCents               Int
+  currency                 String                 @default("CAD")
+  customerNotes            String?
+  internalNotes            String?
+  rejectionReason          String?
+  acceptedAt               DateTime?
+  rejectedAt               DateTime?
+  cancelledAt              DateTime?
+  completedAt              DateTime?
+  createdAt                DateTime               @default(now())
+  updatedAt                DateTime               @updatedAt
+  items                    OrderItem[]
+  payments                 Payment[]
+  events                   OrderEvent[]
+  notifications            Notification[]
+  driverAssignment         DriverAssignment?
+
+  @@index([paymentStatus, refundStatus, fulfillmentStatus, serviceType, createdAt])
+  @@index([customerId])
+  @@index([customerAddressId])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id                          String              @id @default(cuid())
+  orderId                     String
+  order                       Order               @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItemId                  String?
+  menuItem                    MenuItem?           @relation(fields: [menuItemId], references: [id], onDelete: SetNull)
+  menuItemNameSnapshot        String
+  menuItemDescriptionSnapshot String?
+  quantity                    Int
+  unitPriceCents              Int
+  modifiersTotalCents         Int                 @default(0)
+  lineSubtotalCents           Int
+  specialInstructions         String?
+  sortOrder                   Int                 @default(0)
+  modifiers                   OrderItemModifier[]
+  createdAt                   DateTime            @default(now())
+  updatedAt                   DateTime            @updatedAt
+
+  @@index([orderId])
+  @@index([menuItemId])
+}
+
+model OrderItemModifier {
+  id                         String          @id @default(cuid())
+  orderItemId                String
+  orderItem                  OrderItem       @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  modifierGroupId            String?
+  modifierOptionId           String?
+  modifierOption             ModifierOption? @relation(fields: [modifierOptionId], references: [id], onDelete: SetNull)
+  modifierGroupNameSnapshot  String
+  modifierOptionNameSnapshot String
+  priceDeltaCents            Int             @default(0)
+  quantity                   Int             @default(1)
+  createdAt                  DateTime        @default(now())
+
+  @@index([orderItemId])
+  @@index([modifierOptionId])
+}
+
+model Payment {
+  id                  String                @id @default(cuid())
+  orderId             String
+  order               Order                 @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  provider            PaymentProvider
+  status              OrderPaymentStatus    @default(PENDING)
+  refundStatus        OrderRefundStatus     @default(NOT_REQUIRED)
+  amountCents         Int
+  refundedAmountCents Int                   @default(0)
+  currency            String                @default("CAD")
+  checkoutSessionId   String?               @unique
+  providerPaymentId   String?               @unique
+  providerOrderId     String?
+  hostedCheckoutUrl   String?
+  sessionExpiresAt    DateTime?
+  paidAt              DateTime?
+  failedAt            DateTime?
+  refundRequestedAt   DateTime?
+  refundedAt          DateTime?
+  failureCode         String?
+  failureMessage      String?
+  rawProviderData     Json?
+  webhookEvents       PaymentWebhookEvent[]
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+
+  @@index([orderId])
+  @@index([provider, status])
+  @@index([refundStatus])
+}
+
+model PaymentWebhookEvent {
+  id                String          @id @default(cuid())
+  provider          PaymentProvider
+  providerEventId   String
+  eventType         String
+  checkoutSessionId String?
+  providerPaymentId String?
+  paymentId         String?
+  payment           Payment?        @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+  payload           Json
+  processedAt       DateTime?
+  createdAt         DateTime        @default(now())
+
+  @@unique([provider, providerEventId])
+  @@index([checkoutSessionId])
+  @@index([providerPaymentId])
+  @@index([paymentId])
+}
+
+model OrderEvent {
+  id                    String                  @id @default(cuid())
+  orderId               String
+  order                 Order                   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  actorType             OrderActorType
+  actorId               String?
+  actorLabel            String?
+  eventType             String
+  fromPaymentStatus     OrderPaymentStatus?
+  toPaymentStatus       OrderPaymentStatus?
+  fromFulfillmentStatus OrderFulfillmentStatus?
+  toFulfillmentStatus   OrderFulfillmentStatus?
+  message               String?
+  metadata              Json?
+  createdAt             DateTime                @default(now())
+
+  @@index([orderId, createdAt])
+  @@index([eventType])
+}
+
+model Notification {
+  id                String              @id @default(cuid())
+  orderId           String?
+  order             Order?              @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  customerId        String?
+  recipient         String
+  channel           NotificationChannel
+  templateKey       String
+  body              String
+  status            NotificationStatus  @default(PENDING)
+  provider          String?
+  providerMessageId String?             @unique
+  sentAt            DateTime?
+  deliveredAt       DateTime?
+  failedAt          DateTime?
+  errorMessage      String?
+  metadata          Json?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  @@index([orderId])
+  @@index([customerId])
+  @@index([status])
+  @@index([recipient])
+}
+
+model DeliveryZone {
+  id                         String   @id @default(cuid())
+  name                       String
+  isActive                   Boolean  @default(true)
+  centerLatitude             Float
+  centerLongitude            Float
+  radiusKm                   Float
+  deliveryFeeCents           Int      @default(0)
+  minimumOrderCents          Int      @default(0)
+  freeDeliveryThresholdCents Int?
+  sortOrder                  Int      @default(0)
+  createdAt                  DateTime @default(now())
+  updatedAt                  DateTime @updatedAt
+
+  @@index([isActive, sortOrder])
+}
+
+model Driver {
+  id             String             @id @default(cuid())
+  supabaseUserId String?            @unique
+  email          String             @unique
+  name           String
+  phone          String?
+  isActive       Boolean            @default(true)
+  assignments    DriverAssignment[]
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  @@index([isActive])
+}
+
+model DriverAssignment {
+  id          String                 @id @default(cuid())
+  orderId     String                 @unique
+  order       Order                  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  driverId    String
+  driver      Driver                 @relation(fields: [driverId], references: [id], onDelete: Restrict)
+  status      DriverAssignmentStatus @default(ASSIGNED)
+  assignedAt  DateTime               @default(now())
+  pickedUpAt  DateTime?
+  deliveredAt DateTime?
+  cancelledAt DateTime?
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+
+  @@index([driverId, status])
+}
+
+model RestaurantOrderSettings {
+  id                            Int      @id @default(1)
+  onlineOrderingEnabled         Boolean  @default(false)
+  pickupEnabled                 Boolean  @default(true)
+  deliveryEnabled               Boolean  @default(false)
+  scheduledOrdersEnabled        Boolean  @default(false)
+  asapOnly                      Boolean  @default(true)
+  restaurantLatitude            Float?
+  restaurantLongitude           Float?
+  deliveryRadiusKm              Float    @default(8)
+  deliveryFeeCents              Int      @default(0)
+  minimumDeliveryOrderCents     Int      @default(0)
+  freeDeliveryThresholdCents    Int?
+  defaultPickupPrepMinutes      Int      @default(25)
+  defaultDeliveryPrepMinutes    Int      @default(45)
+  busyModeEnabled               Boolean  @default(false)
+  busyModeExtraMinutes          Int      @default(0)
+  maxActiveOrders               Int?
+  orderCutoffMinutesBeforeClose Int?
+  gstRatePpm                    Int      @default(50000)
+  qstRatePpm                    Int      @default(99750)
+  orderAdminSmsRecipient        String?
+  createdAt                     DateTime @default(now())
+  updatedAt                     DateTime @updatedAt
 }

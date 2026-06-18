@@ -21,7 +21,7 @@ export default function LanguageToggle({ mobile = false }: LanguageToggleProps) 
       type="button"
       onClick={() => setLanguage(nextLanguage)}
       aria-label={copy.navbar.languageToggle}
-      className={`inline-flex min-h-0 items-center rounded border border-white/20 bg-[#062F24] p-1 transition-all ${
+      className={`inline-flex min-h-0 items-center rounded-button-group border border-white/20 bg-[#062F24] p-1 transition-all ${
         mobile ? "w-full justify-center" : ""
       }`}
     >
@@ -31,7 +31,7 @@ export default function LanguageToggle({ mobile = false }: LanguageToggleProps) 
         return (
           <span
             key={option.value}
-            className="inline-flex min-h-0 items-center rounded-sm px-3 py-2 text-xs font-semibold leading-none transition-all"
+            className="inline-flex min-h-0 items-center rounded-icon px-3 py-2 text-xs font-semibold leading-none transition-all"
             style={{
               background: active ? "#FFFFFF" : "transparent",
               color: active ? "#062F24" : "rgba(255,255,255,0.78)",

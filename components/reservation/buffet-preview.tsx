@@ -20,7 +20,7 @@ export default function BuffetPreview() {
             viewport={{ once: true }}
             transition={{ duration: 0.7 }}
           >
-            <img src={BUFFET_SPREAD} alt={previewCopy.imageAlt} className="w-full rounded" />
+            <img src={BUFFET_SPREAD} alt={previewCopy.imageAlt} className="w-full rounded-surface" />
           </motion.div>
 
           <motion.div

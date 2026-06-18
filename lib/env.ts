@@ -31,18 +31,23 @@ function normalizeHttpUrl(value: unknown) {
   return `https://${trimmed}`;
 }
 
-const optionalString = z.preprocess(trimToUndefined, z.string().min(1).optional());
+const optionalString = z.preprocess(
+  trimToUndefined,
+  z.union([z.string().min(1), z.undefined()]),
+).optional();
 const optionalHttpUrl = z.preprocess(
   normalizeHttpUrl,
-  z
-    .string()
-    .url()
-    .refine((value) => {
-      const protocol = new URL(value).protocol;
-      return protocol === "http:" || protocol === "https:";
-    }, "Must be an absolute http(s) URL.")
-    .optional(),
-);
+  z.union([
+    z
+      .string()
+      .url()
+      .refine((value) => {
+        const protocol = new URL(value).protocol;
+        return protocol === "http:" || protocol === "https:";
+      }, "Must be an absolute http(s) URL."),
+    z.undefined(),
+  ]),
+).optional();
 
 const envSchema = z
   .object({
@@ -60,6 +65,18 @@ const envSchema = z
         return protocol === "http:" || protocol === "https:";
       }, "Must be an absolute http(s) URL."),
     NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().trim().min(1),
+    GEOCODING_PROVIDER: z
+      .preprocess(trimToUndefined, z.enum(["google", "none"]).optional())
+      .default("none"),
+    GOOGLE_MAPS_API_KEY: optionalString,
+    CLOVER_ENV: z.preprocess(
+      trimToUndefined,
+      z.union([z.enum(["sandbox", "production"]), z.undefined()]),
+    ).optional(),
+    CLOVER_MERCHANT_ID: optionalString,
+    CLOVER_PRIVATE_TOKEN: optionalString,
+    CLOVER_WEBHOOK_SECRET: optionalString,
+    CLOVER_API_BASE_URL: optionalHttpUrl,
     TWILIO_ACCOUNT_SID: optionalString,
     TWILIO_AUTH_TOKEN: optionalString,
     TWILIO_FROM_NUMBER: optionalString,
@@ -143,6 +160,73 @@ export function getAppUrl(source: NodeJS.ProcessEnv = process.env): string {
 
 export function getCronSecret(source: NodeJS.ProcessEnv = process.env): string | null {
   return getEnv(source).CRON_SECRET ?? null;
+}
+
+export function getGeocodingConfig(
+  deliveryEnabled: boolean,
+  source: NodeJS.ProcessEnv = process.env,
+): { provider: "google"; googleMapsApiKey: string } | { provider: "none" } {
+  const currentEnv = getEnv(source);
+
+  if (currentEnv.GEOCODING_PROVIDER !== "google") {
+    if (deliveryEnabled) {
+      throw new Error(
+        "Delivery geocoding is not configured. Set GEOCODING_PROVIDER=google and GOOGLE_MAPS_API_KEY.",
+      );
+    }
+
+    return { provider: "none" };
+  }
+
+  if (!currentEnv.GOOGLE_MAPS_API_KEY) {
+    throw new Error(
+      "GOOGLE_MAPS_API_KEY is required when GEOCODING_PROVIDER=google.",
+    );
+  }
+
+  return {
+    provider: "google",
+    googleMapsApiKey: currentEnv.GOOGLE_MAPS_API_KEY,
+  };
+}
+
+export type CloverConfig = {
+  env: "sandbox" | "production";
+  merchantId: string;
+  privateToken: string;
+  webhookSecret: string | null;
+  apiBaseUrl: string;
+};
+
+export function getCloverConfig(
+  source: NodeJS.ProcessEnv = process.env,
+): CloverConfig {
+  const currentEnv = getEnv(source);
+  const missingKeys = [
+    !currentEnv.CLOVER_ENV ? "CLOVER_ENV" : null,
+    !currentEnv.CLOVER_MERCHANT_ID ? "CLOVER_MERCHANT_ID" : null,
+    !currentEnv.CLOVER_PRIVATE_TOKEN ? "CLOVER_PRIVATE_TOKEN" : null,
+  ].filter(Boolean);
+
+  if (missingKeys.length > 0) {
+    throw new Error(
+      `Clover Hosted Checkout is not configured. Missing: ${missingKeys.join(", ")}.`,
+    );
+  }
+
+  const cloverEnv = currentEnv.CLOVER_ENV!;
+
+  return {
+    env: cloverEnv,
+    merchantId: currentEnv.CLOVER_MERCHANT_ID!,
+    privateToken: currentEnv.CLOVER_PRIVATE_TOKEN!,
+    webhookSecret: currentEnv.CLOVER_WEBHOOK_SECRET ?? null,
+    apiBaseUrl:
+      currentEnv.CLOVER_API_BASE_URL ??
+      (cloverEnv === "sandbox"
+        ? "https://scl-sandbox.dev.clover.com"
+        : "https://scl.clover.com"),
+  };
 }
 
 export function getSmsConfig(

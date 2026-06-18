@@ -23,7 +23,12 @@
     --border: 160 60% 16%;
     --input: 160 60% 14%;
     --ring: 36 48% 60%;
-    --radius: 0.25rem;
+    --radius: 0.5rem;
+    --radius-button: 0.5rem;
+    --radius-button-compact: 0.375rem;
+    --radius-button-group: 0.625rem;
+    --radius-surface: 0.75rem;
+    --radius-surface-lg: 1rem;
   }
 
   * {
@@ -129,7 +134,7 @@
   top: max(1rem, env(safe-area-inset-top));
   z-index: 9999;
   transform: translateY(-150%);
-  border-radius: 999px;
+  border-radius: var(--radius-button);
   background: #c9a56a;
   color: #062f24;
   padding: 0.75rem 1rem;

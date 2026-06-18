@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Arimo } from "next/font/google";
 
 import "@/lib/env";
 
@@ -6,6 +7,12 @@ import { LanguageProvider } from "@/components/providers/language-provider";
 import RestaurantJsonLd from "@/components/seo/restaurant-json-ld";
 import { SITE_NAME, SITE_URL } from "@/lib/seo";
 import "./globals.css";
+
+const arimo = Arimo({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -78,13 +85,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr">
-      <body
-        className="font-sans"
-        style={{
-          fontFamily:
-            "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-        }}
-      >
+      <body className={arimo.className}>
         <RestaurantJsonLd />
         <LanguageProvider>{children}</LanguageProvider>
       </body>

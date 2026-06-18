@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { NotificationStatus } from "@prisma/client";
 import twilio from "twilio";
 
 import { db } from "@/lib/db";
@@ -10,6 +11,13 @@ export const runtime = "nodejs";
 
 const POSITIVE_STATUSES = new Set(["sent", "delivered"]);
 const FAILURE_STATUSES = new Set(["failed", "undelivered", "canceled"]);
+
+function notificationStatusForTwilioStatus(status: string): NotificationStatus {
+  if (status === "delivered") return NotificationStatus.DELIVERED;
+  if (POSITIVE_STATUSES.has(status)) return NotificationStatus.SENT;
+  if (FAILURE_STATUSES.has(status)) return NotificationStatus.FAILED;
+  return NotificationStatus.PENDING;
+}
 
 function jsonResponse(status: number, body: unknown) {
   return NextResponse.json(body, { status });
@@ -96,6 +104,27 @@ export async function POST(request: Request) {
       data: { reminderStatus: status, ...(FAILURE_STATUSES.has(status) ? { reminderMessageSid: null } : {}) },
     });
   }
+
+  const notificationStatus = notificationStatusForTwilioStatus(status);
+  await db.notification.updateMany({
+    where: { providerMessageId: sid },
+    data: {
+      status: notificationStatus,
+      ...(notificationStatus === NotificationStatus.SENT ? { sentAt: new Date() } : {}),
+      ...(notificationStatus === NotificationStatus.DELIVERED
+        ? { deliveredAt: new Date(), sentAt: new Date() }
+        : {}),
+      ...(notificationStatus === NotificationStatus.FAILED
+        ? {
+            failedAt: new Date(),
+            errorMessage:
+              params.ErrorMessage ??
+              params.ErrorCode ??
+              `Twilio reported ${status}.`,
+          }
+        : {}),
+    },
+  });
 
   return NextResponse.json({ ok: true });
 }

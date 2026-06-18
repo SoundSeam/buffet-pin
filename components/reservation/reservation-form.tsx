@@ -8,6 +8,7 @@ import {
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
+  Info,
   Loader2,
   Mail,
   MessageSquare,
@@ -51,15 +52,15 @@ type FormState = {
 };
 
 const panelClass =
-  "rounded border border-[rgba(6,47,36,0.08)] bg-white p-6 shadow-sm sm:p-8 lg:p-10";
+  "rounded-surface border border-[rgba(6,47,36,0.08)] bg-white p-6 shadow-sm sm:p-8 lg:p-10";
 const selectionPanelClass =
-  "rounded-md border border-[rgba(6,47,36,0.08)] bg-white p-6 shadow-sm sm:p-8 lg:p-10";
+  "rounded-surface border border-[rgba(6,47,36,0.08)] bg-white p-6 shadow-sm sm:p-8 lg:p-10";
 const fieldClass =
-  "w-full rounded border bg-[rgba(6,47,36,0.05)] px-4 py-3.5 text-base text-[#062F24] placeholder:text-[#062F24]/35 focus:outline-none";
+  "w-full rounded-button border bg-[rgba(6,47,36,0.05)] px-4 py-3.5 text-base text-[#062F24] placeholder:text-[#062F24]/35 focus:outline-none";
 const primaryActionButtonClass =
-  "inline-flex w-full items-center justify-center gap-3 rounded px-6 py-4 text-center text-base font-extrabold transition-all duration-300 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40";
+  "inline-flex w-full items-center justify-center gap-3 rounded-button px-6 py-4 text-center text-base font-extrabold transition-all duration-300 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40";
 const secondaryActionButtonClass =
-  "inline-flex items-center justify-center rounded border px-6 py-4 text-base font-semibold transition-all duration-300 hover:bg-[rgba(6,47,36,0.03)]";
+  "inline-flex items-center justify-center rounded-button border px-6 py-4 text-base font-semibold transition-all duration-300 hover:bg-[rgba(6,47,36,0.03)]";
 
 function getDaysInMonth(year: number, month: number) {
   return new Date(year, month + 1, 0).getDate();
@@ -168,6 +169,27 @@ function DetailRow({ label, value }: { label: string; value: string }) {
       <span className="max-w-[60%] text-right text-base font-medium leading-relaxed" style={{ color: "#062F24" }}>
         {value}
       </span>
+    </div>
+  );
+}
+
+function InfoNotice({ children }: { children: string }) {
+  return (
+    <div
+      className="flex items-start gap-3 rounded-surface border px-4 py-3.5 text-xs leading-relaxed"
+      style={{
+        borderColor: "rgba(6,47,36,0.12)",
+        color: "rgba(6,47,36,0.72)",
+        background: "rgba(6,47,36,0.04)",
+      }}
+    >
+      <Info
+        size={16}
+        className="mt-1 shrink-0"
+        style={{ color: "rgba(6,47,36,0.66)" }}
+        aria-hidden="true"
+      />
+      <span>{children}</span>
     </div>
   );
 }
@@ -486,7 +508,7 @@ export default function ReservationForm() {
                               onClick={() => {
                                 setForm((current) => ({ ...current, partySize: size, time: "" }));
                               }}
-                              className="h-12 rounded text-base font-extrabold transition-all"
+                              className="h-12 rounded-button text-base font-extrabold transition-all"
                               data-testid={`party-size-${size}`}
                               style={{
                                 background: selected ? "#062F24" : "rgba(6,47,36,0.05)",
@@ -509,7 +531,7 @@ export default function ReservationForm() {
                         <button
                           type="button"
                           onClick={prevMonth}
-                          className="flex h-11 w-11 items-center justify-center rounded-full transition-colors hover:bg-[rgba(6,47,36,0.05)]"
+                          className="flex h-11 w-11 items-center justify-center rounded-icon transition-colors hover:bg-[rgba(6,47,36,0.05)]"
                           style={{ color: "#062F24" }}
                           aria-label={formCopy.previousMonth}
                         >
@@ -521,7 +543,7 @@ export default function ReservationForm() {
                         <button
                           type="button"
                           onClick={nextMonth}
-                          className="flex h-11 w-11 items-center justify-center rounded-full transition-colors hover:bg-[rgba(6,47,36,0.05)]"
+                          className="flex h-11 w-11 items-center justify-center rounded-icon transition-colors hover:bg-[rgba(6,47,36,0.05)]"
                           style={{ color: "#062F24" }}
                           aria-label={formCopy.nextMonth}
                         >
@@ -551,7 +573,7 @@ export default function ReservationForm() {
                               type="button"
                               onClick={() => selectDay(day)}
                               disabled={isPast}
-                              className="h-11 rounded text-sm font-semibold transition-all"
+                              className="h-11 rounded-button text-sm font-semibold transition-all"
                               style={{
                                 background: isSelected ? "#062F24" : "transparent",
                                 color: isPast ? "rgba(6,47,36,0.18)" : isSelected ? "#F8F5EE" : "#062F24",
@@ -575,18 +597,18 @@ export default function ReservationForm() {
                         <div className="space-y-6">
                           <div>
                             {availabilityLoading ? (
-                              <div className="flex items-center gap-3 rounded px-4 py-4 text-sm font-medium" style={{ color: "rgba(6,47,36,0.62)", background: "rgba(6,47,36,0.05)" }}>
+                              <div className="flex items-center gap-3 rounded-surface px-4 py-4 text-sm font-medium" style={{ color: "rgba(6,47,36,0.62)", background: "rgba(6,47,36,0.05)" }}>
                                 <Loader2 size={16} className="animate-spin" />
                                 {formCopy.availabilityLoading}
                               </div>
                             ) : null}
                             {availabilityError ? (
-                              <p className="rounded border px-4 py-4 text-sm leading-7" style={{ borderColor: "rgba(153,27,27,0.18)", color: "#7F1D1D", background: "rgba(153,27,27,0.06)" }}>
+                              <p className="rounded-surface border px-4 py-4 text-sm leading-7" style={{ borderColor: "rgba(153,27,27,0.18)", color: "#7F1D1D", background: "rgba(153,27,27,0.06)" }}>
                                 {availabilityError}
                               </p>
                             ) : null}
                             {!availabilityLoading && !availabilityError && availabilitySlots.length === 0 ? (
-                              <p className="rounded border px-4 py-4 text-sm leading-7" style={{ borderColor: "rgba(6,47,36,0.12)", color: "rgba(6,47,36,0.62)", background: "rgba(6,47,36,0.04)" }}>
+                              <p className="rounded-surface border px-4 py-4 text-sm leading-7" style={{ borderColor: "rgba(6,47,36,0.12)", color: "rgba(6,47,36,0.62)", background: "rgba(6,47,36,0.04)" }}>
                                 {formCopy.noSlots}
                               </p>
                             ) : null}
@@ -601,7 +623,7 @@ export default function ReservationForm() {
                                     key={time}
                                     type="button"
                                     onClick={() => setField("time", time)}
-                                    className="flex min-h-12 flex-col items-center justify-center gap-1 rounded py-3.5 text-center transition-all"
+                                    className="flex min-h-12 flex-col items-center justify-center gap-1 rounded-button py-3.5 text-center transition-all"
                                     data-testid={`slot-${time}`}
                                     style={{
                                       background: selected ? "#062F24" : "rgba(6,47,36,0.05)",
@@ -621,12 +643,18 @@ export default function ReservationForm() {
                     ) : null}
                   </div>
 
-                  <div className="mt-8 flex justify-end">
+                  {form.partySize >= 6 ? (
+                    <div className="mt-8">
+                      <InfoNotice>{formCopy.serviceFeeNotice}</InfoNotice>
+                    </div>
+                  ) : null}
+
+                  <div className="mt-4 flex justify-end">
                     <button
                       type="button"
                       onClick={() => setStep(2)}
                       disabled={!stepOneValid}
-                      className="inline-flex w-full items-center justify-center gap-3 rounded px-6 py-4 text-center text-base font-extrabold transition-all duration-300 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+                      className="inline-flex w-full items-center justify-center gap-3 rounded-button px-6 py-4 text-center text-base font-extrabold transition-all duration-300 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
                       style={{ background: "#062F24", border: "1px solid #062F24", color: "#FFFFFF" }}
                     >
                       {formCopy.continue}
@@ -696,7 +724,7 @@ export default function ReservationForm() {
                                 key={occasion.value}
                                 type="button"
                                 onClick={() => setField("occasion", occasion.value)}
-                                className="rounded px-3 py-3.5 text-sm font-medium"
+                                className="rounded-button px-3 py-3.5 text-sm font-medium"
                                 style={{
                                   background: selected ? "#062F24" : "rgba(6,47,36,0.05)",
                                   color: selected ? "#F8F5EE" : "#062F24",
@@ -772,6 +800,11 @@ export default function ReservationForm() {
                   <p className="mt-5 max-w-2xl text-base leading-8" style={{ color: "rgba(6,47,36,0.58)" }}>
                     {formCopy.reviewNote}
                   </p>
+                  {form.partySize >= 6 ? (
+                    <div className="mt-5">
+                      <InfoNotice>{formCopy.serviceFeeNotice}</InfoNotice>
+                    </div>
+                  ) : null}
 
                   <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <button
@@ -795,7 +828,7 @@ export default function ReservationForm() {
                     </button>
                   </div>
                   {submitError ? (
-                    <p className="mt-5 rounded border px-4 py-4 text-sm leading-7" style={{ borderColor: "rgba(153,27,27,0.18)", color: "#FCA5A5", background: "rgba(153,27,27,0.14)" }}>
+                    <p className="mt-5 rounded-surface border px-4 py-4 text-sm leading-7" style={{ borderColor: "rgba(153,27,27,0.18)", color: "#FCA5A5", background: "rgba(153,27,27,0.14)" }}>
                       {submitError}
                     </p>
                   ) : null}
@@ -839,19 +872,24 @@ export default function ReservationForm() {
                       <DetailRow label={formCopy.summary.guests} value={`${form.partySize} ${guestLabel}`} />
                       <DetailRow label={formCopy.summary.name} value={form.name} />
                     </div>
+                    {form.partySize >= 6 ? (
+                      <div className="mt-6 text-left">
+                        <InfoNotice>{formCopy.serviceFeeNotice}</InfoNotice>
+                      </div>
+                    ) : null}
                   </div>
 
                   <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <Link
                       href={reservationSuccess?.manageUrlPath ?? "#"}
-                      className="order-1 inline-flex w-full items-center justify-center rounded px-6 py-4 text-base font-semibold sm:order-1"
+                      className="order-1 inline-flex w-full items-center justify-center rounded-button px-6 py-4 text-base font-semibold sm:order-1"
                       style={{ background: "#062F24", border: "1px solid #062F24", color: "#FFFFFF" }}
                     >
                       {formCopy.manageReservation}
                     </Link>
                     <Link
                       href="/"
-                      className="order-2 inline-flex w-full items-center justify-center rounded border px-6 py-4 text-base font-semibold sm:order-2"
+                      className="order-2 inline-flex w-full items-center justify-center rounded-button border px-6 py-4 text-base font-semibold sm:order-2"
                       style={{ borderColor: "rgba(6,47,36,0.12)", color: "#062F24" }}
                     >
                       {formCopy.backHome}

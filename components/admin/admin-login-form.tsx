@@ -7,7 +7,7 @@ import { Loader2 } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 const fieldClass =
-  "w-full rounded border border-[rgba(6,47,36,0.12)] bg-[rgba(6,47,36,0.05)] px-4 py-3.5 text-base text-[#062F24] placeholder:text-[#062F24]/35 focus:outline-none focus-visible:outline-none focus-visible:outline-0";
+  "w-full rounded-button border border-[rgba(6,47,36,0.12)] bg-[rgba(6,47,36,0.05)] px-4 py-3.5 text-base text-[#062F24] placeholder:text-[#062F24]/35 focus:outline-none focus-visible:outline-none focus-visible:outline-0";
 
 export default function AdminLoginForm() {
   const router = useRouter();
@@ -38,7 +38,7 @@ export default function AdminLoginForm() {
   };
 
   return (
-    <div className="w-full rounded border border-[rgba(6,47,36,0.08)] bg-white p-6 shadow-sm sm:p-8">
+    <div className="w-full rounded-surface border border-[rgba(6,47,36,0.08)] bg-white p-6 shadow-sm sm:p-8">
       <form
         className="space-y-5"
         onSubmit={(event) => {
@@ -77,7 +77,7 @@ export default function AdminLoginForm() {
         </label>
         {error ? (
           <p
-            className="rounded border border-red-900/20 bg-red-900/10 px-4 py-3 text-sm text-red-800"
+            className="rounded-surface border border-red-900/20 bg-red-900/10 px-4 py-3 text-sm text-red-800"
             role="alert"
             aria-live="polite"
           >
@@ -87,7 +87,7 @@ export default function AdminLoginForm() {
         <button
           type="submit"
           disabled={loading}
-          className="inline-flex w-full items-center justify-center gap-3 rounded bg-[#062F24] px-6 py-4 text-base font-extrabold text-white transition-all duration-300 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex w-full items-center justify-center gap-3 rounded-button bg-[#062F24] px-6 py-4 text-base font-extrabold text-white transition-all duration-300 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading ? <Loader2 size={16} className="animate-spin" /> : null}
           {loading ? "Signing in…" : "Sign in"}

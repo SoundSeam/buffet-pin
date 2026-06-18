@@ -17,7 +17,7 @@ export default function NotFound() {
         </h1>
         <Link
           href="/"
-          className="mt-8 inline-block rounded border px-8 py-3 text-sm font-semibold"
+          className="mt-8 inline-block rounded-button border px-8 py-3 text-sm font-semibold"
           style={{ borderColor: "rgba(201,165,106,0.5)", color: "#C9A56A" }}
         >
           {copy.notFound.cta}

@@ -18,9 +18,9 @@ type AdminSettingsResponse = {
 };
 
 const fieldClass =
-  "w-full rounded border border-[rgba(6,47,36,0.12)] bg-[rgba(6,47,36,0.05)] px-3 py-2.5 text-sm text-[#062F24] focus:outline-none focus-visible:outline-none focus-visible:outline-0";
+  "w-full rounded-button border border-[rgba(6,47,36,0.12)] bg-[rgba(6,47,36,0.05)] px-3 py-2.5 text-sm text-[#062F24] focus:outline-none focus-visible:outline-none focus-visible:outline-0";
 const buttonClass =
-  "inline-flex items-center justify-center rounded px-4 py-2.5 text-sm font-semibold transition-all duration-300 hover:opacity-90 focus-visible:outline-none focus-visible:outline-0 disabled:cursor-not-allowed disabled:opacity-50";
+  "inline-flex items-center justify-center rounded-button px-4 py-2.5 text-sm font-semibold transition-all duration-300 hover:opacity-90 focus-visible:outline-none focus-visible:outline-0 disabled:cursor-not-allowed disabled:opacity-50";
 const primaryButtonStyle = {
   background: "#062F24",
   border: "1px solid #062F24",
@@ -246,7 +246,7 @@ export default function AdminSettingsPage() {
 
         {error ? (
           <p
-            className="mt-6 rounded border border-red-900/20 bg-red-900/10 p-4 text-sm text-red-800"
+            className="mt-6 rounded-surface border border-red-900/20 bg-red-900/10 p-4 text-sm text-red-800"
             role="alert"
           >
             {error}
@@ -255,7 +255,7 @@ export default function AdminSettingsPage() {
 
         {success ? (
           <p
-            className="mt-6 rounded border border-emerald-900/20 bg-emerald-900/10 p-4 text-sm text-emerald-800"
+            className="mt-6 rounded-surface border border-emerald-900/20 bg-emerald-900/10 p-4 text-sm text-emerald-800"
             role="status"
           >
             {success}
@@ -263,7 +263,7 @@ export default function AdminSettingsPage() {
         ) : null}
 
         {loading ? (
-          <div className="mt-8 flex items-center gap-3 rounded border border-[#062F24]/10 bg-white p-6 text-[#062F24] shadow-sm">
+          <div className="mt-8 flex items-center gap-3 rounded-surface border border-[#062F24]/10 bg-white p-6 text-[#062F24] shadow-sm">
             <Loader2 size={16} className="animate-spin" />
             {settingsCopy.loading}
           </div>
@@ -274,7 +274,7 @@ export default function AdminSettingsPage() {
                 {slotCapacityColumns.map((_, index) => (
                   <div
                     key={`header-${index}`}
-                    className="grid grid-cols-[minmax(0,1fr)_160px] gap-4 rounded border border-[#062F24]/10 bg-[rgba(6,47,36,0.04)] px-4 py-3 text-xs font-bold uppercase tracking-[0.14em] text-[#062F24]/45"
+                    className="grid grid-cols-[minmax(0,1fr)_160px] gap-4 rounded-surface border border-[#062F24]/10 bg-[rgba(6,47,36,0.04)] px-4 py-3 text-xs font-bold uppercase tracking-[0.14em] text-[#062F24]/45"
                   >
                     <span>{settingsCopy.time}</span>
                     <span>{settingsCopy.capacity}</span>
@@ -286,7 +286,7 @@ export default function AdminSettingsPage() {
                 {slotCapacityColumns.map((column, columnIndex) => (
                   <div
                     key={`column-${columnIndex}`}
-                    className="overflow-hidden rounded border border-[#062F24]/10"
+                    className="overflow-hidden rounded-surface border border-[#062F24]/10"
                   >
                     <div className="border-b border-[#062F24]/10 bg-[rgba(6,47,36,0.04)] px-4 py-3 md:hidden">
                       <div className="grid grid-cols-[minmax(0,1fr)_132px] gap-4 text-xs font-bold uppercase tracking-[0.14em] text-[#062F24]/45">

@@ -76,11 +76,11 @@ type LoadReservationsOptions = {
 };
 
 const fieldClass =
-  "w-full rounded border border-[rgba(6,47,36,0.12)] bg-[rgba(6,47,36,0.05)] px-3 py-2.5 text-sm text-[#062F24] focus:outline-none focus-visible:outline-none focus-visible:outline-0";
+  "w-full rounded-button border border-[rgba(6,47,36,0.12)] bg-[rgba(6,47,36,0.05)] px-3 py-2.5 text-sm text-[#062F24] focus:outline-none focus-visible:outline-none focus-visible:outline-0";
 const buttonClass =
-  "inline-flex items-center justify-center rounded px-4 py-2.5 text-sm font-semibold transition-all duration-300 hover:opacity-90 focus-visible:outline-none focus-visible:outline-0 disabled:cursor-not-allowed disabled:opacity-50";
+  "inline-flex items-center justify-center rounded-button px-4 py-2.5 text-sm font-semibold transition-all duration-300 hover:opacity-90 focus-visible:outline-none focus-visible:outline-0 disabled:cursor-not-allowed disabled:opacity-50";
 const actionMenuItemClass =
-  "rounded px-3 py-2.5 text-left text-sm font-semibold text-[#062F24] hover:bg-[#062F24]/5";
+  "rounded-button px-3 py-2.5 text-left text-sm font-semibold text-[#062F24] hover:bg-[#062F24]/5";
 const primaryButtonStyle = {
   background: "#062F24",
   border: "1px solid #062F24",
@@ -901,7 +901,7 @@ export default function AdminReservationsDashboard() {
 
   const renderStatusPill = (reservation: AdminReservation) => (
     <span
-      className="inline-flex rounded px-3 py-1 text-xs font-bold"
+      className="inline-flex rounded-button px-3 py-1 text-xs font-bold"
       style={{
         background: statusMeta[reservation.status].background,
         color: statusMeta[reservation.status].color,
@@ -946,7 +946,7 @@ export default function AdminReservationsDashboard() {
         {options?.summaryContent ?? reservationsCopy.actions}
       </button>
       {openActionMenuId === reservation.id ? (
-        <div className="absolute right-0 z-20 mt-2 grid w-56 gap-1 rounded border border-[#062F24]/10 bg-white p-2 text-left shadow-sm">
+        <div className="absolute right-0 z-20 mt-2 grid w-56 gap-1 rounded-surface border border-[#062F24]/10 bg-white p-2 text-left shadow-sm">
         <button
           type="button"
           className={actionMenuItemClass}
@@ -1027,7 +1027,7 @@ export default function AdminReservationsDashboard() {
       key={reservation.id}
       role="button"
       tabIndex={0}
-      className="min-w-0 cursor-pointer overflow-hidden rounded border p-3 text-left shadow-sm transition hover:bg-white/70 focus:outline-none focus-visible:outline-none"
+      className="min-w-0 cursor-pointer overflow-hidden rounded-surface border p-3 text-left shadow-sm transition hover:bg-white/70 focus:outline-none focus-visible:outline-none"
       onClick={() => openReservationDialog(reservation)}
       onKeyDown={(event) => {
         if (event.key === "Enter" || event.key === " ") {
@@ -1063,7 +1063,7 @@ export default function AdminReservationsDashboard() {
             </p>
             <button
               type="button"
-              className="inline-flex w-full items-center justify-center rounded px-3 py-2 text-xs font-semibold transition-all duration-300 hover:opacity-90 focus-visible:outline-none focus-visible:outline-0"
+              className="inline-flex w-full items-center justify-center rounded-button px-3 py-2 text-xs font-semibold transition-all duration-300 hover:opacity-90 focus-visible:outline-none focus-visible:outline-0"
               onClick={(event) => {
                 event.stopPropagation();
                 openReservationDialog(reservation);
@@ -1114,7 +1114,7 @@ export default function AdminReservationsDashboard() {
             </button>
             {renderActionMenu(reservation, {
               className:
-                "inline-flex h-10 w-10 items-center justify-center rounded bg-transparent text-[#062F24] transition hover:bg-[rgba(6,47,36,0.05)] focus-visible:outline-none focus-visible:outline-0",
+                "inline-flex h-10 w-10 items-center justify-center rounded-icon bg-transparent text-[#062F24] transition hover:bg-[rgba(6,47,36,0.05)] focus-visible:outline-none focus-visible:outline-0",
               style: {
                 background: "transparent",
                 border: "1px solid transparent",
@@ -1153,7 +1153,7 @@ export default function AdminReservationsDashboard() {
     emptyMessage: string,
     items: AdminReservation[],
   ) => (
-    <section className="overflow-visible rounded border border-[#062F24]/10 bg-white shadow-sm">
+    <section className="overflow-visible rounded-surface border border-[#062F24]/10 bg-white shadow-sm">
       <div className="border-b border-[#062F24]/10 px-5 py-4">
         <h3 className="text-base font-semibold text-[#062F24]">{title}</h3>
       </div>
@@ -1171,7 +1171,7 @@ export default function AdminReservationsDashboard() {
 
     if (calendarView === "month") {
       return (
-        <div className="overflow-hidden rounded border border-[#062F24]/10 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-surface-lg border border-[#062F24]/10 bg-white shadow-sm">
           <div className="grid grid-cols-7 border-b border-[#062F24]/10 bg-[rgba(6,47,36,0.04)]">
             {reservationsCopy.weekdayShort.map((day) => (
               <div key={day} className="p-3 text-xs font-semibold text-[#062F24]/60">
@@ -1194,7 +1194,7 @@ export default function AdminReservationsDashboard() {
                   <div className="flex items-center justify-between">
                     <button
                       type="button"
-                      className="rounded px-2 py-1 text-sm font-semibold text-[#062F24]"
+                      className="rounded-button px-2 py-1 text-sm font-semibold text-[#062F24]"
                       onClick={() => {
                         setAnchorDate(day);
                         setCalendarView("day");
@@ -1203,7 +1203,7 @@ export default function AdminReservationsDashboard() {
                       {day.getDate()}
                     </button>
                     {dayReservations.length ? (
-                      <span className="rounded bg-[rgba(6,47,36,0.08)] px-2 py-1 text-[10px] font-semibold text-[#062F24]">
+                      <span className="rounded-button bg-[rgba(6,47,36,0.08)] px-2 py-1 text-[10px] font-semibold text-[#062F24]">
                         {dayReservations.length}
                       </span>
                     ) : null}
@@ -1235,7 +1235,7 @@ export default function AdminReservationsDashboard() {
 
     if (calendarView === "week") {
       return (
-        <div className="overflow-x-auto rounded border border-[#062F24]/10 bg-white shadow-sm">
+        <div className="overflow-x-auto rounded-surface-lg border border-[#062F24]/10 bg-white shadow-sm">
           <div className="min-w-[900px]">
             <div className="grid grid-cols-[88px_repeat(7,minmax(112px,1fr))] border-b border-[#062F24]/10 bg-[rgba(6,47,36,0.04)]">
               <div className="p-3 text-xs font-semibold text-[#062F24]/45">
@@ -1290,7 +1290,7 @@ export default function AdminReservationsDashboard() {
     const selectedDate = toDateInputValue(anchorDate);
 
     return (
-      <div className="rounded border border-[#062F24]/10 bg-white shadow-sm">
+      <div className="rounded-surface-lg border border-[#062F24]/10 bg-white shadow-sm">
         {slotTimes.map((time) => {
           const slotReservations = reservationsAtSlot(reservations, selectedDate, time);
 
@@ -1311,7 +1311,7 @@ export default function AdminReservationsDashboard() {
                 {slotReservations.length ? (
                   slotReservations.map((reservation) => renderCalendarEvent(reservation))
                 ) : (
-                  <p className="rounded border border-dashed border-[#062F24]/15 p-4 text-sm font-semibold text-[#062F24]/45">
+                  <p className="rounded-surface border border-dashed border-[#062F24]/15 p-4 text-sm font-semibold text-[#062F24]/45">
                     {reservationsCopy.noReservations}
                   </p>
                 )}
@@ -1330,7 +1330,7 @@ export default function AdminReservationsDashboard() {
       <ModalShell
         labelledBy="reservation-dialog-title"
         onClose={closeReservationDialog}
-        panelClassName="max-w-3xl rounded border border-[rgba(6,47,36,0.08)] bg-white p-6 shadow-sm sm:p-8"
+        panelClassName="max-w-3xl border border-[rgba(6,47,36,0.08)] bg-white p-6 shadow-sm sm:p-8"
       >
           <div className="flex flex-col justify-between gap-4 border-b border-[#062F24]/10 pb-5 sm:flex-row sm:items-start">
             <div>
@@ -1339,7 +1339,7 @@ export default function AdminReservationsDashboard() {
               </h2>
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 {renderStatusPill(selectedReservation)}
-                <span className="rounded bg-[rgba(6,47,36,0.08)] px-3 py-1 text-xs font-semibold text-[#062F24]">
+                <span className="rounded-button bg-[rgba(6,47,36,0.08)] px-3 py-1 text-xs font-semibold text-[#062F24]">
                   {selectedReservation.confirmationCode}
                 </span>
               </div>
@@ -1347,7 +1347,7 @@ export default function AdminReservationsDashboard() {
             <div className="flex flex-wrap gap-2">
               <button
                 type="button"
-                className="inline-flex h-10 w-10 items-center justify-center rounded bg-transparent text-[#062F24] transition hover:bg-[rgba(6,47,36,0.05)] focus-visible:outline-none focus-visible:outline-0"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-icon bg-transparent text-[#062F24] transition hover:bg-[rgba(6,47,36,0.05)] focus-visible:outline-none focus-visible:outline-0"
                 onClick={closeReservationDialog}
                 aria-label={reservationsCopy.dialog.close}
               >
@@ -1481,7 +1481,7 @@ export default function AdminReservationsDashboard() {
             </label>
           </div>
 
-          <div className="mt-6 rounded border border-[#062F24]/10 bg-[rgba(6,47,36,0.04)] p-4">
+          <div className="mt-6 rounded-surface border border-[#062F24]/10 bg-[rgba(6,47,36,0.04)] p-4">
             <p className="text-xs font-semibold text-[#062F24]/55">
               {reservationsCopy.dialog.statusActions}
             </p>
@@ -1561,7 +1561,7 @@ export default function AdminReservationsDashboard() {
       <ModalShell
         labelledBy="create-reservation-dialog-title"
         onClose={() => setCreateDialogOpen(false)}
-        panelClassName="max-w-2xl rounded border border-[rgba(6,47,36,0.08)] bg-white p-6 shadow-sm sm:p-8"
+        panelClassName="max-w-2xl border border-[rgba(6,47,36,0.08)] bg-white p-6 shadow-sm sm:p-8"
       >
           <div className="flex items-start justify-between gap-4 border-b border-[#062F24]/10 pb-5">
             <div>
@@ -1718,7 +1718,7 @@ export default function AdminReservationsDashboard() {
       <ModalShell
         labelledBy="reservation-activity-title"
         onClose={() => setActivityDialogOpen(false)}
-        panelClassName="max-w-2xl rounded border border-[rgba(6,47,36,0.08)] bg-white p-6 shadow-sm sm:p-8"
+        panelClassName="max-w-2xl border border-[rgba(6,47,36,0.08)] bg-white p-6 shadow-sm sm:p-8"
       >
         <div className="flex items-start justify-between gap-4 border-b border-[#062F24]/10 pb-5">
           <div>
@@ -1752,10 +1752,10 @@ export default function AdminReservationsDashboard() {
               key={`${activity.kind}-${activity.reservation.id}-${activity.reservation.updatedAt}`}
               type="button"
               onClick={() => openReservationFromActivity(activity.reservation.id)}
-              className="grid gap-3 rounded border border-[#062F24]/10 bg-[rgba(6,47,36,0.03)] p-4 text-left transition hover:bg-[rgba(6,47,36,0.06)]"
+              className="grid gap-3 rounded-surface border border-[#062F24]/10 bg-[rgba(6,47,36,0.03)] p-4 text-left transition hover:bg-[rgba(6,47,36,0.06)]"
             >
               <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex rounded px-3 py-1 text-xs font-bold text-[#062F24]">
+                <span className="inline-flex rounded-button px-3 py-1 text-xs font-bold text-[#062F24]">
                   {getActivityLabel(activity.kind)}
                 </span>
                 {renderStatusPill(activity.reservation)}
@@ -1826,7 +1826,7 @@ export default function AdminReservationsDashboard() {
 
         {error ? (
           <p
-            className="mt-6 rounded border border-red-900/20 bg-red-900/10 p-4 text-sm text-red-800"
+            className="mt-6 rounded-surface border border-red-900/20 bg-red-900/10 p-4 text-sm text-red-800"
             role="alert"
             aria-live="polite"
           >
@@ -1883,7 +1883,7 @@ export default function AdminReservationsDashboard() {
             </div>
 
             {displayMode === "calendar" ? (
-              <div className="mt-4 rounded border border-[#062F24]/10 bg-[rgba(6,47,36,0.04)] p-3 shadow-sm">
+              <div className="mt-4 rounded-surface border border-[#062F24]/10 bg-[rgba(6,47,36,0.04)] p-3 shadow-sm">
                 <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
                   <div className="flex items-center gap-2">
                     <button
@@ -1900,7 +1900,7 @@ export default function AdminReservationsDashboard() {
                     <button
                       type="button"
                       aria-label={`${reservationsCopy.previous} ${reservationsCopy.viewOptions[calendarView].toLowerCase()}`}
-                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-transparent text-[#062F24] transition hover:bg-[rgba(6,47,36,0.05)]"
+                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-icon bg-transparent text-[#062F24] transition hover:bg-[rgba(6,47,36,0.05)]"
                       onClick={() =>
                         setAnchorDate(
                           moveAnchorDate(calendarView, anchorDate, -1),
@@ -1919,7 +1919,7 @@ export default function AdminReservationsDashboard() {
                     <button
                       type="button"
                       aria-label={`${reservationsCopy.next} ${reservationsCopy.viewOptions[calendarView].toLowerCase()}`}
-                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-transparent text-[#062F24] transition hover:bg-[rgba(6,47,36,0.05)]"
+                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-icon bg-transparent text-[#062F24] transition hover:bg-[rgba(6,47,36,0.05)]"
                       onClick={() =>
                         setAnchorDate(
                           moveAnchorDate(calendarView, anchorDate, 1),
@@ -1930,12 +1930,12 @@ export default function AdminReservationsDashboard() {
                     </button>
                   </div>
 
-                  <div className="inline-flex w-full rounded border border-[#062F24]/10 bg-white p-1 sm:w-auto">
+                  <div className="inline-flex w-full rounded-button-group border border-[#062F24]/10 bg-white p-1 sm:w-auto">
                     {(["day", "week", "month"] as const).map((view) => (
                       <button
                         key={view}
                         type="button"
-                        className="flex-1 rounded px-4 py-2 text-xs font-semibold transition sm:flex-none"
+                        className="flex-1 rounded-button px-4 py-2 text-xs font-semibold transition sm:flex-none"
                         onClick={() => setCalendarView(view)}
                         style={{
                           ...(calendarView === view
@@ -1965,7 +1965,7 @@ export default function AdminReservationsDashboard() {
             )}
 
             {loading ? (
-              <div className="flex items-center gap-3 rounded border border-[#062F24]/10 bg-white p-6 text-[#062F24] shadow-sm">
+              <div className="flex items-center gap-3 rounded-surface border border-[#062F24]/10 bg-white p-6 text-[#062F24] shadow-sm">
                 <Loader2 size={16} className="animate-spin" />
                 {reservationsCopy.loading}
               </div>
@@ -2012,9 +2012,9 @@ export default function AdminReservationsDashboard() {
           onClick={() => void loadReservations({ source: "manual" })}
           disabled={refreshing || loading}
           aria-label={refreshing ? reservationsCopy.refreshing : reservationsCopy.refresh}
-          className="inline-flex min-h-0 items-center rounded border border-white/20 bg-[#062F24] p-1 transition-all"
+          className="inline-flex min-h-0 items-center rounded-button-group border border-white/20 bg-[#062F24] p-1 transition-all"
         >
-          <span className="inline-flex min-h-0 items-center gap-2 rounded-sm px-3 py-2 text-xs font-semibold leading-none text-white">
+          <span className="inline-flex min-h-0 items-center gap-2 rounded-icon px-3 py-2 text-xs font-semibold leading-none text-white">
             <RotateCw
               size={14}
               aria-hidden="true"
