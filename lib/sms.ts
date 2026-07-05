@@ -4,6 +4,8 @@ import twilio from "twilio";
 import { getAppUrl, getSmsConfig } from "./env";
 import { buildManageUrl } from "./reservations/manage-link";
 import {
+  renderAdminReservationCancelledSms,
+  renderAdminReservationUpdatedSms,
   renderAdminNewReservationSms,
   renderConfirmationSms,
   renderReminderSms,
@@ -26,6 +28,17 @@ type AdminReservationAlert = {
   partySize: number;
   guestName: string;
   guestPhone: string;
+};
+
+type AdminReservationUpdateAlert = AdminReservationAlert & {
+  previousReservationAt: Date;
+  previousPartySize: number;
+  previousGuestName: string;
+  previousGuestPhone: string;
+  previousGuestEmail: string | null;
+  previousSpecialRequests: string | null;
+  guestEmail: string | null;
+  specialRequests: string | null;
 };
 
 type SmsSendResult =
@@ -123,5 +136,23 @@ export async function sendAdminNewReservationSms(
   return sendSms(
     ADMIN_RESERVATION_SMS_TO,
     renderAdminNewReservationSms(reservation),
+  );
+}
+
+export async function sendAdminReservationUpdatedSms(
+  reservation: AdminReservationUpdateAlert,
+): Promise<SmsSendResult> {
+  return sendSms(
+    ADMIN_RESERVATION_SMS_TO,
+    renderAdminReservationUpdatedSms(reservation),
+  );
+}
+
+export async function sendAdminReservationCancelledSms(
+  reservation: AdminReservationAlert,
+): Promise<SmsSendResult> {
+  return sendSms(
+    ADMIN_RESERVATION_SMS_TO,
+    renderAdminReservationCancelledSms(reservation),
   );
 }

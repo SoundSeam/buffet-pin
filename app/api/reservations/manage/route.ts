@@ -18,6 +18,10 @@ import {
   timeOnlyToUtcDate,
 } from "@/lib/reservations/time";
 import {
+  sendAdminReservationCancelledSms,
+  sendAdminReservationUpdatedSms,
+} from "@/lib/sms";
+import {
   type ManageReservationUpdatePayload,
   manageReservationLookupSchema,
   manageReservationUpdatePayloadSchema,
@@ -42,6 +46,17 @@ type ManageReservation = Pick<
   | "language"
   | "specialRequests"
   | "cancelledAt"
+>;
+
+type ReservationNotificationSnapshot = Pick<
+  Reservation,
+  | "id"
+  | "reservationAt"
+  | "partySize"
+  | "guestName"
+  | "guestPhone"
+  | "guestEmail"
+  | "specialRequests"
 >;
 
 function errorResponse(
@@ -125,6 +140,61 @@ async function getReservationByToken(token: string) {
   });
 }
 
+async function sendAdminReservationUpdateAlert(
+  previousReservation: ReservationNotificationSnapshot,
+  updatedReservation: ReservationNotificationSnapshot,
+) {
+  const changed =
+    previousReservation.reservationAt.getTime() !==
+      updatedReservation.reservationAt.getTime() ||
+    previousReservation.partySize !== updatedReservation.partySize ||
+    previousReservation.guestName !== updatedReservation.guestName ||
+    previousReservation.guestPhone !== updatedReservation.guestPhone ||
+    previousReservation.guestEmail !== updatedReservation.guestEmail ||
+    previousReservation.specialRequests !== updatedReservation.specialRequests;
+
+  if (!changed) {
+    return;
+  }
+
+  const result = await sendAdminReservationUpdatedSms({
+    previousReservationAt: previousReservation.reservationAt,
+    previousPartySize: previousReservation.partySize,
+    previousGuestName: previousReservation.guestName,
+    previousGuestPhone: previousReservation.guestPhone,
+    previousGuestEmail: previousReservation.guestEmail,
+    previousSpecialRequests: previousReservation.specialRequests,
+    reservationAt: updatedReservation.reservationAt,
+    partySize: updatedReservation.partySize,
+    guestName: updatedReservation.guestName,
+    guestPhone: updatedReservation.guestPhone,
+    guestEmail: updatedReservation.guestEmail,
+    specialRequests: updatedReservation.specialRequests,
+  });
+
+  if (!result.ok) {
+    console.error("Admin reservation update alert SMS failed", {
+      reservationId: updatedReservation.id,
+      skipped: result.skipped ?? false,
+      error: result.error,
+    });
+  }
+}
+
+async function sendAdminReservationCancellationAlert(
+  reservation: ReservationNotificationSnapshot,
+) {
+  const result = await sendAdminReservationCancelledSms(reservation);
+
+  if (!result.ok) {
+    console.error("Admin reservation cancellation alert SMS failed", {
+      reservationId: reservation.id,
+      skipped: result.skipped ?? false,
+      error: result.error,
+    });
+  }
+}
+
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const parsed = manageReservationLookupSchema.safeParse({
@@ -182,7 +252,7 @@ export async function PATCH(request: Request) {
 
   for (let attempt = 1; attempt <= MAX_UPDATE_ATTEMPTS; attempt += 1) {
     try {
-      const updatedReservation = await db.$transaction(
+      const updateResult = await db.$transaction(
         async (tx) => {
           const settings = await getReservationSettings(tx);
           const now = new Date();
@@ -196,6 +266,10 @@ export async function PATCH(request: Request) {
               reservationTime: true,
               reservationAt: true,
               partySize: true,
+              guestName: true,
+              guestPhone: true,
+              guestEmail: true,
+              specialRequests: true,
             },
           });
 
@@ -227,7 +301,7 @@ export async function PATCH(request: Request) {
             now,
           });
 
-          return tx.reservation.update({
+          const updatedReservation = await tx.reservation.update({
             where: { id: reservation.id },
             data: {
               reservationDate: dateOnlyToUtcDate(nextDate),
@@ -257,15 +331,27 @@ export async function PATCH(request: Request) {
               cancelledAt: true,
             },
           });
+
+          return {
+            previousReservation: reservation,
+            updatedReservation,
+          };
         },
         {
           isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
         },
       );
 
-      if (!updatedReservation) {
+      if (!updateResult) {
         return errorResponse(404, "RESERVATION_NOT_FOUND", "Reservation not found.");
       }
+
+      const { previousReservation, updatedReservation } = updateResult;
+
+      await sendAdminReservationUpdateAlert(
+        previousReservation,
+        updatedReservation,
+      );
 
       const settings = await getReservationSettings(db, { includeSlotCapacities: false });
 
@@ -371,6 +457,8 @@ export async function DELETE(request: Request) {
     if (!cancelledReservation) {
       return errorResponse(404, "RESERVATION_NOT_FOUND", "Reservation not found.");
     }
+
+    await sendAdminReservationCancellationAlert(cancelledReservation);
 
     const settings = await getReservationSettings(db, { includeSlotCapacities: false });
 

@@ -18,6 +18,17 @@ type AdminReservationSmsInput = {
   guestPhone: string;
 };
 
+type AdminReservationUpdateSmsInput = AdminReservationSmsInput & {
+  previousReservationAt: Date;
+  previousPartySize: number;
+  previousGuestName: string;
+  previousGuestPhone: string;
+  previousGuestEmail: string | null;
+  previousSpecialRequests: string | null;
+  guestEmail: string | null;
+  specialRequests: string | null;
+};
+
 function formatReservationDateTime(date: Date, language: ReservationLanguage): string {
   const locale = language === "FR" ? "fr-CA" : "en-CA";
 
@@ -67,6 +78,42 @@ export function renderAdminNewReservationSms(
 ): string {
   return [
     "New reservation",
+    `Time: ${formatAdminReservationDateTime(input.reservationAt)}`,
+    `Group size: ${input.partySize}`,
+    `Name: ${input.guestName}`,
+    `Phone: ${input.guestPhone}`,
+  ].join("\n");
+}
+
+export function renderAdminReservationUpdatedSms(
+  input: AdminReservationUpdateSmsInput,
+): string {
+  const changes = [
+    input.previousReservationAt.getTime() !== input.reservationAt.getTime()
+      ? "time"
+      : null,
+    input.previousPartySize !== input.partySize ? "group size" : null,
+    input.previousGuestName !== input.guestName ? "name" : null,
+    input.previousGuestPhone !== input.guestPhone ? "phone" : null,
+    input.previousGuestEmail !== input.guestEmail ? "email" : null,
+    input.previousSpecialRequests !== input.specialRequests ? "requests" : null,
+  ].filter(Boolean);
+
+  return [
+    "Reservation modified by guest",
+    `Changes: ${changes.length > 0 ? changes.join(", ") : "details updated"}`,
+    `Time: ${formatAdminReservationDateTime(input.reservationAt)}`,
+    `Group size: ${input.partySize}`,
+    `Name: ${input.guestName}`,
+    `Phone: ${input.guestPhone}`,
+  ].join("\n");
+}
+
+export function renderAdminReservationCancelledSms(
+  input: AdminReservationSmsInput,
+): string {
+  return [
+    "Reservation cancelled by guest",
     `Time: ${formatAdminReservationDateTime(input.reservationAt)}`,
     `Group size: ${input.partySize}`,
     `Name: ${input.guestName}`,
