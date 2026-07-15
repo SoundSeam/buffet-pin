@@ -1818,6 +1818,9 @@ export default function AdminReservationsDashboard() {
             <Link href="/admin/settings" className={buttonClass} style={quietButtonStyle}>
               {reservationsCopy.settings}
             </Link>
+            <Link href="/admin/drinks" className={buttonClass} style={quietButtonStyle}>
+              Drinks
+            </Link>
             <button type="button" onClick={signOut} className={buttonClass} style={quietButtonStyle}>
               {reservationsCopy.signOut}
             </button>

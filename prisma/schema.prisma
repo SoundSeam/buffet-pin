@@ -556,3 +556,32 @@ model RestaurantOrderSettings {
   createdAt                     DateTime @default(now())
   updatedAt                     DateTime @updatedAt
 }
+
+model DrinkCategory {
+  id        String      @id @default(cuid())
+  nameEn    String
+  nameFr    String
+  sortOrder Int         @default(0)
+  items     DrinkItem[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([sortOrder, nameEn])
+}
+
+model DrinkItem {
+  id            String        @id @default(cuid())
+  categoryId    String
+  category      DrinkCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  nameEn        String
+  nameFr        String
+  descriptionEn String?
+  descriptionFr String?
+  imageUrl      String?
+  priceCents    Int
+  sortOrder     Int           @default(0)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([categoryId, sortOrder, nameEn])
+}

@@ -4,8 +4,10 @@ export type LocalizedText = {
 };
 
 export type DrinkMenuItem = {
+  id?: string;
   name: LocalizedText;
   description?: LocalizedText;
+  imageUrl?: string;
   price: number;
 };
 
@@ -22,8 +24,8 @@ export type DrinkMenuCategory = {
 export const drinksMenuIsSample = true;
 
 /**
- * This is the only file that needs to change for routine drink-menu updates.
- * Keep category IDs short and stable because they are used as section links.
+ * Fallback content used before the drink-menu database migration is applied.
+ * After migration, routine updates are made at /admin/drinks.
  */
 export const drinkMenuCategories: DrinkMenuCategory[] = [
   {

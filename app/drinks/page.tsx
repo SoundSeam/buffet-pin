@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 
 import DrinksMenuPage from "@/components/drinks/drinks-menu-page";
+import { getPublicDrinkMenu } from "@/lib/drinks/menu";
 import { buildPageMetadata } from "@/lib/seo";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = buildPageMetadata({
   title: "Menu des boissons",
@@ -10,6 +13,8 @@ export const metadata: Metadata = buildPageMetadata({
   pathname: "/drinks",
 });
 
-export default function DrinksPage() {
-  return <DrinksMenuPage />;
+export default async function DrinksPage() {
+  const categories = await getPublicDrinkMenu();
+
+  return <DrinksMenuPage categories={categories} />;
 }
