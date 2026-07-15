@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import DrinksMenuPage from "@/components/drinks/drinks-menu-page";
+import SiteShell from "@/components/site-shell";
 import { getPublicDrinkMenu } from "@/lib/drinks/menu";
 import { buildPageMetadata } from "@/lib/seo";
 
@@ -16,5 +17,9 @@ export const metadata: Metadata = buildPageMetadata({
 export default async function DrinksPage() {
   const categories = await getPublicDrinkMenu();
 
-  return <DrinksMenuPage categories={categories} />;
+  return (
+    <SiteShell>
+      <DrinksMenuPage categories={categories} />
+    </SiteShell>
+  );
 }
