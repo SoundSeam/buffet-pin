@@ -6,7 +6,7 @@ import { db } from "@/lib/db";
 import { generateConfirmationCode } from "@/lib/reservations/codes";
 import {
   ReservationRuleError,
-  assertPublicBookingRules,
+  assertStaffBookingRules,
 } from "@/lib/reservations/rules";
 import {
   dateOnlyToUtcDate,
@@ -298,7 +298,7 @@ export async function POST(request: Request) {
 
           await lockReservationSlot(tx, payload.date, payload.time);
 
-          await assertPublicBookingRules(tx, settings, {
+          await assertStaffBookingRules(tx, settings, {
             reservationDate: payload.date,
             reservationTime: payload.time,
             partySize: payload.partySize,

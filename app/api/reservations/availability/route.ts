@@ -14,7 +14,7 @@ import {
   ReservationRuleError,
   assertDateIsNotPast,
   assertDateIsOpen,
-  assertPartySize,
+  assertPublicPartySize,
 } from "@/lib/reservations/rules";
 import { generateReservationSlotsFromSettings } from "@/lib/reservations/slots";
 import { isLocalSlotAtLeastLeadTimeAway } from "@/lib/reservations/time";
@@ -87,7 +87,7 @@ export async function POST(request: Request) {
     const settings = await getReservationSettings(db);
     const now = new Date();
 
-    assertPartySize(settings, payload.partySize);
+    assertPublicPartySize(payload.partySize);
     assertDateIsNotPast(payload.date, now);
     await assertDateIsOpen(db, payload.date);
 

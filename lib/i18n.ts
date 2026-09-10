@@ -282,8 +282,8 @@ export const translations = {
         stepThreeDescription: "Veuillez vérifier les détails de votre réservation ci-dessous.",
         steps: ["Date et heure", "Vos détails", "Confirmer"],
         partySizeLabel: "Combien de convives?",
-        partySizeHint: "Les réservations en ligne sont offertes pour 6 à 15 personnes.",
-        partySizeNote: "Pour les groupes de plus de 15 personnes, veuillez nous appeler directement.",
+        partySizeHint: "Les réservations en ligne sont offertes pour 1 à 5 personnes.",
+        partySizeNote: "Pour les groupes de 6 personnes ou plus, veuillez appeler le (450) 699-8088 pour réserver.",
         serviceFeeNotice:
           "Pour les groupes de 6 personnes ou plus, des frais de service de 15 % peuvent être ajoutés afin de nous aider à bien prendre soin des grandes tablées.",
         dateLabel: "Date",
@@ -819,8 +819,8 @@ export const translations = {
         stepThreeDescription: "Please review your reservation details below.",
         steps: ["Date & time", "Your details", "Confirm"],
         partySizeLabel: "How many guests?",
-        partySizeHint: "Online reservations are available for 6 to 15 guests.",
-        partySizeNote: "For parties over 15 guests, please call us directly.",
+        partySizeHint: "Online reservations are available for 1 to 5 guests.",
+        partySizeNote: "For parties of 6 or more, please call (450) 699-8088 to reserve.",
         serviceFeeNotice:
           "For groups of 6 or more, a 15% service fee may be added to help us take good care of larger tables.",
         dateLabel: "Date",

@@ -5,6 +5,7 @@ import type {
 } from "@prisma/client";
 
 import { hasCapacityForParty } from "./capacity";
+import { ONLINE_MIN_PARTY_SIZE, ONLINE_MAX_PARTY_SIZE } from "./party-size";
 import { isReservationSlotForSettings } from "./slots";
 import {
   dateOnlyToUtcDate,
@@ -65,14 +66,38 @@ export function assertReservationSlot(
   }
 }
 
-export function assertPartySize(
+export function assertStaffPartySize(
   settings: Pick<RulesSettings, "minPartySize" | "maxPartySize">,
   partySize: number,
 ): void {
-  if (partySize < settings.minPartySize || partySize > settings.maxPartySize) {
+  // Staff must be able to manage the new small online bookings as well as
+  // larger phone bookings admitted by their existing settings.
+  if (
+    Number.isInteger(partySize) &&
+    partySize >= ONLINE_MIN_PARTY_SIZE &&
+    partySize <= ONLINE_MAX_PARTY_SIZE
+  ) return;
+  if (
+    !Number.isInteger(partySize) ||
+    partySize < settings.minPartySize ||
+    partySize > settings.maxPartySize
+  ) {
     throw new ReservationRuleError(
       "INVALID_PARTY_SIZE",
-      `Party size must be between ${settings.minPartySize} and ${settings.maxPartySize}.`,
+      "This party size is outside the permitted reservation limits.",
+    );
+  }
+}
+
+export function assertPublicPartySize(partySize: number): void {
+  if (
+    !Number.isInteger(partySize) ||
+    partySize < ONLINE_MIN_PARTY_SIZE ||
+    partySize > ONLINE_MAX_PARTY_SIZE
+  ) {
+    throw new ReservationRuleError(
+      "INVALID_PARTY_SIZE",
+      "Online reservations are available for 1 to 5 guests. For parties of 6 or more, please call (450) 699-8088 to reserve.",
     );
   }
 }
@@ -175,7 +200,7 @@ export async function assertCapacityForParty(
   }
 }
 
-export async function assertPublicBookingRules(
+export async function assertStaffBookingRules(
   db: RulesDb,
   settings: RulesSettings,
   query: {
@@ -191,11 +216,20 @@ export async function assertPublicBookingRules(
     reservationAtFromLocalSlot(query.reservationDate, query.reservationTime);
 
   assertReservationSlot(settings, query.reservationTime);
-  assertPartySize(settings, query.partySize);
+  assertStaffPartySize(settings, query.partySize);
   assertDateIsNotPast(query.reservationDate, query.now);
   assertReservationLeadTime(reservationAt, query.now);
   await assertDateIsOpen(db, query.reservationDate);
   await assertCapacityForParty(db, settings, query);
+}
+
+export async function assertPublicBookingRules(
+  db: RulesDb,
+  settings: RulesSettings,
+  query: Parameters<typeof assertStaffBookingRules>[2],
+): Promise<void> {
+  assertPublicPartySize(query.partySize);
+  await assertStaffBookingRules(db, settings, query);
 }
 
 export async function assertPublicUpdateRules(
@@ -206,6 +240,7 @@ export async function assertPublicUpdateRules(
     reservationDate: string;
     reservationTime: string;
     currentReservationAt: Date;
+    currentPartySize: number;
     nextReservationAt?: Date;
     partySize: number;
     now?: Date;
@@ -224,7 +259,15 @@ export async function assertPublicUpdateRules(
   }
 
   assertReservationSlot(settings, query.reservationTime);
-  assertPartySize(settings, query.partySize);
+  // Preserve contact edits on existing larger parties, but require a call to
+  // change their booking unless the resulting party fits the online policy.
+  if (
+    query.partySize !== query.currentPartySize ||
+    proposedReservationAt.getTime() !== query.currentReservationAt.getTime() ||
+    query.partySize <= ONLINE_MAX_PARTY_SIZE
+  ) {
+    assertPublicPartySize(query.partySize);
+  }
   assertDateIsNotPast(query.reservationDate, query.now);
   await assertDateIsOpen(db, query.reservationDate);
   await assertCapacityForParty(db, settings, {

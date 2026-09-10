@@ -23,3 +23,8 @@ The user suggested a dedicated Buffet Pin bucket. This already exists as `buffet
 ## Reservation switch alignment — 2026-09-10
 
 CODE_COMPLETE. Separate the visible 56×32px track from its 44px clickable button so the 24px thumb has even 4px spacing on both sides of travel. Only the reservation settings component and this task's documentation change; reservation state/data and media configuration remain untouched. Measured desktop/mobile geometry, both switch states, keyboard activation, visual review, existing Chromium workflows, focused lint, and safe production build pass. Deployment evidence is recorded in `plans/reservation-settings-switch.md`.
+
+
+## Online reservation guest limit — 2026-09-10
+
+CODE_COMPLETE in isolated branch `codex/reservation-five-guest-limit` on exact deployed `c69a427`. Existing UI choices/copy only: public 1–5 guests, phone for 6+. Server enforces availability/create/edit bounds; staff retain larger phone bookings and can manage the new small bookings. Existing larger records retain contact edits/cancellation; rescheduling at 6+ requires calling. No schema, migration, dependency, asset, ordering or availability-switch change. Verification: 30 unit/route tests, nine disposable PostgreSQL/API tests, four desktop/mobile Chromium workflows, TypeScript, focused lint (zero errors/two existing warnings), safe production build and reviewed screenshots/diff. Production publication and smoke remain pending explicit authorization. See `plans/reservation-five-guest-limit.md`.

@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 
 import { useTranslation } from "@/components/providers/language-provider";
+import { ONLINE_PARTY_SIZES, ONLINE_MAX_PARTY_SIZE } from "@/lib/reservations/party-size";
 
 type ManagedReservation = {
   id: string;
@@ -61,8 +62,6 @@ type ApiErrorResponse = {
     message?: string;
   };
 };
-
-const PARTY_SIZES = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 
 const panelClass =
   "rounded-surface border border-[rgba(6,47,36,0.08)] bg-white p-6 shadow-sm sm:p-8 lg:p-10";
@@ -287,6 +286,12 @@ export default function ManageReservationPage({ token }: { token: string }) {
   useEffect(() => {
     if (!form || !reservation?.editingAllowed) {
       setSlots([]);
+      return;
+    }
+
+    if (form.partySize > ONLINE_MAX_PARTY_SIZE) {
+      setSlots([{ time: form.time, remainingCapacity: form.partySize }]);
+      setAvailabilityLoading(false);
       return;
     }
 
@@ -549,7 +554,7 @@ export default function ManageReservationPage({ token }: { token: string }) {
                       onChange={(event) => {
                         setField("date", event.target.value);
                       }}
-                      disabled={!reservation.editingAllowed}
+                      disabled={!reservation.editingAllowed || form.partySize > ONLINE_MAX_PARTY_SIZE}
                       className={fieldClass}
                       style={{ borderColor: "rgba(6,47,36,0.12)" }}
                     />
@@ -562,7 +567,7 @@ export default function ManageReservationPage({ token }: { token: string }) {
                       onChange={(event) => {
                         setField("time", event.target.value);
                       }}
-                      disabled={!reservation.editingAllowed || availabilityLoading}
+                      disabled={!reservation.editingAllowed || form.partySize > ONLINE_MAX_PARTY_SIZE || availabilityLoading}
                       className={fieldClass}
                       style={{ borderColor: "rgba(6,47,36,0.12)" }}
                     >
@@ -585,7 +590,9 @@ export default function ManageReservationPage({ token }: { token: string }) {
                       className={fieldClass}
                       style={{ borderColor: "rgba(6,47,36,0.12)" }}
                     >
-                      {PARTY_SIZES.map((size) => (
+                      {(reservation.partySize > ONLINE_MAX_PARTY_SIZE
+                        ? [...ONLINE_PARTY_SIZES, reservation.partySize]
+                        : ONLINE_PARTY_SIZES).map((size) => (
                         <option key={size} value={size}>
                           {size}
                         </option>
@@ -593,10 +600,10 @@ export default function ManageReservationPage({ token }: { token: string }) {
                     </select>
                   </label>
 
-                  {form.partySize >= 6 ? (
+                  {form.partySize > ONLINE_MAX_PARTY_SIZE ? (
                     <div className="sm:col-span-2">
                       <MessageBox tone="info" size="small">
-                        {copy.reservation.form.serviceFeeNotice}
+                        {copy.reservation.form.partySizeNote}
                       </MessageBox>
                     </div>
                   ) : null}

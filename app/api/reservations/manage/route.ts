@@ -296,6 +296,7 @@ export async function PATCH(request: Request) {
             reservationDate: nextDate,
             reservationTime: nextTime,
             currentReservationAt: reservation.reservationAt,
+            currentPartySize: reservation.partySize,
             nextReservationAt,
             partySize: nextPartySize,
             now,

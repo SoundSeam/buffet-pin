@@ -20,7 +20,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useTranslation } from "@/components/providers/language-provider";
 import type { OccasionKey } from "@/lib/i18n";
 
-const PARTY_SIZES = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+import { ONLINE_PARTY_SIZES, ONLINE_DEFAULT_PARTY_SIZE } from "@/lib/reservations/party-size";
 
 type AvailabilitySlot = {
   time: string;
@@ -215,7 +215,7 @@ export default function ReservationForm() {
   const [form, setForm] = useState<FormState>({
     date: "",
     time: "",
-    partySize: 6,
+    partySize: ONLINE_DEFAULT_PARTY_SIZE,
     name: "",
     phone: "",
     email: "",
@@ -437,7 +437,7 @@ export default function ReservationForm() {
     setForm({
       date: "",
       time: "",
-      partySize: 6,
+      partySize: ONLINE_DEFAULT_PARTY_SIZE,
       name: "",
       phone: "",
       email: "",
@@ -498,7 +498,7 @@ export default function ReservationForm() {
                         {formCopy.partySizeLabel}
                       </div>
                       <div className="grid grid-cols-5 gap-2">
-                        {PARTY_SIZES.map((size) => {
+                        {ONLINE_PARTY_SIZES.map((size) => {
                           const selected = form.partySize === size;
 
                           return (

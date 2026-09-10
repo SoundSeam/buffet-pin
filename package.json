@@ -12,8 +12,8 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "prisma db seed",
-    "test:reservations": "vitest run tests/reservation-switch.test.ts",
-    "test:reservations:db": "vitest run tests/reservation-switch.database.test.ts",
+    "test:reservations": "vitest run tests/reservation-switch.test.ts tests/reservation-party-size.test.ts",
+    "test:reservations:db": "vitest run tests/reservation-switch.database.test.ts tests/reservation-party-size.database.test.ts --no-file-parallelism",
     "test:reservations:browser": "playwright test"
   },
   "prisma": {
