@@ -79,3 +79,6 @@ Use a disposable PostgreSQL instance on `127.0.0.1:55439`, database `reservation
 
 ## Image correction
 User steering requires preserving the prior image fix. Restore only the eight existing CloudFront mappings and associated consumers, without unrelated ordering work. Add loaded-image browser assertions, verify all eight remote assets, rerun browser/build checks, and deploy on main. No database changes or production settings mutations are required.
+
+
+Image correction outcome: `ba6ca3a` is deployed on the production domain through `dpl_TNnFf1XRbzsTyfz41agvuWYJjqQU`. The prior live deployment was inspected using authenticated Vercel access and confirmed to use the same restored CloudFront URLs. All eight CDN assets return 200 and match the existing dedicated bucket's object ETags and sizes. Both buckets remain fully blocked from public S3 access; no infrastructure mutation is necessary or performed. Loaded-image browser assertions, media manifest test, focused lint, and safe production build pass. Live homepage images/video and reservation-page images are loaded, with booking still off.
