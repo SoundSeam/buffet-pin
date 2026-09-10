@@ -82,3 +82,10 @@ User steering requires preserving the prior image fix. Restore only the eight ex
 
 
 Image correction outcome: `ba6ca3a` is deployed on the production domain through `dpl_TNnFf1XRbzsTyfz41agvuWYJjqQU`. The prior live deployment was inspected using authenticated Vercel access and confirmed to use the same restored CloudFront URLs. All eight CDN assets return 200 and match the existing dedicated bucket's object ETags and sizes. Both buckets remain fully blocked from public S3 access; no infrastructure mutation is necessary or performed. Loaded-image browser assertions, media manifest test, focused lint, and safe production build pass. Live homepage images/video and reservation-page images are loaded, with booking still off.
+
+
+## Toggle alignment follow-up — 2026-09-10
+Scope: only the reservation settings switch geometry. The global 44px minimum button height stretched a nominally 32px track while its 24px thumb stayed top-aligned. Keep a 44px clickable button, center a separate 56×32px visual track, and give the 24px thumb an even 4px inset in either state. Preserve switch semantics, saving behavior, flag state, database schema/data, and the working CloudFront assets. No migration. Verify measured geometry and screenshots for both states at desktop/mobile widths, run existing browser coverage, TypeScript/lint and a safe build, then deploy only this UI change on main. Rollback reverts this component-only markup/style change.
+
+
+Toggle alignment verification: PASS at 1440px and 390px in both states. Measured 56×32px track, 24×24px thumb, even 4px inset, and 44px button height (track centered with 6px above/below). Space-key activation works. Four focused screenshots were captured under ignored `.vercel/toggle-*.png` and visually reviewed. Both existing Chromium workflows pass; focused ESLint, `git diff --check`, and the safe production build including type validation pass. The release changes only `components/admin/admin-settings-page.tsx` plus this documentation; no scripts, assets, behavior, dependencies, schema, or migrations are changed. The live reservation setting was false before deployment.

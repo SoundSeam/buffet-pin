@@ -299,9 +299,14 @@ export default function AdminSettingsPage() {
                 aria-describedby="online-reservations-description"
                 disabled={saving}
                 onClick={() => { setOnlineReservationsEnabled((enabled) => !enabled); setSuccess(""); }}
-                className={`relative h-8 w-14 shrink-0 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#062F24] disabled:opacity-50 ${onlineReservationsEnabled ? "bg-[#062F24]" : "bg-gray-400"}`}
+                className="flex h-11 w-14 shrink-0 items-center rounded-full bg-transparent p-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#062F24] disabled:opacity-50"
               >
-                <span aria-hidden="true" className={`absolute top-1 h-6 w-6 rounded-full bg-white shadow transition-transform ${onlineReservationsEnabled ? "left-1 translate-x-6" : "left-1"}`} />
+                <span
+                  aria-hidden="true"
+                  className={`relative block h-8 w-full rounded-full transition-colors ${onlineReservationsEnabled ? "bg-[#062F24]" : "bg-gray-400"}`}
+                >
+                  <span className={`absolute left-1 top-1 h-6 w-6 rounded-full bg-white shadow transition-transform ${onlineReservationsEnabled ? "translate-x-6" : "translate-x-0"}`} />
+                </span>
               </button>
             </div>
             <div>

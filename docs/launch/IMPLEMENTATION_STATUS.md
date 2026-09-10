@@ -18,3 +18,8 @@ The first main-based deployment restored old direct S3 URLs and broke the image 
 ### Dedicated media bucket verification
 
 The user suggested a dedicated Buffet Pin bucket. This already exists as `buffet-pin-media-559050218020` in `us-east-2`, containing exactly the eight required assets. Its non-public bucket policy permits the dedicated CloudFront distribution `E1DVTDEQ25O29`; the prior media-isolation record identifies its domain as `d2d93bgcpgtdom.cloudfront.net`. All eight CloudFront responses return 200 with content lengths and ETags matching the dedicated bucket. Both it and `soundseam-origin` have all four S3 Block Public Access controls enabled. No bucket was created, made public, altered, or deleted during this correction; no source objects were removed. Current credentials permit S3 verification but not CloudFront control-plane inspection; existing CDN delivery was verified directly.
+
+
+## Reservation switch alignment — 2026-09-10
+
+CODE_COMPLETE. Separate the visible 56×32px track from its 44px clickable button so the 24px thumb has even 4px spacing on both sides of travel. Only the reservation settings component and this task's documentation change; reservation state/data and media configuration remain untouched. Measured desktop/mobile geometry, both switch states, keyboard activation, visual review, existing Chromium workflows, focused lint, and safe production build pass. Deployment evidence is recorded in `plans/reservation-settings-switch.md`.
