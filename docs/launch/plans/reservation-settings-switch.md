@@ -89,3 +89,6 @@ Scope: only the reservation settings switch geometry. The global 44px minimum bu
 
 
 Toggle alignment verification: PASS at 1440px and 390px in both states. Measured 56×32px track, 24×24px thumb, even 4px inset, and 44px button height (track centered with 6px above/below). Space-key activation works. Four focused screenshots were captured under ignored `.vercel/toggle-*.png` and visually reviewed. Both existing Chromium workflows pass; focused ESLint, `git diff --check`, and the safe production build including type validation pass. The release changes only `components/admin/admin-settings-page.tsx` plus this documentation; no scripts, assets, behavior, dependencies, schema, or migrations are changed. The live reservation setting was false before deployment.
+
+
+Toggle UI deployment: commit `c69a4272fd9021838372b4badb0f44141a8cb1da` is deployed on main via READY production deployment `dpl_BPhPw6DJPQEGvvbBaxzZPcPEUutq` at `https://www.buffetpin.com`. Live availability remains false, matching the before-deployment value; settings remains authentication-protected. Exact component geometry was verified locally with the authenticated test harness; no production switch mutation was performed. No database or asset changes are included.

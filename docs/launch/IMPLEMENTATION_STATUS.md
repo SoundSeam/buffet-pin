@@ -23,3 +23,6 @@ The user suggested a dedicated Buffet Pin bucket. This already exists as `buffet
 ## Reservation switch alignment — 2026-09-10
 
 CODE_COMPLETE. Separate the visible 56×32px track from its 44px clickable button so the 24px thumb has even 4px spacing on both sides of travel. Only the reservation settings component and this task's documentation change; reservation state/data and media configuration remain untouched. Measured desktop/mobile geometry, both switch states, keyboard activation, visual review, existing Chromium workflows, focused lint, and safe production build pass. Deployment evidence is recorded in `plans/reservation-settings-switch.md`.
+
+
+The toggle UI fix is deployed from main commit `c69a427` (Vercel `dpl_BPhPw6DJPQEGvvbBaxzZPcPEUutq`, READY). Live reservation availability remains unchanged. Deployment evidence is retained in the execution plan; final evidence documentation is committed locally without triggering another production build.
