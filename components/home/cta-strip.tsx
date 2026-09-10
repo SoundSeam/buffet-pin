@@ -1,5 +1,7 @@
 "use client";
 
+import { buffetPinMedia } from "@/lib/media";
+
 import Link from "next/link";
 import { useOnlineReservationsEnabled } from "@/components/providers/reservation-availability-provider";
 import { motion } from "framer-motion";
@@ -42,7 +44,7 @@ export default function CtaStrip() {
         }}
       >
         <source
-          src="https://soundseam-origin.s3.us-east-2.amazonaws.com/misc/BuffetPinReel.mp4"
+          src={buffetPinMedia.reel}
           type="video/mp4"
         />
       </motion.video>

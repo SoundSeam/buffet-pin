@@ -1,5 +1,7 @@
 "use client";
 
+import { buffetPinMedia } from "@/lib/media";
+
 import { motion } from "framer-motion";
 import { GiAlarmClock, GiBabyFace, GiFamilyHouse, GiRecycle } from "react-icons/gi";
 import { useTranslation } from "@/components/providers/language-provider";
@@ -26,9 +28,9 @@ const GOOGLE_MAPS_URL =
 const APPLE_MAPS_URL =
   "https://maps.apple.com/place?address=3-90%20Boul%20St-Jean-Baptiste,%20Ch%C3%A2teauguay%20QC%20J6K%203A6,%20Canada&coordinate=45.360646,-73.713994&name=Buffet%20Pin%20Chateauguay&map=explore";
 const GOOGLE_MAPS_ICON =
-  "https://soundseam-origin.s3.us-east-2.amazonaws.com/misc/Google_Maps_iOS_26.webp";
+  buffetPinMedia.googleMapsIcon;
 const APPLE_MAPS_ICON =
-  "https://soundseam-origin.s3.us-east-2.amazonaws.com/misc/Apple_Maps_iOS_26_icon.png";
+  buffetPinMedia.appleMapsIcon;
 const NOTE_ICONS = [GiFamilyHouse, GiBabyFace, GiAlarmClock, GiRecycle] as const;
 
 export default function LocationHours() {

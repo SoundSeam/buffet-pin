@@ -1,5 +1,7 @@
 "use client";
 
+import { buffetPinMedia } from "@/lib/media";
+
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useOnlineReservationsEnabled } from "@/components/providers/reservation-availability-provider";
@@ -14,9 +16,9 @@ import {
 } from "@/components/home/smooth-reveal";
 
 const LOGO =
-  "https://soundseam-origin.s3.us-east-2.amazonaws.com/misc/Buffet+PIN-Logo+Horizontal.png";
+  buffetPinMedia.logoHorizontal;
 const LOGO_BLACK =
-  "https://soundseam-origin.s3.us-east-2.amazonaws.com/misc/Buffet+PIN-Logo+HorizontalBlack.png";
+  buffetPinMedia.logoHorizontalBlack;
 const HEADER_GREEN = "#041F18";
 
 export default function Navbar() {

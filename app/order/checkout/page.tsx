@@ -1,3 +1,4 @@
+import { buffetPinMedia } from "@/lib/media";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -6,7 +7,7 @@ import OrderFlow from "@/components/order/order-flow";
 import SiteShell from "@/components/site-shell";
 
 const CHECKOUT_LOGO =
-  "https://soundseam-origin.s3.us-east-2.amazonaws.com/misc/Buffet+PIN-Logo+HorizontalBlack.png";
+  buffetPinMedia.logoHorizontalBlack;
 
 export const metadata: Metadata = {
   title: "Place Order",

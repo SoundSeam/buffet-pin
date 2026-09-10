@@ -8,3 +8,8 @@ Verification: clean npm install, nine route/unit tests, four disposable PostgreS
 
 
 Production evidence: feature commit `bdc585801ab1b59427977b68d02c46bed7ceb127`, Vercel deployment `dpl_DDABEwtqf5bRjo3Uzs891d3s3XiK`, live at `https://www.buffetpin.com`. The new migration applied successfully. All 312 pre-existing reservation fingerprints match exactly after deployment; no rows changed or disappeared. Existing settings values, slot capacities, and closure dates also match their before-deployment fingerprints. Online reservations are off. The public status endpoint, blocked booking/availability POSTs, unauthorized settings mutation denial, and desktop/mobile bilingual call-page behavior pass live smoke checks. No real booking, SMS, ordering, payment, or production switch-enable test was performed. The authenticated switch's enable/save/disable path was verified against the isolated test environment.
+
+
+### Image regression correction — 2026-09-09
+
+The first main-based deployment restored old direct S3 URLs and broke the image fix previously present outside main. The user identified this regression. The dedicated CloudFront media manifest and its eight asset mappings are now restored on main, including navbar/footer logos, map icons, homepage videos, ordering food image, and checkout logo; reservation settings and data are unchanged. This correction is being verified and redeployed, with browser checks now requiring loaded images rather than only visible page structure.

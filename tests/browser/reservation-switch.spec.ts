@@ -13,6 +13,9 @@ test("disabled public site shows phone message and no booking links on desktop/m
       await page.goto(path);
       if (width === 390) await page.locator('button[aria-controls="primary-navigation-mobile"]').click();
       await expect(page.locator('a[href="/reservation"]')).toHaveCount(0);
+      await expect.poll(() => page.locator('img[src*="cloudfront.net"]').evaluateAll((images) =>
+        images.length >= 2 && images.every((image) => (image as HTMLImageElement).complete && (image as HTMLImageElement).naturalWidth > 0),
+      )).toBe(true);
     }
   }
   await page.goto("/reservation");

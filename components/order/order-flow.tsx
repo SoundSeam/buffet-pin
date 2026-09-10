@@ -1,5 +1,7 @@
 "use client";
 
+import { buffetPinMedia } from "@/lib/media";
+
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -157,7 +159,7 @@ type Props = {
 
 const CART_STORAGE_KEY = "buffet-pin-public-cart-v1";
 const ORDER_HERO_IMAGE =
-  "https://soundseam-origin.s3.us-east-2.amazonaws.com/misc/BuffetPinFood.png";
+  buffetPinMedia.food;
 
 const emptyCart: CartState = {
   items: [],

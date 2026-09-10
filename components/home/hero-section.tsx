@@ -1,5 +1,7 @@
 "use client";
 
+import { buffetPinMedia } from "@/lib/media";
+
 import Link from "next/link";
 import { useOnlineReservationsEnabled } from "@/components/providers/reservation-availability-provider";
 import { motion } from "framer-motion";
@@ -45,7 +47,7 @@ export default function HeroSection() {
         }}
       >
         <source
-          src="https://soundseam-origin.s3.us-east-2.amazonaws.com/misc/Buffet+Pin+Hero+Background+Final.mp4"
+          src={buffetPinMedia.heroBackground}
           type="video/mp4"
         />
       </motion.video>

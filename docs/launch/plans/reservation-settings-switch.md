@@ -47,7 +47,7 @@ No credentials enter source or client; public status exposes only a Boolean. Tes
 - Diff reviewed: no reservation-table or existing-row migration, unrelated asset/style/ordering changes, secrets, or destructive SQL.
 
 ## Manual verification
-Local desktop/mobile and authenticated settings-switch visual review complete. Production HTTP/browser smoke complete; no Clover, payment, hardware or real reservation submission is part of this task. Existing main media URLs failed to load in local screenshots; the unrelated media migration from the original worktree was intentionally excluded.
+Local desktop/mobile and authenticated settings-switch visual review complete. Production HTTP/browser smoke complete; no Clover, payment, hardware or real reservation submission is part of this task. The first main-based deployment regressed the previously deployed image fix, which was absent from main. The user identified this; the existing CloudFront asset mapping is now being restored as an explicit scope correction.
 
 ## Acceptance criteria
 - Persistent default-off switch saves in reservation settings with authenticated audit evidence.
@@ -75,3 +75,7 @@ Use a disposable PostgreSQL instance on `127.0.0.1:55439`, database `reservation
 - Switch location: `/admin/settings`, “Réservations en ligne” / “Online reservations”; use the existing Save button. Enabling restores booking without a deployment; disabling preserves existing guest management/cancellation.
 - Private backup and matching baseline/after evidence are retained under ignored `.vercel/` in the isolated worktree. Backup restore matched every reservation record. No secrets or customer records are committed.
 - This final documentation update records evidence from the deployed feature source; it contains no application or migration changes.
+
+
+## Image correction
+User steering requires preserving the prior image fix. Restore only the eight existing CloudFront mappings and associated consumers, without unrelated ordering work. Add loaded-image browser assertions, verify all eight remote assets, rerun browser/build checks, and deploy on main. No database changes or production settings mutations are required.
