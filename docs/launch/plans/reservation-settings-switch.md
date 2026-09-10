@@ -1,7 +1,7 @@
 # Reservation settings switch
 
 ## Milestone
-- Scoped reservation-only follow-up; IN_PROGRESS; 2026-09-09.
+- Scoped reservation-only follow-up; VERIFIED; 2026-09-09.
 - Branch: codex/reservation-settings-switch, based on origin/main 45edfa2.
 - Owner: Codex. Existing unrelated work remains in the original checkout.
 
@@ -47,7 +47,7 @@ No credentials enter source or client; public status exposes only a Boolean. Tes
 - Diff reviewed: no reservation-table or existing-row migration, unrelated asset/style/ordering changes, secrets, or destructive SQL.
 
 ## Manual verification
-Local desktop/mobile and production smoke pending. No Clover, payment, hardware or real reservation submission is part of this task.
+Local desktop/mobile and authenticated settings-switch visual review complete. Production HTTP/browser smoke complete; no Clover, payment, hardware or real reservation submission is part of this task. Existing main media URLs failed to load in local screenshots; the unrelated media migration from the original worktree was intentionally excluded.
 
 ## Acceptance criteria
 - Persistent default-off switch saves in reservation settings with authenticated audit evidence.
@@ -64,3 +64,14 @@ Switch on to restore online booking, off to disable; no rebuild needed. Do not d
 
 ## Reproducing database/browser checks
 Use a disposable PostgreSQL instance on `127.0.0.1:55439`, database `reservation_switch_test`, role `reservation_test`; tests hard-code this address and never consume production credentials. Apply main migrations first, insert a synthetic reservation with ID `availability-sentinel`, guest name `Preserved Test Guest`, party size 6, and a Settings row with ID 1; then apply this additive migration. Run the database and browser suites sequentially. The browser harness serves a local Supabase fake on port 55440 and the real Next app on 3111, with no provider secrets. Database suite resets only the test availability switch at setup, preserves the sentinel, and leaves booking disabled. The browser suite checks both switch states and also leaves it disabled. Unit tests require no database.
+
+
+## Production handoff — 2026-09-09
+- Feature commit `bdc585801ab1b59427977b68d02c46bed7ceb127` fast-forwarded main from `45edfa2`; only the reservation feature and its test/documentation support were included.
+- Vercel production deployment `dpl_DDABEwtqf5bRjo3Uzs891d3s3XiK` is READY and serves `https://www.buffetpin.com` (plus existing aliases).
+- Build applied only `20260910020000_reservation_availability_switch`; all prior migration files were preserved. No schema push/reset/drop or seed was run against production.
+- Before/after database verification: 312 reservations, zero missing, zero changed fingerprints; old settings fields, slot capacities, and closure dates unchanged. New flag is false and audit table is empty, as expected for migration initialization without staff actions.
+- Production smoke: status reports false; both booking POST endpoints return 503 / RESERVATIONS_DISABLED; unauthenticated settings PATCH returns 401. Desktop/mobile home and booking pages have no booking links; booking page has large French/English call copy and the correct telephone link.
+- Switch location: `/admin/settings`, “Réservations en ligne” / “Online reservations”; use the existing Save button. Enabling restores booking without a deployment; disabling preserves existing guest management/cancellation.
+- Private backup and matching baseline/after evidence are retained under ignored `.vercel/` in the isolated worktree. Backup restore matched every reservation record. No secrets or customer records are committed.
+- This final documentation update records evidence from the deployed feature source; it contains no application or migration changes.
