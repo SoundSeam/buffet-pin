@@ -17,6 +17,7 @@ import {
 } from "./time";
 
 export type ReservationRuleCode =
+  | "RESERVATIONS_DISABLED"
   | "INVALID_SLOT"
   | "INVALID_PARTY_SIZE"
   | "PAST_DATE"

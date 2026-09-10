@@ -3,6 +3,9 @@ import { Arimo } from "next/font/google";
 
 import "@/lib/env";
 
+import { ReservationAvailabilityProvider } from "@/components/providers/reservation-availability-provider";
+import { getOnlineReservationsEnabled } from "@/lib/reservations/availability";
+
 import { LanguageProvider } from "@/components/providers/language-provider";
 import RestaurantJsonLd from "@/components/seo/restaurant-json-ld";
 import { SITE_NAME, SITE_URL } from "@/lib/seo";
@@ -78,16 +81,22 @@ export const viewport: Viewport = {
   themeColor: "#041F18",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const reservationsEnabled = await getOnlineReservationsEnabled();
+
   return (
     <html lang="fr">
       <body className={arimo.className}>
         <RestaurantJsonLd />
-        <LanguageProvider>{children}</LanguageProvider>
+        <LanguageProvider>
+          <ReservationAvailabilityProvider initialEnabled={reservationsEnabled}>
+            {children}
+          </ReservationAvailabilityProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

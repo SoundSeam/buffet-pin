@@ -11,7 +11,10 @@
     "qr:drinks": "node scripts/generate-drinks-qr.mjs",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:seed": "prisma db seed"
+    "prisma:seed": "prisma db seed",
+    "test:reservations": "vitest run tests/reservation-switch.test.ts",
+    "test:reservations:db": "vitest run tests/reservation-switch.database.test.ts",
+    "test:reservations:browser": "playwright test"
   },
   "prisma": {
     "seed": "node prisma/seed.js"
@@ -30,6 +33,7 @@
     "zod": "^4.4.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "@types/node": "^22.10.2",
     "@types/react": "^19.0.2",
     "@types/react-dom": "^19.0.2",
@@ -40,6 +44,7 @@
     "qrcode": "^1.5.4",
     "sharp": "^0.34.5",
     "tailwindcss": "^3.4.16",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vitest": "^4.1.10"
   }
 }

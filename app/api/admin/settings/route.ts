@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z, ZodError } from "zod";
 
 import { db } from "@/lib/db";
+import { setOnlineReservationsEnabled } from "@/lib/reservations/availability";
 import { getConfiguredCapacityForSlot } from "@/lib/reservations/capacity";
 import {
   ensureSlotCapacitySettingsTable,
@@ -20,6 +21,7 @@ const slotCapacitySchema = z.object({
 });
 
 const settingsSchema = z.object({
+  onlineReservationsEnabled: z.boolean().optional(),
   slotCapacityGuests: z.coerce.number().int().positive().optional(),
   minPartySize: z.coerce.number().int().positive().optional(),
   maxPartySize: z.coerce.number().int().positive().optional(),
@@ -44,6 +46,7 @@ async function requireAdminResponse() {
 }
 
 function serializeSettings(settings: {
+  onlineReservationsEnabled: boolean;
   slotCapacityGuests: number;
   minPartySize: number;
   maxPartySize: number;
@@ -59,6 +62,7 @@ function serializeSettings(settings: {
   const reservationTimes = generateReservationSlotsFromSettings(settings);
 
   return {
+    onlineReservationsEnabled: settings.onlineReservationsEnabled,
     slotCapacityGuests: settings.slotCapacityGuests,
     minPartySize: settings.minPartySize,
     maxPartySize: settings.maxPartySize,
@@ -96,8 +100,8 @@ export async function GET() {
 }
 
 export async function PATCH(request: Request) {
-  const unauthorized = await requireAdminResponse();
-  if (unauthorized) return unauthorized;
+  const user = await getAdminUser();
+  if (!user) return errorResponse(401, "UNAUTHORIZED", "Admin access required.");
 
   try {
     const payload = settingsSchema.parse(await request.json());
@@ -136,6 +140,10 @@ export async function PATCH(request: Request) {
     }
 
     const settings = await db.$transaction(async (tx) => {
+      if (payload.onlineReservationsEnabled !== undefined) {
+        await setOnlineReservationsEnabled(tx, payload.onlineReservationsEnabled, user.id);
+      }
+
       await tx.settings.update({
         where: { id: 1 },
         data: {

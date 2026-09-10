@@ -122,17 +122,18 @@ model Reservation {
 }
 
 model Settings {
-  id                     Int                   @id @default(1)
-  slotCapacityGuests     Int                   @default(24)
-  minPartySize           Int
-  maxPartySize           Int
-  firstSlot              DateTime              @db.Time(0)
-  lastSlot               DateTime              @db.Time(0)
-  slotIntervalMinutes    Int
-  guestModifyCutoffHours Int
-  slotCapacities         SlotCapacitySetting[]
-  createdAt              DateTime              @default(now())
-  updatedAt              DateTime              @updatedAt
+  onlineReservationsEnabled Boolean               @default(false)
+  id                        Int                   @id @default(1)
+  slotCapacityGuests        Int                   @default(24)
+  minPartySize              Int
+  maxPartySize              Int
+  firstSlot                 DateTime              @db.Time(0)
+  lastSlot                  DateTime              @db.Time(0)
+  slotIntervalMinutes       Int
+  guestModifyCutoffHours    Int
+  slotCapacities            SlotCapacitySetting[]
+  createdAt                 DateTime              @default(now())
+  updatedAt                 DateTime              @updatedAt
 }
 
 model SlotCapacitySetting {
@@ -584,4 +585,15 @@ model DrinkItem {
   updatedAt     DateTime      @updatedAt
 
   @@index([categoryId, sortOrder, nameEn])
+}
+
+// Append-only evidence for administrator changes to online booking availability.
+model ReservationAvailabilityEvent {
+  id              String   @id @default(cuid())
+  previousEnabled Boolean
+  enabled         Boolean
+  actorId         String
+  createdAt       DateTime @default(now())
+
+  @@index([createdAt])
 }

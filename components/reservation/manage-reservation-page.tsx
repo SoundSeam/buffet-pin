@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useOnlineReservationsEnabled } from "@/components/providers/reservation-availability-provider";
 import {
   AlertCircle,
   ArrowRight,
@@ -207,6 +208,7 @@ function MessageBox({
 }
 
 export default function ManageReservationPage({ token }: { token: string }) {
+  const reservationsEnabled = useOnlineReservationsEnabled();
   const { language, copy } = useTranslation();
   const [reservation, setReservation] = useState<ManagedReservation | null>(null);
   const [form, setForm] = useState<FormState | null>(null);
@@ -473,14 +475,16 @@ export default function ManageReservationPage({ token }: { token: string }) {
         {!loading && error && !reservation ? (
           <div className="max-w-2xl space-y-6">
             <MessageBox tone="error">{error}</MessageBox>
-            <Link
-              href="/reservation"
-              className={`${primaryButtonClass} focus-visible:outline-none focus-visible:outline-0`}
-              style={{ background: "#062F24", border: "1px solid #062F24", color: "#FFFFFF" }}
-            >
-              Make a reservation
-              <ArrowRight size={18} />
-            </Link>
+            {reservationsEnabled && (
+              <Link
+                href="/reservation"
+                className={`${primaryButtonClass} focus-visible:outline-none focus-visible:outline-0`}
+                style={{ background: "#062F24", border: "1px solid #062F24", color: "#FFFFFF" }}
+              >
+                Make a reservation
+                <ArrowRight size={18} />
+              </Link>
+            )}
           </div>
         ) : null}
 

@@ -271,6 +271,7 @@ export const translations = {
       ],
     },
     reservation: {
+      callToReserve: "Appelez pour réserver.",
       form: {
         title: "Faire une réservation",
         description:
@@ -515,6 +516,8 @@ export const translations = {
         },
       },
       settings: {
+        onlineReservations: "Réservations en ligne",
+        onlineReservationsDescription: "Activez le formulaire et les boutons de réservation. Désactivé : les clients sont invités à appeler.",
         title: "Paramètres des réservations",
         description:
           "Ajustez le nombre de convives permis pour chaque plage horaire publique.",
@@ -805,6 +808,7 @@ export const translations = {
       ],
     },
     reservation: {
+      callToReserve: "Call to reserve.",
       form: {
         title: "Make a Reservation",
         description:
@@ -1047,6 +1051,8 @@ export const translations = {
         },
       },
       settings: {
+        onlineReservations: "Online reservations",
+        onlineReservationsDescription: "Enable the booking form and reservation buttons. When off, guests are asked to call.",
         title: "Reservation settings",
         description:
           "Adjust the number of guests allowed for each public reservation slot.",

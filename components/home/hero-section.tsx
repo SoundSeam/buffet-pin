@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useOnlineReservationsEnabled } from "@/components/providers/reservation-availability-provider";
 import { motion } from "framer-motion";
 import { useTranslation } from "@/components/providers/language-provider";
 import {
@@ -11,6 +12,7 @@ import {
 } from "@/components/home/smooth-reveal";
 
 export default function HeroSection() {
+  const reservationsEnabled = useOnlineReservationsEnabled();
   const { copy } = useTranslation();
 
   return (
@@ -105,25 +107,27 @@ export default function HeroSection() {
                   />
                 </Link>
               </motion.div>
-              <motion.div variants={blurItemVariants} className="w-full sm:w-auto">
-                <Link
-                  href="/reservation"
-                  className="inline-flex w-full items-center justify-center rounded-button border px-6 py-3.5 text-[0.95rem] font-semibold transition-all duration-300 hover:opacity-90 sm:w-auto sm:px-10 sm:py-4 sm:text-lg"
-                  style={{
-                    background: "#F4E8D2",
-                    borderColor: "#F4E8D2",
-                    color: "#062F24",
-                  }}
-                >
-                  <AnimatedWords
-                    as="span"
-                    className="inline-flex"
-                    reveal="mount"
-                    stagger={0.04}
-                    text={copy.home.hero.reservationCta}
-                  />
-                </Link>
-              </motion.div>
+              {reservationsEnabled && (
+                <motion.div variants={blurItemVariants} className="w-full sm:w-auto">
+                  <Link
+                    href="/reservation"
+                    className="inline-flex w-full items-center justify-center rounded-button border px-6 py-3.5 text-[0.95rem] font-semibold transition-all duration-300 hover:opacity-90 sm:w-auto sm:px-10 sm:py-4 sm:text-lg"
+                    style={{
+                      background: "#F4E8D2",
+                      borderColor: "#F4E8D2",
+                      color: "#062F24",
+                    }}
+                  >
+                    <AnimatedWords
+                      as="span"
+                      className="inline-flex"
+                      reveal="mount"
+                      stagger={0.04}
+                      text={copy.home.hero.reservationCta}
+                    />
+                  </Link>
+                </motion.div>
+              )}
             </motion.div>
           </motion.div>
         </div>

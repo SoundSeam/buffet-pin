@@ -1,5 +1,6 @@
 import { Prisma, ReservationStatus } from "@prisma/client";
 import { NextResponse } from "next/server";
+import { getOnlineReservationsEnabled, assertOnlineReservationsEnabled } from "@/lib/reservations/availability";
 import { ZodError } from "zod";
 
 import {
@@ -129,6 +130,10 @@ async function sendAdminReservationAlert(reservation: {
 }
 
 export async function POST(request: Request) {
+  if (!(await getOnlineReservationsEnabled())) {
+    return errorResponse(503, "RESERVATIONS_DISABLED", "Online reservations are currently unavailable. Please call (450) 699-8088.");
+  }
+
   const clientRateLimit = await consumeRateLimit(
     db,
     PUBLIC_ENDPOINT_RATE_LIMITS.reservationCreateClient,
@@ -182,6 +187,7 @@ export async function POST(request: Request) {
     try {
       const reservation = await db.$transaction(
         async (tx) => {
+          await assertOnlineReservationsEnabled(tx);
           const settings = await getReservationSettings(tx);
           const now = new Date();
 
@@ -267,7 +273,7 @@ export async function POST(request: Request) {
       );
     } catch (error) {
       if (error instanceof ReservationRuleError) {
-        const status = error.code === "INSUFFICIENT_CAPACITY" ? 409 : 400;
+        const status = error.code === "RESERVATIONS_DISABLED" ? 503 : error.code === "INSUFFICIENT_CAPACITY" ? 409 : 400;
         return errorResponse(status, error.code, error.message);
       }
 

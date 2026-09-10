@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useOnlineReservationsEnabled } from "@/components/providers/reservation-availability-provider";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -19,6 +20,7 @@ const LOGO_BLACK =
 const HEADER_GREEN = "#041F18";
 
 export default function Navbar() {
+  const reservationsEnabled = useOnlineReservationsEnabled();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
@@ -90,9 +92,11 @@ export default function Navbar() {
                 </Link>
               ))}
 
-              <Link href="/reservation" className={reserveClassName}>
-                {copy.navbar.reserve}
-              </Link>
+              {reservationsEnabled && (
+                <Link href="/reservation" className={reserveClassName}>
+                  {copy.navbar.reserve}
+                </Link>
+              )}
             </div>
 
             <div className="flex items-center gap-3 lg:hidden">
@@ -119,9 +123,11 @@ export default function Navbar() {
                 </Link>
               ))}
 
-              <Link href="/reservation" className={mobileReserveClassName}>
-                {copy.navbar.reserve}
-              </Link>
+              {reservationsEnabled && (
+                <Link href="/reservation" className={mobileReserveClassName}>
+                  {copy.navbar.reserve}
+                </Link>
+              )}
             </div>
           </div>
         ) : null}
@@ -167,17 +173,19 @@ export default function Navbar() {
               </motion.div>
             ))}
 
-            <motion.div variants={blurItemVariants}>
-              <Link href="/reservation" className={reserveClassName}>
-                <AnimatedWords
-                  as="span"
-                  className="inline-flex"
-                  reveal="mount"
-                  stagger={0.04}
-                  text={copy.navbar.reserve}
-                />
-              </Link>
-            </motion.div>
+            {reservationsEnabled && (
+              <motion.div variants={blurItemVariants}>
+                <Link href="/reservation" className={reserveClassName}>
+                  <AnimatedWords
+                    as="span"
+                    className="inline-flex"
+                    reveal="mount"
+                    stagger={0.04}
+                    text={copy.navbar.reserve}
+                  />
+                </Link>
+              </motion.div>
+            )}
           </motion.div>
 
           <motion.div className="flex items-center gap-3 lg:hidden" variants={blurItemVariants}>
@@ -212,9 +220,11 @@ export default function Navbar() {
                 </Link>
               ))}
 
-              <Link href="/reservation" className={mobileReserveClassName}>
-                {copy.navbar.reserve}
-              </Link>
+              {reservationsEnabled && (
+                <Link href="/reservation" className={mobileReserveClassName}>
+                  {copy.navbar.reserve}
+                </Link>
+              )}
             </div>
           </motion.div>
         )}

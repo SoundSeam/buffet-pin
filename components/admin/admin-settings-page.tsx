@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowLeft, Loader2 } from "lucide-react";
 
 import { useTranslation } from "@/components/providers/language-provider";
@@ -13,6 +14,7 @@ type SlotCapacityFormRow = {
 
 type AdminSettingsResponse = {
   settings: {
+    onlineReservationsEnabled: boolean;
     slotCapacities: SlotCapacityFormRow[];
   };
 };
@@ -69,8 +71,11 @@ function formatDisplayTime(time: string, language: "fr" | "en") {
 }
 
 export default function AdminSettingsPage() {
+  const router = useRouter();
   const { language, copy } = useTranslation();
   const settingsCopy = copy.admin.settings;
+  const [onlineReservationsEnabled, setOnlineReservationsEnabled] = useState(false);
+  const [initialOnlineReservationsEnabled, setInitialOnlineReservationsEnabled] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -80,9 +85,10 @@ export default function AdminSettingsPage() {
 
   const hasUnsavedChanges = useMemo(
     () =>
+      onlineReservationsEnabled !== initialOnlineReservationsEnabled ||
       slotCapacitiesSignature(slotCapacities) !==
       slotCapacitiesSignature(initialSlotCapacities),
-    [initialSlotCapacities, slotCapacities],
+    [initialSlotCapacities, slotCapacities, onlineReservationsEnabled, initialOnlineReservationsEnabled],
   );
 
   const slotCapacityColumns = useMemo(
@@ -112,6 +118,8 @@ export default function AdminSettingsPage() {
           (result.data as AdminSettingsResponse).settings.slotCapacities,
         );
 
+        setInitialOnlineReservationsEnabled(result.data.settings.onlineReservationsEnabled);
+        setOnlineReservationsEnabled(result.data.settings.onlineReservationsEnabled);
         setInitialSlotCapacities(nextSlotCapacities);
         setSlotCapacities(nextSlotCapacities);
       } catch {
@@ -157,6 +165,7 @@ export default function AdminSettingsPage() {
   };
 
   const discardChanges = () => {
+    setOnlineReservationsEnabled(initialOnlineReservationsEnabled);
     setSlotCapacities(normalizeSlotCapacities(initialSlotCapacities));
     setError("");
     setSuccess("");
@@ -176,10 +185,10 @@ export default function AdminSettingsPage() {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          slotCapacities: slotCapacities.map((slot) => ({
-            time: slot.time,
-            capacityGuests: slot.capacityGuests,
-          })),
+          ...(onlineReservationsEnabled !== initialOnlineReservationsEnabled ? { onlineReservationsEnabled } : {}),
+          ...(slotCapacitiesSignature(slotCapacities) !== slotCapacitiesSignature(initialSlotCapacities)
+            ? { slotCapacities: normalizeSlotCapacities(slotCapacities) }
+            : {}),
         }),
       });
       const result = await response.json();
@@ -193,9 +202,12 @@ export default function AdminSettingsPage() {
         (result.data as AdminSettingsResponse).settings.slotCapacities,
       );
 
+      setInitialOnlineReservationsEnabled(result.data.settings.onlineReservationsEnabled);
+      setOnlineReservationsEnabled(result.data.settings.onlineReservationsEnabled);
       setInitialSlotCapacities(nextSlotCapacities);
       setSlotCapacities(nextSlotCapacities);
       setSuccess(settingsCopy.saveSuccess);
+      router.refresh();
     } catch {
       setError(settingsCopy.saveError);
     } finally {
@@ -269,6 +281,29 @@ export default function AdminSettingsPage() {
           </div>
         ) : (
           <section className="mt-8">
+            <div className="mb-8 flex items-center justify-between gap-6 rounded-surface border border-[#062F24]/10 bg-[#062F24]/5 p-5">
+              <div>
+                <label htmlFor="online-reservations" className="text-lg font-semibold text-[#062F24]">
+                  {settingsCopy.onlineReservations}
+                </label>
+                <p id="online-reservations-description" className="mt-1 max-w-xl text-sm text-[#062F24]/70">
+                  {settingsCopy.onlineReservationsDescription}
+                </p>
+              </div>
+              <button
+                id="online-reservations"
+                type="button"
+                role="switch"
+                aria-checked={onlineReservationsEnabled}
+                aria-label={settingsCopy.onlineReservations}
+                aria-describedby="online-reservations-description"
+                disabled={saving}
+                onClick={() => { setOnlineReservationsEnabled((enabled) => !enabled); setSuccess(""); }}
+                className={`relative h-8 w-14 shrink-0 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#062F24] disabled:opacity-50 ${onlineReservationsEnabled ? "bg-[#062F24]" : "bg-gray-400"}`}
+              >
+                <span aria-hidden="true" className={`absolute top-1 h-6 w-6 rounded-full bg-white shadow transition-transform ${onlineReservationsEnabled ? "left-1 translate-x-6" : "left-1"}`} />
+              </button>
+            </div>
             <div>
               <div className="hidden md:grid md:grid-cols-2 md:gap-4">
                 {slotCapacityColumns.map((_, index) => (
@@ -315,6 +350,7 @@ export default function AdminSettingsPage() {
                               aria-label={`${settingsCopy.capacity} ${slot.time}`}
                               className={`${fieldClass} text-center font-semibold`}
                               type="number"
+                              disabled={saving}
                               min={1}
                               inputMode="numeric"
                               value={Number.isNaN(slot.capacityGuests) ? "" : slot.capacityGuests}

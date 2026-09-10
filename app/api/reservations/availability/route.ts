@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getOnlineReservationsEnabled } from "@/lib/reservations/availability";
 import { ZodError } from "zod";
 
 import {
@@ -45,6 +46,10 @@ function errorResponse(
 }
 
 export async function POST(request: Request) {
+  if (!(await getOnlineReservationsEnabled())) {
+    return errorResponse(503, "RESERVATIONS_DISABLED", "Online reservations are currently unavailable. Please call (450) 699-8088.");
+  }
+
   const clientRateLimit = await consumeRateLimit(
     db,
     PUBLIC_ENDPOINT_RATE_LIMITS.availabilityClient,

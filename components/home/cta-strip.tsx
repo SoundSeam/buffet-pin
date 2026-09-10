@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useOnlineReservationsEnabled } from "@/components/providers/reservation-availability-provider";
 import { motion } from "framer-motion";
 import { useTranslation } from "@/components/providers/language-provider";
 import {
@@ -11,7 +12,10 @@ import {
 } from "@/components/home/smooth-reveal";
 
 export default function CtaStrip() {
+  const reservationsEnabled = useOnlineReservationsEnabled();
   const { copy } = useTranslation();
+
+  if (!reservationsEnabled) return null;
 
   return (
     <section
