@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 
 import DrinksMenuPage from "@/components/drinks/drinks-menu-page";
 import SiteShell from "@/components/site-shell";
+import { getPublicDrinkMenu } from "@/lib/drinks/menu";
 import styles from "./page.module.css";
 import { buildPageMetadata } from "@/lib/seo";
 
@@ -14,12 +15,15 @@ export const metadata: Metadata = buildPageMetadata({
   pathname: "/drinks",
 });
 
-export default function DrinksPage() {
+export const dynamic = "force-dynamic";
+
+export default async function DrinksPage() {
+  const categories = await getPublicDrinkMenu();
 
   return (
     <div className={styles.page}>
       <SiteShell theme="drinks">
-        <DrinksMenuPage />
+        <DrinksMenuPage categories={categories} />
       </SiteShell>
     </div>
   );

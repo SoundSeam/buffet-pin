@@ -1,18 +1,29 @@
+import http from "node:http";
 import { spawn } from "node:child_process";
 
-// Run the safe production build without loading caller or production credentials.
-const child = spawn(process.execPath, ["node_modules/next/dist/bin/next", "start", "-p", "3117"], {
+// Local-only Supabase fake. Production credentials are never loaded.
+const auth = http.createServer((request, response) => {
+  response.setHeader("Content-Type", "application/json");
+  if (request.url === "/auth/v1/user" && request.headers.authorization?.startsWith("Bearer ")) {
+    response.end(JSON.stringify({ id: "11111111-1111-4111-8111-111111111111", email: "reservation-admin@example.test", aud: "authenticated", role: "authenticated", created_at: "2026-01-01T00:00:00Z", app_metadata: {}, user_metadata: {} }));
+  } else {
+    response.statusCode = 401;
+    response.end(JSON.stringify({ error: "unauthorized" }));
+  }
+});
+await new Promise((resolve) => auth.listen(55442, "127.0.0.1", resolve));
+const child = spawn(process.execPath, ["node_modules/next/dist/bin/next", "dev", "-p", "3117"], {
   env: {
     PATH: process.env.PATH,
-    NODE_ENV: "production",
+    NODE_ENV: "development",
     APP_URL: "http://localhost:3117",
-    CRON_SECRET: "drinks-local-verification-only",
-    DATABASE_URL: "postgresql://build:build@127.0.0.1:59999/build?connect_timeout=1",
-    DIRECT_URL: "postgresql://build:build@127.0.0.1:59999/build?connect_timeout=1",
-    NEXT_PUBLIC_SUPABASE_URL: "https://build.invalid",
-    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "build-only-key",
+    DATABASE_URL: "postgresql://drinks_test@127.0.0.1:55441/drinks_catalog_test",
+    DIRECT_URL: "postgresql://drinks_test@127.0.0.1:55441/drinks_catalog_test",
+    NEXT_PUBLIC_SUPABASE_URL: "http://127.0.0.1:55442",
+    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "test-public-key",
+    ADMIN_EMAILS: "reservation-admin@example.test",
   },
   stdio: "inherit",
 });
-for (const signal of ["SIGTERM", "SIGINT"]) process.on(signal, () => child.kill(signal));
-child.on("exit", (code) => process.exit(code ?? 1));
+for (const signal of ["SIGTERM", "SIGINT"]) process.on(signal, () => { child.kill(signal); auth.close(); });
+child.on("exit", (code) => { auth.close(); process.exit(code ?? 1); });

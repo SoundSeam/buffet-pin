@@ -33,3 +33,9 @@ CODE_COMPLETE in isolated branch `codex/reservation-five-guest-limit` on exact d
 CODE_COMPLETE in isolated `codex/drinks-image-page`, based on live main `596414a`. Scope: public image menu and opt-in dark layout only. Plan: `plans/drinks-image-page.md`.
 
 Drinks page evidence: safe production build, TypeScript, focused lint (zero errors), 30 existing reservation tests and three new Chromium layout/navigation workflows pass. Mobile/desktop screenshots reviewed. Production release is authorized and pending; no migration, database or unrelated application change.
+
+## Drinks catalog restoration — 2026-09-13
+
+`CODE_COMPLETE` for the scoped release on `codex/drinks-catalog`, isolated from live main `7fdd605`. Restores the bilingual database menu with 15 CDN-hosted transparent generated assets. Admin titles and exact-cent prices edit inline with per-row save, retained drafts on failure, stale-edit detection, optional image/description/visibility controls and hidden-entry recovery. Nullable prices stay absent publicly. All drinks mutations record transactional actor/before/after audit evidence. The additive migration and one-time import preserve legacy data.
+
+Verification: 42 unit/database/regression tests and five Chromium workflows pass at 390/768/1440px, including authenticated saves reflected publicly, failed-save recovery, concurrent-edit rejection, hide/reveal and auth denial. Typecheck and focused lint pass (two native-image warnings); safe production build passes. All 15 WebP files match uploaded bytes and preserve alpha, 1.86MB total; original PNGs are also in the private bucket. Migration preserved a sentinel and importer rerun preserved edits. Production migration/import/deployment and smoke pending. Plan: `plans/drinks-catalog.md`.

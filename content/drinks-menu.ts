@@ -8,7 +8,7 @@ export type DrinkMenuItem = {
   name: LocalizedText;
   description?: LocalizedText;
   imageUrl?: string;
-  price: number;
+  price: number | null;
 };
 
 export type DrinkMenuCategory = {

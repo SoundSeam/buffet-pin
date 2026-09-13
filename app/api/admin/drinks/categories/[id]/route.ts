@@ -1,3 +1,4 @@
+import { snapshot } from "@/lib/drinks/mutations";
 import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
@@ -33,7 +34,13 @@ export async function PATCH(
 
   try {
     const payload = drinkCategoryUpdateSchema.parse(await request.json());
-    const category = await db.drinkCategory.update({ where: { id }, data: payload });
+    const category = await db.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT "id" FROM "DrinkCategory" WHERE "id" = ${id} FOR UPDATE`;
+      const before = await tx.drinkCategory.findUniqueOrThrow({ where: { id } });
+      const updated = await tx.drinkCategory.update({ where: { id }, data: payload });
+      await tx.drinkMenuEvent.create({ data: { actorId: user.id, action: "category.update", entityId: id, before: snapshot(before), after: snapshot(updated) } });
+      return updated;
+    });
 
     return NextResponse.json({ ok: true, data: { category } });
   } catch (error) {
@@ -62,7 +69,13 @@ export async function DELETE(
   const { id } = await params;
 
   try {
-    const category = await db.drinkCategory.delete({ where: { id } });
+    const category = await db.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT "id" FROM "DrinkCategory" WHERE "id" = ${id} FOR UPDATE`;
+      const before = await tx.drinkCategory.findUniqueOrThrow({ where: { id }, include: { items: true } });
+      const deleted = await tx.drinkCategory.delete({ where: { id } });
+      await tx.drinkMenuEvent.create({ data: { actorId: user.id, action: "category.delete", entityId: id, before: snapshot(before) } });
+      return deleted;
+    });
 
     return NextResponse.json({ ok: true, data: { category } });
   } catch (error) {

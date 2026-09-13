@@ -1,0 +1,198 @@
+{
+  "categories": [
+    {
+      "id": "drinks-refreshments",
+      "nameEn": "Soft Drinks",
+      "nameFr": "Boissons fraîches",
+      "sortOrder": 0
+    },
+    {
+      "id": "drinks-mocktails",
+      "nameEn": "Mocktails",
+      "nameFr": "Mocktails sans alcool",
+      "sortOrder": 10
+    }
+  ],
+  "items": [
+    {
+      "id": "menu-coke",
+      "categoryId": "drinks-refreshments",
+      "nameEn": "Coke",
+      "nameFr": "Coke",
+      "descriptionEn": null,
+      "descriptionFr": null,
+      "imageUrl": "https://d2d93bgcpgtdom.cloudfront.net/drinks/2026-09-13/01-coke.webp",
+      "priceCents": null,
+      "isVisible": true,
+      "sortOrder": 0
+    },
+    {
+      "id": "menu-coke-zero",
+      "categoryId": "drinks-refreshments",
+      "nameEn": "Coke Zero",
+      "nameFr": "Coke Zero",
+      "descriptionEn": null,
+      "descriptionFr": null,
+      "imageUrl": "https://d2d93bgcpgtdom.cloudfront.net/drinks/2026-09-13/02-coke-zero.webp",
+      "priceCents": null,
+      "isVisible": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "menu-ginger-ale",
+      "categoryId": "drinks-refreshments",
+      "nameEn": "Canada Dry Ginger Ale",
+      "nameFr": "Soda au gingembre Canada Dry",
+      "descriptionEn": null,
+      "descriptionFr": null,
+      "imageUrl": "https://d2d93bgcpgtdom.cloudfront.net/drinks/2026-09-13/03-ginger-ale.webp",
+      "priceCents": null,
+      "isVisible": true,
+      "sortOrder": 2
+    },
+    {
+      "id": "menu-sprite",
+      "categoryId": "drinks-refreshments",
+      "nameEn": "Sprite",
+      "nameFr": "Sprite",
+      "descriptionEn": null,
+      "descriptionFr": null,
+      "imageUrl": "https://d2d93bgcpgtdom.cloudfront.net/drinks/2026-09-13/04-sprite.webp",
+      "priceCents": null,
+      "isVisible": true,
+      "sortOrder": 3
+    },
+    {
+      "id": "menu-fuze-iced-tea",
+      "categoryId": "drinks-refreshments",
+      "nameEn": "Fuze Iced Tea",
+      "nameFr": "Thé glacé Fuze",
+      "descriptionEn": null,
+      "descriptionFr": null,
+      "imageUrl": "https://d2d93bgcpgtdom.cloudfront.net/drinks/2026-09-13/05-fuze-iced-tea.webp",
+      "priceCents": null,
+      "isVisible": true,
+      "sortOrder": 4
+    },
+    {
+      "id": "menu-fruitopia",
+      "categoryId": "drinks-refreshments",
+      "nameEn": "Fruitopia",
+      "nameFr": "Fruitopia",
+      "descriptionEn": null,
+      "descriptionFr": null,
+      "imageUrl": "https://d2d93bgcpgtdom.cloudfront.net/drinks/2026-09-13/06-fruitopia.webp",
+      "priceCents": null,
+      "isVisible": true,
+      "sortOrder": 5
+    },
+    {
+      "id": "menu-fanta",
+      "categoryId": "drinks-refreshments",
+      "nameEn": "Fanta",
+      "nameFr": "Fanta",
+      "descriptionEn": null,
+      "descriptionFr": null,
+      "imageUrl": "https://d2d93bgcpgtdom.cloudfront.net/drinks/2026-09-13/07-fanta.webp",
+      "priceCents": null,
+      "isVisible": true,
+      "sortOrder": 6
+    },
+    {
+      "id": "menu-barqs-root-beer",
+      "categoryId": "drinks-refreshments",
+      "nameEn": "Barq’s Root Beer",
+      "nameFr": "Racinette Barq’s",
+      "descriptionEn": null,
+      "descriptionFr": null,
+      "imageUrl": "https://d2d93bgcpgtdom.cloudfront.net/drinks/2026-09-13/08-barqs-root-beer.webp",
+      "priceCents": null,
+      "isVisible": true,
+      "sortOrder": 7
+    },
+    {
+      "id": "menu-corona-cero",
+      "categoryId": "drinks-refreshments",
+      "nameEn": "Corona Cero 0.0%",
+      "nameFr": "Corona Cero 0,0 %",
+      "descriptionEn": "Alcohol-free beer · 330 mL bottle",
+      "descriptionFr": "Bière sans alcool · Bouteille de 330 mL",
+      "imageUrl": "https://d2d93bgcpgtdom.cloudfront.net/drinks/2026-09-13/09-corona-cero.webp",
+      "priceCents": null,
+      "isVisible": true,
+      "sortOrder": 8
+    },
+    {
+      "id": "menu-perrier",
+      "categoryId": "drinks-refreshments",
+      "nameEn": "Perrier",
+      "nameFr": "Perrier",
+      "descriptionEn": "Sparkling water · 330 mL can",
+      "descriptionFr": "Eau pétillante · Canette de 330 mL",
+      "imageUrl": "https://d2d93bgcpgtdom.cloudfront.net/drinks/2026-09-13/10-perrier.webp",
+      "priceCents": null,
+      "isVisible": true,
+      "sortOrder": 9
+    },
+    {
+      "id": "menu-oasis-orange-juice",
+      "categoryId": "drinks-refreshments",
+      "nameEn": "Oasis Orange Juice",
+      "nameFr": "Jus d’orange Oasis",
+      "descriptionEn": "300 mL bottle",
+      "descriptionFr": "Bouteille de 300 mL",
+      "imageUrl": "https://d2d93bgcpgtdom.cloudfront.net/drinks/2026-09-13/11-oasis-orange-juice.webp",
+      "priceCents": null,
+      "isVisible": true,
+      "sortOrder": 10
+    },
+    {
+      "id": "menu-oasis-apple-juice",
+      "categoryId": "drinks-refreshments",
+      "nameEn": "Oasis Apple Juice",
+      "nameFr": "Jus de pomme Oasis",
+      "descriptionEn": "300 mL bottle",
+      "descriptionFr": "Bouteille de 300 mL",
+      "imageUrl": "https://d2d93bgcpgtdom.cloudfront.net/drinks/2026-09-13/12-oasis-apple-juice.webp",
+      "priceCents": null,
+      "isVisible": true,
+      "sortOrder": 11
+    },
+    {
+      "id": "menu-mango-coconut-refresher",
+      "categoryId": "drinks-mocktails",
+      "nameEn": "Mango Coconut Refresher",
+      "nameFr": "Rafraîchissant mangue coco",
+      "descriptionEn": "Tropical mango and coconut cream over crushed ice.",
+      "descriptionFr": "Mangue tropicale et crème de noix de coco, sur une glace pilée.",
+      "imageUrl": "https://d2d93bgcpgtdom.cloudfront.net/drinks/2026-09-13/13-mango-coconut-refresher.webp",
+      "priceCents": null,
+      "isVisible": true,
+      "sortOrder": 12
+    },
+    {
+      "id": "menu-black-tea-hibiscus-refresher",
+      "categoryId": "drinks-mocktails",
+      "nameEn": "Black Tea Hibiscus Refresher",
+      "nameFr": "Rafraîchissant thé noir hibiscus",
+      "descriptionEn": "Black tea infused with hibiscus, tangy and floral.",
+      "descriptionFr": "Thé noir infusé à l’hibiscus, acidulé et floral.",
+      "imageUrl": "https://d2d93bgcpgtdom.cloudfront.net/drinks/2026-09-13/14-black-tea-hibiscus-refresher.webp",
+      "priceCents": null,
+      "isVisible": true,
+      "sortOrder": 13
+    },
+    {
+      "id": "menu-jasmine-tea-passion-fruit-refresher",
+      "categoryId": "drinks-mocktails",
+      "nameEn": "Jasmine Tea Passion Fruit Refresher",
+      "nameFr": "Rafraîchissant thé jasmin fruit de la passion",
+      "descriptionEn": "Jasmine tea with passion fruit, slightly sweet and exotic.",
+      "descriptionFr": "Thé au jasmin et fruit de la passion, légèrement sucré et exotique.",
+      "imageUrl": "https://d2d93bgcpgtdom.cloudfront.net/drinks/2026-09-13/15-jasmine-tea-passion-fruit-refresher.webp",
+      "priceCents": null,
+      "isVisible": true,
+      "sortOrder": 14
+    }
+  ]
+}

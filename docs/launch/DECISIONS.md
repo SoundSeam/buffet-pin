@@ -14,3 +14,6 @@ User requires a maximum of five online and phone reservations for six or more, u
 
 ## Drinks image page — 2026-09-12
 User selected the supplied Drinks.jpg as the public drinks menu, #020305 page/header/footer background, white header/footer text and existing site content width. Implement as an opt-in layout theme; admin catalog data remains intact. Deployment authorized for this scoped change only.
+
+## Drinks catalog — 2026-09-13
+User authorizes replacing the temporary menu cover with the editable catalog, uploading the 15 approved generated images, simplifying admin title/price edits and deploying the scoped release. Reference images provide content, not photographic style. Preserve the dark public theme. Generated packaged products use the verified 330mL Corona/Perrier and 300mL Oasis formats. The existing 24 sample entries are retained hidden. Reference menus contain no prices; no seed price is represented as an approved selling price. Blank prices remain unpublished until entered by staff. New drinks start hidden in the editor. Migration and import affect drinks only; booking and ordering remain disabled.

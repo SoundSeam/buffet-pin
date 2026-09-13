@@ -1,3 +1,4 @@
+import { snapshot } from "@/lib/drinks/mutations";
 import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
@@ -24,10 +25,15 @@ export async function POST(request: Request) {
 
   try {
     const payload = drinkItemCreateSchema.parse(await request.json());
-    const item = await db.drinkItem.create({ data: payload });
+    const item = await db.$transaction(async (tx) => {
+      const created = await tx.drinkItem.create({ data: payload });
+      await tx.drinkMenuEvent.create({ data: { actorId: user.id, action: "item.create", entityId: created.id, after: snapshot(created) } });
+      return created;
+    });
 
     return NextResponse.json({ ok: true, data: { item } }, { status: 201 });
   } catch (error) {
+    if (error instanceof SyntaxError) return errorResponse(400, "INVALID_JSON", "Invalid request body.");
     if (error instanceof ZodError) {
       return errorResponse(400, "VALIDATION_ERROR", "Invalid drink.", error.issues);
     }

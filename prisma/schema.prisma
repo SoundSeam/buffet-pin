@@ -579,7 +579,8 @@ model DrinkItem {
   descriptionEn String?
   descriptionFr String?
   imageUrl      String?
-  priceCents    Int
+  priceCents    Int?
+  isVisible     Boolean       @default(true)
   sortOrder     Int           @default(0)
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
@@ -596,4 +597,17 @@ model ReservationAvailabilityEvent {
   createdAt       DateTime @default(now())
 
   @@index([createdAt])
+}
+
+// Append-only menu mutation history, independent of reservation and order domains.
+model DrinkMenuEvent {
+  id        String   @id @default(cuid())
+  actorId   String
+  action    String
+  entityId  String
+  before    Json?
+  after     Json?
+  createdAt DateTime @default(now())
+
+  @@index([entityId, createdAt])
 }

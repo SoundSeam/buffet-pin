@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 
+import { DrinkConflict, snapshot, updateDrink } from "@/lib/drinks/mutations";
 import { db } from "@/lib/db";
 import { drinkItemUpdateSchema } from "@/lib/drinks/validation";
 import { getAdminUser } from "@/lib/supabase/auth";
@@ -33,10 +34,12 @@ export async function PATCH(
 
   try {
     const payload = drinkItemUpdateSchema.parse(await request.json());
-    const item = await db.drinkItem.update({ where: { id }, data: payload });
+    const item = await db.$transaction((tx) => updateDrink(tx, id, payload, user.id));
 
     return NextResponse.json({ ok: true, data: { item } });
   } catch (error) {
+    if (error instanceof DrinkConflict) return errorResponse(409, "EDIT_CONFLICT", error.message);
+    if (error instanceof SyntaxError) return errorResponse(400, "INVALID_JSON", "Invalid request body.");
     if (error instanceof ZodError) {
       return errorResponse(400, "VALIDATION_ERROR", "Invalid drink.", error.issues);
     }
@@ -65,7 +68,11 @@ export async function DELETE(
   const { id } = await params;
 
   try {
-    const item = await db.drinkItem.delete({ where: { id } });
+    const item = await db.$transaction(async (tx) => {
+      const deleted = await tx.drinkItem.delete({ where: { id } });
+      await tx.drinkMenuEvent.create({ data: { actorId: user.id, action: "item.delete", entityId: id, before: snapshot(deleted) } });
+      return deleted;
+    });
 
     return NextResponse.json({ ok: true, data: { item } });
   } catch (error) {
