@@ -24,9 +24,9 @@ export default function DrinksMenuPage({ categories }: { categories: DrinkMenuCa
           <div className="h-px flex-1 bg-gradient-to-r from-[#C9A76B]/40 to-transparent" />
         </div>
         <div className={`grid grid-cols-2 gap-x-4 gap-y-7 sm:gap-6 ${category.items.length <= 3 ? "md:grid-cols-3" : "md:grid-cols-3 lg:grid-cols-4"}`}>
-          {category.items.map((item, index) => <article key={item.id ?? item.name.en} className="group min-w-0 rounded-2xl border border-white/[0.08] bg-[#101314] p-3 sm:p-5">
-            <div className="relative mb-4 aspect-square rounded-xl bg-[radial-gradient(ellipse_at_center,_rgba(192,156,95,0.09),_transparent_70%)]">
-              {item.imageUrl && <img src={item.imageUrl} width={1254} height={1254} alt={item.name[language]} loading={index < 4 ? "eager" : "lazy"} decoding="async" className="h-full w-full object-contain transition-transform duration-500 motion-safe:group-hover:scale-[1.025]" />}
+          {category.items.map((item, index) => <article key={item.id ?? item.name.en} className="min-w-0 p-3 sm:p-5">
+            <div className="mb-4 aspect-square">
+              {item.imageUrl && <img src={item.imageUrl} width={1254} height={1254} alt={item.name[language]} loading={index < 4 ? "eager" : "lazy"} decoding="async" className="h-full w-full object-contain" />}
             </div>
             <div className="px-1 pb-2 sm:px-2">
               <h3 className="text-base font-semibold leading-snug text-[#F5F0E7] sm:text-xl">{item.name[language]}</h3>
