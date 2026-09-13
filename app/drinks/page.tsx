@@ -1,11 +1,11 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 
 import DrinksMenuPage from "@/components/drinks/drinks-menu-page";
 import SiteShell from "@/components/site-shell";
-import { getPublicDrinkMenu } from "@/lib/drinks/menu";
+import styles from "./page.module.css";
 import { buildPageMetadata } from "@/lib/seo";
 
-export const dynamic = "force-dynamic";
+export const viewport: Viewport = { themeColor: "#020305" };
 
 export const metadata: Metadata = buildPageMetadata({
   title: "Menu des boissons",
@@ -14,12 +14,13 @@ export const metadata: Metadata = buildPageMetadata({
   pathname: "/drinks",
 });
 
-export default async function DrinksPage() {
-  const categories = await getPublicDrinkMenu();
+export default function DrinksPage() {
 
   return (
-    <SiteShell>
-      <DrinksMenuPage categories={categories} />
-    </SiteShell>
+    <div className={styles.page}>
+      <SiteShell theme="drinks">
+        <DrinksMenuPage />
+      </SiteShell>
+    </div>
   );
 }

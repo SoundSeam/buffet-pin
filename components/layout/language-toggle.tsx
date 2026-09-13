@@ -10,9 +10,10 @@ const LANGUAGE_OPTIONS: Array<{ value: Language; label: string }> = [
 
 type LanguageToggleProps = {
   mobile?: boolean;
+  theme?: "default" | "drinks";
 };
 
-export default function LanguageToggle({ mobile = false }: LanguageToggleProps) {
+export default function LanguageToggle({ mobile = false, theme = "default" }: LanguageToggleProps) {
   const { language, setLanguage, copy } = useTranslation();
   const nextLanguage: Language = language === "fr" ? "en" : "fr";
 
@@ -21,6 +22,7 @@ export default function LanguageToggle({ mobile = false }: LanguageToggleProps) 
       type="button"
       onClick={() => setLanguage(nextLanguage)}
       aria-label={copy.navbar.languageToggle}
+      style={theme === "drinks" ? { background: "#020305" } : undefined}
       className={`inline-flex min-h-0 items-center rounded-button-group border border-white/20 bg-[#062F24] p-1 transition-all ${
         mobile ? "w-full justify-center" : ""
       }`}
@@ -34,7 +36,7 @@ export default function LanguageToggle({ mobile = false }: LanguageToggleProps) 
             className="inline-flex min-h-0 items-center rounded-icon px-3 py-2 text-xs font-semibold leading-none transition-all"
             style={{
               background: active ? "#FFFFFF" : "transparent",
-              color: active ? "#062F24" : "rgba(255,255,255,0.78)",
+              color: active ? (theme === "drinks" ? "#020305" : "#062F24") : "rgba(255,255,255,0.78)",
             }}
           >
             {option.label}

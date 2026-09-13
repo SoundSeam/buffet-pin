@@ -1,0 +1,9 @@
+.page {
+  background: #020305;
+  color: #fff;
+}
+
+/* Keep overscroll and the viewport background continuous with this page. */
+:global(body):has(.page) {
+  background: #020305;
+}

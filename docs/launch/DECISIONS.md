@@ -11,3 +11,6 @@ The user identified that the main-based deployment regressed an already-deployed
 ## Online reservation guest limit — 2026-09-10
 
 User requires a maximum of five online and phone reservations for six or more, using existing UI elements and only this change on the deployed version. Preserve current availability flag and staff larger-party bounds while allowing staff to manage the new small online bookings; public policy is independent of legacy staff min/max settings. Historical larger bookings retain contact editing and cancellation, while rescheduling at six or more requires calling.
+
+## Drinks image page — 2026-09-12
+User selected the supplied Drinks.jpg as the public drinks menu, #020305 page/header/footer background, white header/footer text and existing site content width. Implement as an opt-in layout theme; admin catalog data remains intact. Deployment authorized for this scoped change only.

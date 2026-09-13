@@ -7,15 +7,16 @@ type SiteShellProps = {
   children: ReactNode;
   header?: ReactNode;
   footer?: boolean;
+  theme?: "default" | "drinks";
 };
 
-export default function SiteShell({ children, header, footer = true }: SiteShellProps) {
+export default function SiteShell({ children, header, footer = true, theme = "default" }: SiteShellProps) {
   return (
-    <div className="min-h-screen bg-[#041F18]">
+    <div className={theme === "drinks" ? "min-h-screen bg-[#020305] text-white" : "min-h-screen bg-[#041F18]"}>
       <a href="#main-content" className="skip-link">
         Skip to content
       </a>
-      {header ?? <Navbar />}
+      {header ?? <Navbar theme={theme} />}
       <main id="main-content" tabIndex={-1}>
         {children}
       </main>
@@ -26,9 +27,9 @@ export default function SiteShell({ children, header, footer = true }: SiteShell
           right: "max(1rem, env(safe-area-inset-right))",
         }}
       >
-        <LanguageToggle />
+        <LanguageToggle theme={theme} />
       </div>
-      {footer ? <Footer /> : null}
+      {footer ? <Footer theme={theme} /> : null}
     </div>
   );
 }

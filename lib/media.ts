@@ -1,6 +1,7 @@
 const MEDIA_ORIGIN = "https://d2d93bgcpgtdom.cloudfront.net";
 
 export const buffetPinMedia = {
+  drinksMenu: `${MEDIA_ORIGIN}/misc/Drinks.jpg`,
   appleMapsIcon: `${MEDIA_ORIGIN}/misc/Apple_Maps_iOS_26_icon.png`,
   food: `${MEDIA_ORIGIN}/misc/BuffetPinFood.png`,
   heroBackground: `${MEDIA_ORIGIN}/misc/Buffet%20Pin%20Hero%20Background%20Final.mp4`,

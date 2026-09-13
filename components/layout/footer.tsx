@@ -8,11 +8,12 @@ import { useTranslation } from "@/components/providers/language-provider";
 const LOGO_HORIZONTAL =
   buffetPinMedia.logoSquare;
 
-export default function Footer() {
+export default function Footer({ theme = "default" }: { theme?: "default" | "drinks" }) {
+  const isDrinks = theme === "drinks";
   const { copy } = useTranslation();
 
   return (
-    <footer style={{ background: "#041F18", borderTop: "1px solid rgba(201,165,106,0.15)" }}>
+    <footer style={{ background: isDrinks ? "#020305" : "#041F18", borderTop: "1px solid rgba(201,165,106,0.15)" }}>
       <div className="mx-auto max-w-7xl px-6 py-10 lg:px-8 lg:py-12">
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
           <div className="flex flex-col items-center text-center sm:items-start sm:text-left">
@@ -20,7 +21,7 @@ export default function Footer() {
           </div>
 
           <div className="text-center sm:text-left">
-            <h4 className="mb-5 text-sm font-semibold" style={{ color: "#C9A56A" }}>
+            <h4 className="mb-5 text-sm font-semibold" style={{ color: isDrinks ? "#FFFFFF" : "#C9A56A" }}>
               {copy.footer.socials}
             </h4>
             <div className="flex flex-col items-center gap-3 sm:items-start">
@@ -35,10 +36,10 @@ export default function Footer() {
                     rel="noopener noreferrer"
                     aria-label={link.ariaLabel}
                     className="inline-flex items-center gap-3 transition-all duration-300 hover:opacity-80"
-                    style={{ color: "#C9A56A" }}
+                    style={{ color: isDrinks ? "#FFFFFF" : "#C9A56A" }}
                   >
                     <Icon size={20} />
-                    <span className="text-base" style={{ color: "rgba(244,232,210,0.65)" }}>
+                    <span className="text-base" style={{ color: isDrinks ? "#FFFFFF" : "rgba(244,232,210,0.65)" }}>
                       {link.label}
                     </span>
                   </a>
@@ -48,12 +49,12 @@ export default function Footer() {
           </div>
 
           <div className="text-center sm:text-left">
-            <h4 className="mb-5 text-sm font-semibold" style={{ color: "#C9A56A" }}>
+            <h4 className="mb-5 text-sm font-semibold" style={{ color: isDrinks ? "#FFFFFF" : "#C9A56A" }}>
               {copy.footer.address}
             </h4>
             <div
               className="flex flex-col items-center gap-3 text-base sm:items-start"
-              style={{ color: "rgba(244,232,210,0.65)" }}
+              style={{ color: isDrinks ? "#FFFFFF" : "rgba(244,232,210,0.65)" }}
             >
               {copy.footer.addressLines.map((line) => (
                 <p key={line}>{line}</p>
@@ -62,12 +63,12 @@ export default function Footer() {
           </div>
 
           <div className="text-center sm:text-left">
-            <h4 className="mb-5 text-sm font-semibold" style={{ color: "#C9A56A" }}>
+            <h4 className="mb-5 text-sm font-semibold" style={{ color: isDrinks ? "#FFFFFF" : "#C9A56A" }}>
               {copy.footer.contact}
             </h4>
             <div
               className="flex flex-col items-center gap-3 text-base sm:items-start"
-              style={{ color: "rgba(244,232,210,0.65)" }}
+              style={{ color: isDrinks ? "#FFFFFF" : "rgba(244,232,210,0.65)" }}
             >
               {copy.footer.contactLinks.map((link) => (
                 (() => {

@@ -21,7 +21,8 @@ const LOGO_BLACK =
   buffetPinMedia.logoHorizontalBlack;
 const HEADER_GREEN = "#041F18";
 
-export default function Navbar() {
+export default function Navbar({ theme = "default" }: { theme?: "default" | "drinks" }) {
+  const isDrinks = theme === "drinks";
   const reservationsEnabled = useOnlineReservationsEnabled();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -31,7 +32,7 @@ export default function Navbar() {
   const isHomePage = pathname === "/";
   const useHomeHeader = isHomePage;
   const showHomeTransparentHeader = useHomeHeader && !scrolled && !mobileOpen;
-  const navBackground = showHomeTransparentHeader
+  const navBackground = isDrinks ? "#020305" : showHomeTransparentHeader
     ? "transparent"
     : useHomeHeader
       ? HEADER_GREEN
@@ -41,24 +42,24 @@ export default function Navbar() {
         scrolled ? "backdrop-blur-xl shadow-[0_1px_0_rgba(201,165,106,0.12)]" : ""
       }`
     : "fixed left-0 right-0 top-0 z-50";
-  const logoSrc = useHomeHeader ? LOGO : LOGO_BLACK;
-  const navLinkClassName = useHomeHeader
+  const logoSrc = useHomeHeader || isDrinks ? LOGO : LOGO_BLACK;
+  const navLinkClassName = isDrinks ? "group relative text-sm font-medium text-white hover:opacity-80" : useHomeHeader
     ? "group relative text-sm font-medium text-white/80 transition-colors duration-300 hover:text-[#C9A56A]"
     : "group relative text-sm font-medium text-black hover:text-[#041F18]";
-  const reserveClassName = useHomeHeader
+  const reserveClassName = isDrinks ? "inline-flex items-center justify-center rounded-button border border-white/20 bg-[#020305] px-6 py-2.5 text-sm font-semibold text-white hover:opacity-80" : useHomeHeader
     ? "inline-flex items-center justify-center rounded-button bg-[#C9A56A] px-6 py-2.5 text-sm font-semibold text-[#062F24] transition-all duration-300 hover:opacity-90"
     : "inline-flex items-center justify-center rounded-button bg-[#041F18] px-6 py-2.5 text-sm font-semibold text-white hover:opacity-90";
-  const mobileButtonClassName = useHomeHeader
+  const mobileButtonClassName = isDrinks ? "min-h-11 min-w-11 rounded-icon border border-white/20 bg-[#020305] p-2 text-white hover:opacity-80" : useHomeHeader
     ? "min-h-11 min-w-11 rounded-icon bg-[#C9A56A] p-2 text-[#062F24] transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A56A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#062F24]"
     : "min-h-11 min-w-11 rounded-icon bg-[#041F18] p-2 text-white hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#041F18] focus-visible:ring-offset-2 focus-visible:ring-offset-white";
   const mobileMenuClassName = useHomeHeader
     ? "overflow-hidden border-t border-[#C9A56A]/10 lg:hidden"
     : "overflow-hidden lg:hidden";
-  const mobileMenuStyle = { background: useHomeHeader ? HEADER_GREEN : "#ffffff" };
-  const mobileLinkClassName = useHomeHeader
+  const mobileMenuStyle = { background: isDrinks ? "#020305" : useHomeHeader ? HEADER_GREEN : "#ffffff" };
+  const mobileLinkClassName = isDrinks ? "block text-base font-medium text-white hover:opacity-80" : useHomeHeader
     ? "block text-base font-medium text-white/80 transition-colors hover:text-[#C9A56A]"
     : "block text-base font-medium text-black hover:text-[#041F18]";
-  const mobileReserveClassName = useHomeHeader
+  const mobileReserveClassName = isDrinks ? "inline-flex min-h-11 w-full items-center justify-center rounded-button border border-white/20 bg-[#020305] px-4 py-3 text-sm font-semibold text-white hover:opacity-80" : useHomeHeader
     ? "inline-flex min-h-11 w-full items-center justify-center rounded-button bg-[#C9A56A] px-4 py-3 text-sm font-semibold text-[#062F24] transition-all duration-300 hover:opacity-90"
     : "inline-flex min-h-11 w-full items-center justify-center rounded-button bg-[#041F18] px-4 py-3 text-sm font-semibold text-white hover:opacity-90";
 

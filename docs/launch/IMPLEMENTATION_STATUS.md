@@ -28,3 +28,8 @@ CODE_COMPLETE. Separate the visible 56×32px track from its 44px clickable butto
 ## Online reservation guest limit — 2026-09-10
 
 CODE_COMPLETE in isolated branch `codex/reservation-five-guest-limit` on exact deployed `c69a427`. Existing UI choices/copy only: public 1–5 guests, phone for 6+. Server enforces availability/create/edit bounds; staff retain larger phone bookings and can manage the new small bookings. Existing larger records retain contact edits/cancellation; rescheduling at 6+ requires calling. No schema, migration, dependency, asset, ordering or availability-switch change. Verification: 30 unit/route tests, nine disposable PostgreSQL/API tests, four desktop/mobile Chromium workflows, TypeScript, focused lint (zero errors/two existing warnings), safe production build and reviewed screenshots/diff. Production publication and smoke remain pending explicit authorization. See `plans/reservation-five-guest-limit.md`.
+
+## Drinks image page — 2026-09-12
+CODE_COMPLETE in isolated `codex/drinks-image-page`, based on live main `596414a`. Scope: public image menu and opt-in dark layout only. Plan: `plans/drinks-image-page.md`.
+
+Drinks page evidence: safe production build, TypeScript, focused lint (zero errors), 30 existing reservation tests and three new Chromium layout/navigation workflows pass. Mobile/desktop screenshots reviewed. Production release is authorized and pending; no migration, database or unrelated application change.
