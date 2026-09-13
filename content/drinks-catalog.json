@@ -36,8 +36,7 @@
       "imageUrl": "https://d2d93bgcpgtdom.cloudfront.net/drinks/2026-09-13-outlined/02-coke-zero.webp",
       "priceCents": null,
       "isVisible": true,
-      "sortOrder": 1,
-      "nextUrl": "https://d2d93bgcpgtdom.cloudfront.net/drinks/2026-09-13-outlined/02-coke-zero.webp"
+      "sortOrder": 1
     },
     {
       "id": "menu-ginger-ale",
@@ -73,8 +72,7 @@
       "imageUrl": "https://d2d93bgcpgtdom.cloudfront.net/drinks/2026-09-13-outlined/05-fuze-iced-tea.webp",
       "priceCents": null,
       "isVisible": true,
-      "sortOrder": 4,
-      "nextUrl": "https://d2d93bgcpgtdom.cloudfront.net/drinks/2026-09-13-outlined/05-fuze-iced-tea.webp"
+      "sortOrder": 4
     },
     {
       "id": "menu-fruitopia",
