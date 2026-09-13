@@ -60,3 +60,6 @@ Run npx vitest run tests/drinks.test.ts tests/drinks.database.test.ts tests/rese
 
 ## Card framing removal — 2026-09-13
 User requests removing the ornamental cards. Remove article backgrounds, outlines, corner rounding, image glow and hover zoom. Preserve the existing responsive grid, image sizing, names, descriptions and prices. This is a presentation-only follow-up; no database or asset mutation. Logo compositing remains pending the separate editing-method clarification. Verification: three existing bilingual catalog browser workflows PASS at390/768/1440px; desktop screenshot reviewed. Typecheck, focused lint (one existing native-image warning), safe production build and scoped diff checks PASS. Deployment pending.
+
+
+Card framing removal VERIFIED in production: main commit73dc25c84ef2518ad8003aeaeb1b9fcb2a1483e1, Vercel dpl_86yn4yeQAcuD6NTfn2b7TLd85yQv READY with exact gitSource and www.buffetpin.com alias. Three live bilingual browser workflows pass at390/768/1440px. Computed styles confirm all15 articles have transparent background,0px border,0px radius and no image glow. No data, prices or media changed. Previous dpl_5VWX7szysxo738qmErHK7LXVu3kR remains rollback target.

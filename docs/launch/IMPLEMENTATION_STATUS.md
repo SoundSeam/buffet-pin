@@ -42,4 +42,4 @@ Verification: 42 unit/database/regression tests and five Chromium workflows pass
 
 
 ### Drinks card framing removal — 2026-09-13
-CODE_COMPLETE: user requests unframed drinks on the existing page. The card background, border, rounded framing, image glow and hover zoom are removed. Layout and catalog data remain intact. Responsive browser checks, typecheck, lint and safe build pass. Deployment pending; see plans/drinks-catalog.md.
+VERIFIED: user requests unframed drinks on the existing page. The card background, border, rounded framing, image glow and hover zoom are removed. Layout and catalog data remain intact. Responsive browser checks, typecheck, lint and safe build pass. Deployed commit73dc25c to Vercel dpl_86yn4yeQAcuD6NTfn2b7TLd85yQv. Three live responsive workflows and direct computed-style checks pass; see plans/drinks-catalog.md.
