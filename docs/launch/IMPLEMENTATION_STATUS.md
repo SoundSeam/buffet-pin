@@ -43,3 +43,7 @@ Verification: 42 unit/database/regression tests and five Chromium workflows pass
 
 ### Drinks card framing removal — 2026-09-13
 VERIFIED: user requests unframed drinks on the existing page. The card background, border, rounded framing, image glow and hover zoom are removed. Layout and catalog data remain intact. Responsive browser checks, typecheck, lint and safe build pass. Deployed commit73dc25c to Vercel dpl_86yn4yeQAcuD6NTfn2b7TLd85yQv. Three live responsive workflows and direct computed-style checks pass; see plans/drinks-catalog.md.
+
+
+### Branded glass images — 2026-09-13
+VERIFIED: user-approved direct compositing adds official online logos to the eight soft-drink glasses. Original alpha is bit-identical; pixels outside logo ink are unchanged. Eight versioned PNG/WebP assets uploaded and byte-verified through the existing CDN. Transactional replacement changes only eight image URLs with before/after audit evidence; original URLs remain available for rollback. Three live bilingual browser workflows pass at 390/768/1440px; all 15 assets load. Exactly eight image URLs and their revision timestamps changed; all other fields and 31 other catalog rows are unchanged. See plans/drinks-catalog.md.

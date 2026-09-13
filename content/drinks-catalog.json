@@ -21,7 +21,7 @@
       "nameFr": "Coke",
       "descriptionEn": null,
       "descriptionFr": null,
-      "imageUrl": "https://d2d93bgcpgtdom.cloudfront.net/drinks/2026-09-13/01-coke.webp",
+      "imageUrl": "https://d2d93bgcpgtdom.cloudfront.net/drinks/2026-09-13-branded/01-coke.webp",
       "priceCents": null,
       "isVisible": true,
       "sortOrder": 0
@@ -33,7 +33,7 @@
       "nameFr": "Coke Zero",
       "descriptionEn": null,
       "descriptionFr": null,
-      "imageUrl": "https://d2d93bgcpgtdom.cloudfront.net/drinks/2026-09-13/02-coke-zero.webp",
+      "imageUrl": "https://d2d93bgcpgtdom.cloudfront.net/drinks/2026-09-13-branded/02-coke-zero.webp",
       "priceCents": null,
       "isVisible": true,
       "sortOrder": 1
@@ -45,7 +45,7 @@
       "nameFr": "Soda au gingembre Canada Dry",
       "descriptionEn": null,
       "descriptionFr": null,
-      "imageUrl": "https://d2d93bgcpgtdom.cloudfront.net/drinks/2026-09-13/03-ginger-ale.webp",
+      "imageUrl": "https://d2d93bgcpgtdom.cloudfront.net/drinks/2026-09-13-branded/03-ginger-ale.webp",
       "priceCents": null,
       "isVisible": true,
       "sortOrder": 2
@@ -57,7 +57,7 @@
       "nameFr": "Sprite",
       "descriptionEn": null,
       "descriptionFr": null,
-      "imageUrl": "https://d2d93bgcpgtdom.cloudfront.net/drinks/2026-09-13/04-sprite.webp",
+      "imageUrl": "https://d2d93bgcpgtdom.cloudfront.net/drinks/2026-09-13-branded/04-sprite.webp",
       "priceCents": null,
       "isVisible": true,
       "sortOrder": 3
@@ -69,7 +69,7 @@
       "nameFr": "Thé glacé Fuze",
       "descriptionEn": null,
       "descriptionFr": null,
-      "imageUrl": "https://d2d93bgcpgtdom.cloudfront.net/drinks/2026-09-13/05-fuze-iced-tea.webp",
+      "imageUrl": "https://d2d93bgcpgtdom.cloudfront.net/drinks/2026-09-13-branded/05-fuze-iced-tea.webp",
       "priceCents": null,
       "isVisible": true,
       "sortOrder": 4
@@ -81,7 +81,7 @@
       "nameFr": "Fruitopia",
       "descriptionEn": null,
       "descriptionFr": null,
-      "imageUrl": "https://d2d93bgcpgtdom.cloudfront.net/drinks/2026-09-13/06-fruitopia.webp",
+      "imageUrl": "https://d2d93bgcpgtdom.cloudfront.net/drinks/2026-09-13-branded/06-fruitopia.webp",
       "priceCents": null,
       "isVisible": true,
       "sortOrder": 5
@@ -93,7 +93,7 @@
       "nameFr": "Fanta",
       "descriptionEn": null,
       "descriptionFr": null,
-      "imageUrl": "https://d2d93bgcpgtdom.cloudfront.net/drinks/2026-09-13/07-fanta.webp",
+      "imageUrl": "https://d2d93bgcpgtdom.cloudfront.net/drinks/2026-09-13-branded/07-fanta.webp",
       "priceCents": null,
       "isVisible": true,
       "sortOrder": 6
@@ -105,7 +105,7 @@
       "nameFr": "Racinette Barq’s",
       "descriptionEn": null,
       "descriptionFr": null,
-      "imageUrl": "https://d2d93bgcpgtdom.cloudfront.net/drinks/2026-09-13/08-barqs-root-beer.webp",
+      "imageUrl": "https://d2d93bgcpgtdom.cloudfront.net/drinks/2026-09-13-branded/08-barqs-root-beer.webp",
       "priceCents": null,
       "isVisible": true,
       "sortOrder": 7

@@ -5,7 +5,7 @@ for (const width of [390, 768, 1440]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/drinks");
     await expect(page.locator("main article")).toHaveCount(15);
-    await expect(page.locator('main img[src*="/drinks/2026-09-13/"]')).toHaveCount(15);
+    await expect(page.locator('main img[src*="/drinks/"]')).toHaveCount(15);
     for (const article of await page.locator("main article").all()) {
       await article.scrollIntoViewIfNeeded();
       await expect.poll(() => article.locator("img").evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth === 900)).toBe(true);
