@@ -47,3 +47,6 @@ VERIFIED: user requests unframed drinks on the existing page. The card backgroun
 
 ### Branded glass images — 2026-09-13
 VERIFIED: user-approved direct compositing adds official online logos to the eight soft-drink glasses. Original alpha is bit-identical; pixels outside logo ink are unchanged. Eight versioned PNG/WebP assets uploaded and byte-verified through the existing CDN. Transactional replacement changes only eight image URLs with before/after audit evidence; original URLs remain available for rollback. Three live bilingual browser workflows pass at 390/768/1440px; all 15 assets load. Exactly eight image URLs and their revision timestamps changed; all other fields and 31 other catalog rows are unchanged. See plans/drinks-catalog.md.
+
+### Fuze and Coke Zero contrast — 2026-09-13
+VERIFIED: replace the two low-contrast marks with strongly outlined variants of the official web artwork. Transparent original photographs preserved; visual review at menu size passes. Both versioned CDN assets match local bytes; exactly two image URLs updated with audit events, all other fields and 37 other rows unchanged. Three live bilingual browser workflows pass at 390/768/1440px.

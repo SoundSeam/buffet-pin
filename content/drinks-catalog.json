@@ -33,10 +33,11 @@
       "nameFr": "Coke Zero",
       "descriptionEn": null,
       "descriptionFr": null,
-      "imageUrl": "https://d2d93bgcpgtdom.cloudfront.net/drinks/2026-09-13-branded/02-coke-zero.webp",
+      "imageUrl": "https://d2d93bgcpgtdom.cloudfront.net/drinks/2026-09-13-outlined/02-coke-zero.webp",
       "priceCents": null,
       "isVisible": true,
-      "sortOrder": 1
+      "sortOrder": 1,
+      "nextUrl": "https://d2d93bgcpgtdom.cloudfront.net/drinks/2026-09-13-outlined/02-coke-zero.webp"
     },
     {
       "id": "menu-ginger-ale",
@@ -69,10 +70,11 @@
       "nameFr": "Thé glacé Fuze",
       "descriptionEn": null,
       "descriptionFr": null,
-      "imageUrl": "https://d2d93bgcpgtdom.cloudfront.net/drinks/2026-09-13-branded/05-fuze-iced-tea.webp",
+      "imageUrl": "https://d2d93bgcpgtdom.cloudfront.net/drinks/2026-09-13-outlined/05-fuze-iced-tea.webp",
       "priceCents": null,
       "isVisible": true,
-      "sortOrder": 4
+      "sortOrder": 4,
+      "nextUrl": "https://d2d93bgcpgtdom.cloudfront.net/drinks/2026-09-13-outlined/05-fuze-iced-tea.webp"
     },
     {
       "id": "menu-fruitopia",
