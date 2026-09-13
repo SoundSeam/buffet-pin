@@ -1,7 +1,7 @@
 # Drinks catalog restoration
 
 ## Milestone
-Scoped site release; IN_PROGRESS; 2026-09-13. Branch codex/drinks-catalog, based on live main 7fdd605. Owner: Codex. User authorized generated-media upload, catalog/admin replacement and deployment.
+Scoped site release; VERIFIED; 2026-09-13. Branch codex/drinks-catalog, based on live main 7fdd605. Owner: Codex. User authorized generated-media upload, catalog/admin replacement and deployment.
 
 ## Goal / current and required behavior
 Replace the temporary Drinks.jpg cover with the existing bilingual database catalog. Publish the 15 approved generated assets with reference names/descriptions. Make titles and prices editable directly in rows; advanced details and hidden legacy entries remain accessible.
@@ -41,3 +41,18 @@ Prior production dpl_2xkNND1xELfAxtmefqzxTQ8mop3J renders the image cover indepe
 
 ## Production data preparation
 Final safe build, typecheck and focused lint PASS. Migration 20260913170000_drinks_catalog applied successfully alone to production. Catalog import saved a private before snapshot and created an actor-attributed import event; 15 approved entries are visible, legacy24 retained hidden, all new prices unset. Protected reservation/settings/order-settings fingerprints are byte-identical after import. Deployment next; current public cover remains available throughout preparation.
+
+
+## Production verification — 2026-09-13
+VERIFIED. Commit c03518e193268794685016ebcbe29aefba90e516 was fast-forwarded to main. Vercel dpl_5VWX7szysxo738qmErHK7LXVu3kR is READY, aliased to https://www.buffetpin.com, with exact matching gitSource. Build reports no pending migrations and successful compilation.
+
+Live browser checks PASS at390/768/1440px: all15 transparent CDN assets, translated reference titles/ingredients, unset prices omitted, no overflow, theme cleanup on navigation, and unauthenticated admin redirect/API401. Four live workflows passed; the fifth authenticated mutation workflow intentionally runs only against the disposable local database and passed there. No live test prices or bookings created.
+
+Production catalog matches all15 manifest rows exactly. All24 original rows retain titles, descriptions, images, prices, category and order and are hidden. Catalog import audit exists with delegated actor and before/after evidence. Reservation, settings, restaurant order settings, closures and slot-capacity fingerprints are identical before/after import and deployment; online reservations and ordering remain false. Public drinks/home/reservation/status HTTP200.
+
+Logs: /tmp/buffet-catalog-production-{build,browser}.log. Private backups and protected-domain hashes: /Users/daniel/buffet-pin/output/drinks-catalog-release-2026-09-13/. Screenshots: ignored test-results/. Original assets remain in the dedicated bucket, with immutable optimized derivatives. Prior Vercel deployment is the tested operational rollback target by architecture (cover page independent of catalog); rollback itself was not performed. No remaining release gate. Staff can enter approved prices in /admin/drinks.
+
+## Local reproduction
+Install with npm ci and use Node22.23.2 or later compatible Node22. Start a disposable PostgreSQL17 instance at127.0.0.1:55441, user drinks_test, database drinks_catalog_test. Apply the schema with prisma db push using DATABASE_URL and DIRECT_URL both pointing explicitly to that local database. For the migration-preservation test, prepare a pre-change DrinkItem (without isVisible and with required priceCents), insert category sentinel-category and item migration-sentinel (Preserved drink / Boisson conservée,475cents), then apply prisma/migrations/20260913170000_drinks_catalog/migration.sql. Run scripts/import-drinks-catalog.mjs --apply with the local URL, DRINKS_IMPORT_ACTOR=test-import and a new private DRINKS_BACKUP_PATH. Never use production credentials for this setup.
+
+Run npx vitest run tests/drinks.test.ts tests/drinks.database.test.ts tests/reservation-switch.test.ts tests/reservation-party-size.test.ts tests/media.test.ts, then npx playwright test --config tests/drinks/playwright.config.ts. The browser harness has a localhost-only fake Supabase server and disposable DB coordinates. DRINKS_TEST_URL=https://www.buffetpin.com runs read-only production workflows and skips authenticated mutations. Typecheck: npx tsc --noEmit --incremental false. Build: node scripts/build-reservation-safe.mjs.
