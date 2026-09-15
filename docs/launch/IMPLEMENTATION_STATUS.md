@@ -50,3 +50,7 @@ VERIFIED: user-approved direct compositing adds official online logos to the eig
 
 ### Fuze and Coke Zero contrast — 2026-09-13
 VERIFIED: replace the two low-contrast marks with strongly outlined variants of the official web artwork. Transparent original photographs preserved; visual review at menu size passes. Both versioned CDN assets match local bytes; exactly two image URLs updated with audit events, all other fields and 37 other rows unchanged. Three live bilingual browser workflows pass at 390/768/1440px.
+
+
+## Online reservations for 6–12 — 2026-09-15
+CODE_COMPLETE in isolated `/Users/daniel/buffet-pin-reservation-six-to-twelve`, branch `codex/reservation-six-to-twelve`, on exact live main `0a09ad0`. Scoped range/copy update only; booking switch currently true and preserved. 39 unit/route tests, 11 disposable DB/API tests, five Chromium workflows, TypeScript, focused lint and safe build pass. Diff and mobile/desktop screenshots reviewed. Deployment explicitly authorized and pending. Plan: `plans/reservation-six-to-twelve.md`.

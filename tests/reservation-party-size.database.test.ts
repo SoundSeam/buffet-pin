@@ -1,4 +1,4 @@
-import { beforeAll, afterAll, describe, expect, it, vi } from "vitest";
+import { beforeAll, afterAll, afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/db", async () => {
   const { PrismaClient } = await import("@prisma/client");
@@ -25,7 +25,7 @@ import { PATCH as staffUpdate } from "@/app/api/admin/reservations/[id]/route";
 import { sendReservationConfirmationSms, sendAdminNewReservationSms } from "@/lib/sms";
 
 const date = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
-const payload = { date, time: "17:00", partySize: 5, name: "Online Limit Test", phone: "+15145550199", language: "EN" };
+const payload = { date, time: "17:00", partySize: 12, name: "Online Limit Test", phone: "+15145550199", language: "EN" };
 const ids: string[] = [];
 let originalSettings: Awaited<ReturnType<typeof db.settings.findUniqueOrThrow>>;
 let sentinel: unknown;
@@ -42,8 +42,11 @@ beforeAll(async () => {
   sentinel = await db.reservation.findUniqueOrThrow({ where: { id: "availability-sentinel" } });
   await db.settings.update({ where: { id: 1 }, data: { onlineReservationsEnabled: true } });
 });
-afterAll(async () => {
+afterEach(async () => {
   await db.reservation.deleteMany({ where: { id: { in: ids } } });
+  ids.length = 0;
+});
+afterAll(async () => {
   await db.settings.update({ where: { id: 1 }, data: { onlineReservationsEnabled: originalSettings.onlineReservationsEnabled } });
   expect(await db.reservation.findUniqueOrThrow({ where: { id: "availability-sentinel" } })).toEqual(sentinel);
   const after = await db.settings.findUniqueOrThrow({ where: { id: 1 } });
@@ -52,16 +55,16 @@ afterAll(async () => {
 });
 
 describe("public and staff reservation API boundaries", () => {
-  it("accepts availability at one and five despite existing 6–15 settings", async () => {
-    for (const partySize of [1, 5]) {
+  it("accepts availability at six and twelve despite existing 6–15 settings", async () => {
+    for (const partySize of [6, 12]) {
       const response = await availability(request("POST", { date, partySize }));
       expect(response.status).toBe(200);
       expect((await response.json()).data.slots.length).toBeGreaterThan(0);
     }
   });
-  it("rejects six and fifteen on availability and creation without rows or SMS", async () => {
+  it("rejects five and thirteen on availability and creation without rows or SMS", async () => {
     const before = await db.reservation.count();
-    for (const partySize of [6, 15]) {
+    for (const partySize of [5, 13]) {
       for (const [handler, body] of [[availability, { date, partySize }], [create, { ...payload, partySize }]] as const) {
         const response = await handler(request("POST", body));
         expect(response.status).toBe(400);
@@ -72,29 +75,29 @@ describe("public and staff reservation API boundaries", () => {
     expect(sendReservationConfirmationSms).not.toHaveBeenCalled();
     expect(sendAdminNewReservationSms).not.toHaveBeenCalled();
   });
-  it("creates one and five, permits editing within the limit, rejects six without mutation", async () => {
-    await make(1);
-    const booking = await make(5);
-    const response = await update(request("PATCH", { token: booking.manageToken, partySize: 6 }));
-    expect(response.status).toBe(400);
-    expect(await db.reservation.findUniqueOrThrow({ where: { id: booking.id } })).toEqual(booking);
-    expect((await update(request("PATCH", { token: booking.manageToken, partySize: 4 }))).status).toBe(200);
+  it("creates six and twelve, permits edits within the range, rejects both boundaries without mutation", async () => {
+    await make(6);
+    const booking = await make(12);
+    for (const partySize of [5, 13]) {
+      const response = await update(request("PATCH", { token: booking.manageToken, partySize }));
+      expect(response.status).toBe(400);
+      expect(await db.reservation.findUniqueOrThrow({ where: { id: booking.id } })).toEqual(booking);
+    }
+    expect((await update(request("PATCH", { token: booking.manageToken, partySize: 10 }))).status).toBe(200);
     expect((await staffUpdate(request("PATCH", { partySize: 3 }), { params: Promise.resolve({ id: booking.id }) })).status).toBe(200);
   });
-  it("keeps staff larger bookings and historical management/cancellation working", async () => {
-    const booking = await make(6, true);
-    const adminResponse = await staffUpdate(request("PATCH", { partySize: 7 }), { params: Promise.resolve({ id: booking.id }) });
-    expect(adminResponse.status).toBe(200);
+  it.each([4, 15])("keeps staff and historical management/cancellation working for a party of %i", async (partySize) => {
+    const booking = await make(partySize, true);
     const url = `http://localhost/api/reservations/manage?token=${booking.manageToken}`;
     expect((await read(new Request(url))).status).toBe(200);
     expect((await update(request("PATCH", { token: booking.manageToken, name: "Updated Test Contact" }))).status).toBe(200);
     expect((await update(request("PATCH", { token: booking.manageToken, time: "18:00" }))).status).toBe(400);
-    expect((await db.reservation.findUniqueOrThrow({ where: { id: booking.id } })).partySize).toBe(7);
+    expect((await db.reservation.findUniqueOrThrow({ where: { id: booking.id } })).partySize).toBe(partySize);
     expect((await cancel(new Request(url, { method: "DELETE" }))).status).toBe(200);
     expect((await db.reservation.findUniqueOrThrow({ where: { id: booking.id } })).status).toBe("CANCELLED");
   });
-  it("permits existing larger bookings to reduce to five", async () => {
-    const booking = await make(6, true);
-    expect((await update(request("PATCH", { token: booking.manageToken, partySize: 5 }))).status).toBe(200);
+  it.each([4, 15])("permits an existing party of %i to change into the online range", async (partySize) => {
+    const booking = await make(partySize, true);
+    expect((await update(request("PATCH", { token: booking.manageToken, partySize: 12 }))).status).toBe(200);
   });
 });

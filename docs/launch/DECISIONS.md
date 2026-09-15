@@ -17,3 +17,7 @@ User selected the supplied Drinks.jpg as the public drinks menu, #020305 page/he
 
 ## Drinks catalog — 2026-09-13
 User authorizes replacing the temporary menu cover with the editable catalog, uploading the 15 approved generated images, simplifying admin title/price edits and deploying the scoped release. Reference images provide content, not photographic style. Preserve the dark public theme. Generated packaged products use the verified 330mL Corona/Perrier and 300mL Oasis formats. The existing 24 sample entries are retained hidden. Reference menus contain no prices; no seed price is represented as an approved selling price. Blank prices remain unpublished until entered by staff. New drinks start hidden in the editor. Migration and import affect drinks only; booking and ordering remain disabled.
+
+
+## Online reservation range — 2026-09-15
+User supersedes the five-person policy: online reservations are now for groups of 6–12, and authorizes deployment of only this change. Default six; existing copy directs other sizes to phone reservations. No new controls or layout changes. Preserve current live booking-enabled setting, staff capabilities, and all historical records; existing outside-range parties retain contact edits/cancellation and may change into the valid range online.

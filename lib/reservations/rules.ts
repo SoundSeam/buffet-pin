@@ -5,7 +5,7 @@ import type {
 } from "@prisma/client";
 
 import { hasCapacityForParty } from "./capacity";
-import { ONLINE_MIN_PARTY_SIZE, ONLINE_MAX_PARTY_SIZE } from "./party-size";
+import { isOnlinePartySize, ONLINE_MAX_PARTY_SIZE } from "./party-size";
 import { isReservationSlotForSettings } from "./slots";
 import {
   dateOnlyToUtcDate,
@@ -70,11 +70,11 @@ export function assertStaffPartySize(
   settings: Pick<RulesSettings, "minPartySize" | "maxPartySize">,
   partySize: number,
 ): void {
-  // Staff must be able to manage the new small online bookings as well as
-  // larger phone bookings admitted by their existing settings.
+  // Staff retain small historical bookings, current online-sized parties,
+  // and larger phone bookings admitted by their existing settings.
   if (
     Number.isInteger(partySize) &&
-    partySize >= ONLINE_MIN_PARTY_SIZE &&
+    partySize >= 1 &&
     partySize <= ONLINE_MAX_PARTY_SIZE
   ) return;
   if (
@@ -90,14 +90,10 @@ export function assertStaffPartySize(
 }
 
 export function assertPublicPartySize(partySize: number): void {
-  if (
-    !Number.isInteger(partySize) ||
-    partySize < ONLINE_MIN_PARTY_SIZE ||
-    partySize > ONLINE_MAX_PARTY_SIZE
-  ) {
+  if (!isOnlinePartySize(partySize)) {
     throw new ReservationRuleError(
       "INVALID_PARTY_SIZE",
-      "Online reservations are available for 1 to 5 guests. For parties of 6 or more, please call (450) 699-8088 to reserve.",
+      "Online reservations are available for 6 to 12 guests. For other party sizes, please call (450) 699-8088 to reserve.",
     );
   }
 }
@@ -259,12 +255,12 @@ export async function assertPublicUpdateRules(
   }
 
   assertReservationSlot(settings, query.reservationTime);
-  // Preserve contact edits on existing larger parties, but require a call to
+  // Preserve contact edits on existing outside-range parties, but require a call to
   // change their booking unless the resulting party fits the online policy.
   if (
     query.partySize !== query.currentPartySize ||
     proposedReservationAt.getTime() !== query.currentReservationAt.getTime() ||
-    query.partySize <= ONLINE_MAX_PARTY_SIZE
+    isOnlinePartySize(query.partySize)
   ) {
     assertPublicPartySize(query.partySize);
   }
