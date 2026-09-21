@@ -283,7 +283,7 @@ export const translations = {
         steps: ["Date et heure", "Vos détails", "Confirmer"],
         partySizeLabel: "Combien de convives?",
         partySizeHint: "Les réservations en ligne sont offertes pour 6 à 12 personnes.",
-        partySizeNote: "Pour les groupes de moins de 6 ou de plus de 12 personnes, veuillez appeler le (450) 699-8088 pour réserver.",
+        partySizeNote: "Pour les groupes de plus de 12 personnes, veuillez nous appeler directement.",
         serviceFeeNotice:
           "Pour les groupes de 6 personnes ou plus, des frais de service de 15 % peuvent être ajoutés afin de nous aider à bien prendre soin des grandes tablées.",
         dateLabel: "Date",
@@ -820,7 +820,7 @@ export const translations = {
         steps: ["Date & time", "Your details", "Confirm"],
         partySizeLabel: "How many guests?",
         partySizeHint: "Online reservations are available for 6 to 12 guests.",
-        partySizeNote: "For parties of fewer than 6 or more than 12, please call (450) 699-8088 to reserve.",
+        partySizeNote: "For parties over 12 guests, please call us directly.",
         serviceFeeNotice:
           "For groups of 6 or more, a 15% service fee may be added to help us take good care of larger tables.",
         dateLabel: "Date",

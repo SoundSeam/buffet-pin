@@ -54,3 +54,7 @@ VERIFIED: replace the two low-contrast marks with strongly outlined variants of 
 
 ## Online reservations for 6–12 — 2026-09-15
 CODE_COMPLETE in isolated `/Users/daniel/buffet-pin-reservation-six-to-twelve`, branch `codex/reservation-six-to-twelve`, on exact live main `0a09ad0`. Scoped range/copy update only; booking switch currently true and preserved. 39 unit/route tests, 11 disposable DB/API tests, five Chromium workflows, TypeScript, focused lint and safe build pass. Diff and mobile/desktop screenshots reviewed. Deployment explicitly authorized and pending. Plan: `plans/reservation-six-to-twelve.md`.
+
+
+## Original reservation copy with twelve-guest limit — 2026-09-20
+CODE_COMPLETE in isolated `/Users/daniel/buffet-pin-reservations-july` on live `018c4b1`. Two locale-string corrections only, using July `45edfa2` wording with 15 guests replaced by 12. Existing 6–12 policy and all other behavior preserved. Full French/English form copy comparison against July passes with only guest-limit references substituted. All 39 reservation tests, focused lint and safe build/type validation pass. Deployment explicitly authorized and pending. Plan: `plans/restore-july-reservations.md`.

@@ -13,7 +13,7 @@ test("existing booking controls offer only 6–12 and localized phone guidance o
       await page.setViewportSize({ width, height: 900 });
       await page.goto("/reservation");
       await expect(page.locator('[data-testid^="party-size-"]')).toHaveText(["6", "7", "8", "9", "10", "11", "12"]);
-      await expect(page.getByText("Pour les groupes de moins de 6 ou de plus de 12 personnes, veuillez appeler le (450) 699-8088 pour réserver.")).toBeVisible();
+      await expect(page.getByText("Pour les groupes de plus de 12 personnes, veuillez nous appeler directement.")).toBeVisible();
       await expect(page.getByTestId("party-size-6")).toHaveCSS("background-color", "rgb(6, 47, 36)");
       await expect(page.getByTestId("party-size-5")).toHaveCount(0);
       await page.getByTestId("party-size-12").click();
@@ -21,7 +21,7 @@ test("existing booking controls offer only 6–12 and localized phone guidance o
       await expect(page.getByTestId("party-size-13")).toHaveCount(0);
       await page.screenshot({ path: `.vercel/party-size-fr-${width}.png`, fullPage: true });
       await page.getByRole("button", { name: "Choisir la langue" }).click();
-      await expect(page.getByText("For parties of fewer than 6 or more than 12, please call (450) 699-8088 to reserve.")).toBeVisible();
+      await expect(page.getByText("For parties over 12 guests, please call us directly.")).toBeVisible();
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
       await page.screenshot({ path: `.vercel/party-size-en-${width}.png`, fullPage: true });
       // Return to French for the next viewport.
@@ -50,7 +50,7 @@ test(`existing party of ${partySize} retains its real size and contact/cancel co
     await expect(page.getByRole("combobox", { name: "Time", exact: true })).toBeDisabled();
     await expect(page.getByLabel("Name", { exact: true })).toBeEnabled();
     await expect(page.getByRole("button", { name: "Cancel reservation", exact: true })).toBeEnabled();
-    await expect(page.getByText("Pour les groupes de moins de 6 ou de plus de 12 personnes, veuillez appeler le (450) 699-8088 pour réserver.")).toBeVisible();
+    await expect(page.getByText("Pour les groupes de plus de 12 personnes, veuillez nous appeler directement.")).toBeVisible();
     await page.screenshot({ path: `.vercel/party-size-manage-${partySize}-390.png`, fullPage: true });
     await page.getByRole("combobox", { name: "Party size", exact: true }).selectOption("6");
     await expect(page.getByLabel("Date", { exact: true })).toBeEnabled();

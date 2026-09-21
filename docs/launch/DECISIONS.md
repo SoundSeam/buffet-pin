@@ -21,3 +21,7 @@ User authorizes replacing the temporary menu cover with the editable catalog, up
 
 ## Online reservation range — 2026-09-15
 User supersedes the five-person policy: online reservations are now for groups of 6–12, and authorizes deployment of only this change. Default six; existing copy directs other sizes to phone reservations. No new controls or layout changes. Preserve current live booking-enabled setting, staff capabilities, and all historical records; existing outside-range parties retain contact edits/cancellation and may change into the valid range online.
+
+
+## Reservation copy correction — 2026-09-20
+User requests July wording with the guest threshold changed from 15 to 12, and explicitly authorizes deployment when done. Only restore the original French/English call-guidance strings with that number substitution; retain the current 6–12 policy/default six, switch state, UI, and separate 15% fee copy.
