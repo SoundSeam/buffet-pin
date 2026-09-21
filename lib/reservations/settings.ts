@@ -8,7 +8,7 @@ const defaultSettingsCreateInput = {
   id: 1,
   slotCapacityGuests: 24,
   minPartySize: 6,
-  maxPartySize: 15,
+  maxPartySize: 12,
   firstSlot: timeOnly("16:30"),
   lastSlot: timeOnly("20:00"),
   slotIntervalMinutes: 30,

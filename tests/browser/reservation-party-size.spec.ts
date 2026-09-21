@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 
 // Local disposable database only; no provider credentials or real reservations.
-const db = new PrismaClient({ datasourceUrl: "postgresql://reservation_test@127.0.0.1:55439/reservation_switch_test" });
+const db = new PrismaClient({ datasourceUrl: "postgresql://reservation_test@127.0.0.1:55459/reservation_switch_test" });
 test.afterAll(() => db.$disconnect());
 
 test("existing booking controls offer only 6–12 and localized phone guidance on desktop/mobile", async ({ page }) => {
@@ -13,7 +13,7 @@ test("existing booking controls offer only 6–12 and localized phone guidance o
       await page.setViewportSize({ width, height: 900 });
       await page.goto("/reservation");
       await expect(page.locator('[data-testid^="party-size-"]')).toHaveText(["6", "7", "8", "9", "10", "11", "12"]);
-      await expect(page.getByText("Pour les groupes de plus de 12 personnes, veuillez nous appeler directement.")).toBeVisible();
+      await expect(page.getByText("Pour les groupes de 6 personnes ou plus, des frais de service de 15 % peuvent être ajoutés afin de nous aider à bien prendre soin des grandes tablées.").last()).toBeVisible();
       await expect(page.getByTestId("party-size-6")).toHaveCSS("background-color", "rgb(6, 47, 36)");
       await expect(page.getByTestId("party-size-5")).toHaveCount(0);
       await page.getByTestId("party-size-12").click();
@@ -32,8 +32,8 @@ test("existing booking controls offer only 6–12 and localized phone guidance o
   }
 });
 
-for (const partySize of [4, 15]) {
-test(`existing party of ${partySize} retains its real size and contact/cancel controls`, async ({ page }) => {
+for (const partySize of [6, 12]) {
+test(`existing party of ${partySize} uses the original July edit controls`, async ({ page }) => {
   const date = new Date(Date.now() + 40 * 86400000).toISOString().slice(0, 10);
   const token = "party-size-browser-test-token-0000000000000000000000";
   const booking = await db.reservation.create({ data: {
@@ -45,12 +45,12 @@ test(`existing party of ${partySize} retains its real size and contact/cancel co
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`/reservation/manage?token=${token}`);
     await expect(page.getByRole("combobox", { name: "Party size", exact: true })).toHaveValue(String(partySize));
-    await expect(page.getByRole("combobox", { name: "Party size", exact: true }).locator("option")).toHaveText(["6", "7", "8", "9", "10", "11", "12", String(partySize)]);
-    await expect(page.getByLabel("Date", { exact: true })).toBeDisabled();
-    await expect(page.getByRole("combobox", { name: "Time", exact: true })).toBeDisabled();
+    await expect(page.getByRole("combobox", { name: "Party size", exact: true }).locator("option")).toHaveText(["6", "7", "8", "9", "10", "11", "12"]);
+    await expect(page.getByLabel("Date", { exact: true })).toBeEnabled();
+    await expect(page.getByRole("combobox", { name: "Time", exact: true })).toBeEnabled();
     await expect(page.getByLabel("Name", { exact: true })).toBeEnabled();
     await expect(page.getByRole("button", { name: "Cancel reservation", exact: true })).toBeEnabled();
-    await expect(page.getByText("Pour les groupes de plus de 12 personnes, veuillez nous appeler directement.")).toBeVisible();
+    await expect(page.getByText("Pour les groupes de 6 personnes ou plus, des frais de service de 15 % peuvent être ajoutés afin de nous aider à bien prendre soin des grandes tablées.").last()).toBeVisible();
     await page.screenshot({ path: `.vercel/party-size-manage-${partySize}-390.png`, fullPage: true });
     await page.getByRole("combobox", { name: "Party size", exact: true }).selectOption("6");
     await expect(page.getByLabel("Date", { exact: true })).toBeEnabled();

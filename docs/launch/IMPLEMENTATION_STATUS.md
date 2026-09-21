@@ -58,3 +58,9 @@ CODE_COMPLETE in isolated `/Users/daniel/buffet-pin-reservation-six-to-twelve`, 
 
 ## Original reservation copy with twelve-guest limit — 2026-09-20
 CODE_COMPLETE in isolated `/Users/daniel/buffet-pin-reservations-july` on live `018c4b1`. Two locale-string corrections only, using July `45edfa2` wording with 15 guests replaced by 12. Existing 6–12 policy and all other behavior preserved. Full French/English form copy comparison against July passes with only guest-limit references substituted. All 39 reservation tests, focused lint and safe build/type validation pass. Deployment explicitly authorized and pending. Plan: `plans/restore-july-reservations.md`.
+
+
+## Functional July reservation restoration — 2026-09-20
+CODE_COMPLETE on `codex/restore-july-reservation-behavior` in `/Users/daniel/buffet-pin-reservations-behavior`, based on live `82bbb31`. Previous copy-only release was not functionally identical: separate public/staff rules and edit exceptions remained, and stored maximum was 15. Plan: `plans/restore-july-reservation-behavior.md`.
+
+Verification: exact historical-source comparisons, 34 unit/route tests, 12 PostgreSQL/API tests, five Chromium workflows, migration preservation/replay/custom-value guard, TypeScript, focused lint and safe build pass. Existing production migration checksums match; 327 reservation fingerprints captured before deployment. Only the new guarded maxPartySize 15→12 migration is pending.

@@ -25,3 +25,7 @@ User supersedes the five-person policy: online reservations are now for groups o
 
 ## Reservation copy correction — 2026-09-20
 User requests July wording with the guest threshold changed from 15 to 12, and explicitly authorizes deployment when done. Only restore the original French/English call-guidance strings with that number substitution; retain the current 6–12 policy/default six, switch state, UI, and separate 15% fee copy.
+
+
+## Functional July reservation restoration — 2026-09-20
+User explicitly requests and authorizes publishing the functional July restoration, not only copy: restore shared configured min/max validation and original management behavior, set existing maximum 15→12 through a guarded versioned migration, and preserve all other settings, existing reservations and current booking switch.

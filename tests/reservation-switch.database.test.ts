@@ -6,7 +6,7 @@ vi.mock("next/cache", () => ({ unstable_noStore: vi.fn() }));
 import { assertOnlineReservationsEnabled, setOnlineReservationsEnabled } from "@/lib/reservations/availability";
 
 // Intentionally hard-coded to the disposable local database, never caller credentials.
-const db = new PrismaClient({ datasourceUrl: "postgresql://reservation_test@127.0.0.1:55439/reservation_switch_test" });
+const db = new PrismaClient({ datasourceUrl: "postgresql://reservation_test@127.0.0.1:55459/reservation_switch_test" });
 beforeAll(() => db.settings.update({ where: { id: 1 }, data: { onlineReservationsEnabled: false } }));
 afterAll(() => db.$disconnect());
 

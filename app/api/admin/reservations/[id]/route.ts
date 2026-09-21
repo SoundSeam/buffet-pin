@@ -10,7 +10,7 @@ import {
   assertDateIsOpen,
   assertReservationLeadTime,
   assertReservationSlot,
-  assertStaffPartySize,
+  assertPartySize,
 } from "@/lib/reservations/rules";
 import { getReservationSettings } from "@/lib/reservations/settings";
 import {
@@ -117,7 +117,7 @@ export async function PATCH(
         if (reservationConstraintsChanged) {
           await lockReservationSlot(tx, nextDate, nextTime);
           assertReservationSlot(settings, nextTime);
-          assertStaffPartySize(settings, nextPartySize);
+          assertPartySize(settings, nextPartySize);
           assertDateIsNotPast(nextDate, now);
           if (reservationTimeChanged) {
             assertReservationLeadTime(

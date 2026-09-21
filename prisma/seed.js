@@ -100,7 +100,7 @@ async function main() {
     where: { id: 1 },
     update: {
       minPartySize: 6,
-      maxPartySize: 15,
+      maxPartySize: 12,
       firstSlot: time("16:30"),
       lastSlot: time("20:00"),
     },
@@ -108,7 +108,7 @@ async function main() {
       id: 1,
       slotCapacityGuests: 24,
       minPartySize: 6,
-      maxPartySize: 15,
+      maxPartySize: 12,
       firstSlot: time("16:30"),
       lastSlot: time("20:00"),
       slotIntervalMinutes: 30,
