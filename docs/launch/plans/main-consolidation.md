@@ -77,3 +77,5 @@ Git history retains snapshot and all merged branch tips. No force push or branch
 
 ## Final handoff
 Source integration and push are complete. Initial consolidated commit bf857df was pushed successfully with no force; local main/origin/main matched and status was clean. Post-push Vercel inspect confirms the exact pre-existing READY deployment and aliases. All local branch tips are ancestors of main; older worktrees/branches remain available and were not deleted. This final evidence-only commit is also pushed under the same publication guards. This task does not change delivery launch milestone acceptance or close external gates; dependency advisories must be addressed before a future approved release.
+
+Final cleanup: generated .cache/image-references files appeared during verification; preserved locally and excluded from Git and Vercel uploads, like output/.

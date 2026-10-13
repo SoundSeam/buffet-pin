@@ -14,3 +14,6 @@ coverage
 cdk.out
 # Generated assets and private release/database snapshots stay local.
 /output/
+
+# Local generated reference-image cache.
+/.cache/

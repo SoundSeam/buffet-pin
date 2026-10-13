@@ -12,3 +12,4 @@ coverage
 
 # Private snapshots and generated assets are never uploaded by the CLI.
 output
+.cache
