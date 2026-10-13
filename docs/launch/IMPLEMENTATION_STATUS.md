@@ -463,3 +463,14 @@ Verification: exact historical-source comparisons, 34 unit/route tests, 12 Postg
 ## Main consolidation — 2026-10-13
 
 IN_PROGRESS: consolidating local source and branch evidence onto main/origin/main under user authorization. Production remains pinned to dpl_FnmZX1EeGPgeiGZcDRxeaLnnQK9e at c874e11; Vercel Ignored Build Step exit 0 is read-back confirmed, and automatic Git deployments are disabled in the consolidated vercel.json. No production release, migration, setting change, order, payment, refund, or provider action. Plan: plans/main-consolidation.md. Existing external/manual delivery gates remain open.
+
+
+### Preserved evidence from codex/drinks-image-page
+
+VERIFIED in isolated `codex/drinks-image-page`, based on live main `596414a`. Scope: public image menu and opt-in dark layout only. Plan: `plans/drinks-image-page.md`.
+Drinks page evidence: safe production build, TypeScript, focused lint (zero errors), 30 existing reservation tests and three new Chromium layout/navigation workflows pass. Mobile/desktop screenshots reviewed. Production release and live smoke checks passed; no migration, database or unrelated application change.
+
+## Production verification — 2026-09-12
+VERIFIED. User-authorized scoped commit `7fdd6051b44b7f201a09ea0a67f6e42a678e0d9d` was fast-forwarded to main. Vercel deployment `dpl_2xkNND1xELfAxtmefqzxTQ8mop3J` is READY and aliased to https://www.buffetpin.com; deployment API gitSource matches exactly. Build reports no pending migrations.
+
+Live Chromium workflows PASS at 390, 768 and 1440px, covering the image, exact body/header/footer colors, white text, mobile menu, translation, aspect ratio/content width, overflow and navigation away. HTTP 200 for /drinks, / and /reservation. Public reservation status remains `onlineReservationsEnabled: false`. No data/settings mutation was performed. No remaining gate for this scoped page. Prior deployment remains the rollback target. Evidence logs are in /tmp/buffet-drinks-*.log and screenshots in ignored test-results/. This verification-only documentation is committed locally to avoid an unnecessary second deployment.

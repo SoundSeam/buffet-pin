@@ -1,7 +1,7 @@
 # Drinks image page
 
 ## Milestone
-Scoped public drinks page; CODE_COMPLETE; 2026-09-12. Branch `codex/drinks-image-page`, isolated from exact live main SHA `596414a7e8b8d3e5f7f3d1ae04d89222c2f0857d`. Prior production: `dpl_Es4t7seC12mLypaok3bKUjv6sprt`.
+Scoped public drinks page; VERIFIED; 2026-09-12. Branch `codex/drinks-image-page`, isolated from exact live main SHA `596414a7e8b8d3e5f7f3d1ae04d89222c2f0857d`. Prior production: `dpl_Es4t7seC12mLypaok3bKUjv6sprt`.
 
 ## Goal / current and required behavior
 Replace the public database-rendered drinks list with the user-supplied bilingual Drinks.jpg. Use its sampled #020305 pixel as the entire page background, including header/footer, with white navigation/footer text. Center the uncropped image at the existing max-w-7xl content width with responsive gutters and intrinsic dimensions.
@@ -33,4 +33,9 @@ Baseline verified using Vercel deployment API gitSource. Source asset already ve
 - Screenshots reviewed for desktop and phone; image is uncropped, navigation clear, footer text white. Browser pinch zoom remains enabled for small embedded menu text.
 - Diff reviewed: only public drinks image, opt-in shell/header/footer/language-toggle styling, media manifest, scoped tests and documentation. No schema, migration, dependency or other feature changes. Current live deployment and remote main still match the verified baseline.
 
-Production deployment pending; user authorization already given. Rollback target remains `dpl_Es4t7seC12mLypaok3bKUjv6sprt`. No remaining hardware/provider/manual business gate applies to this page.
+Production deployment complete under the existing user authorization. Rollback target remains `dpl_Es4t7seC12mLypaok3bKUjv6sprt`. No remaining hardware/provider/manual business gate applies to this page.
+
+## Production verification — 2026-09-12
+VERIFIED. User-authorized scoped commit `7fdd6051b44b7f201a09ea0a67f6e42a678e0d9d` was fast-forwarded to main. Vercel deployment `dpl_2xkNND1xELfAxtmefqzxTQ8mop3J` is READY and aliased to https://www.buffetpin.com; deployment API gitSource matches exactly. Build reports no pending migrations.
+
+Live Chromium workflows PASS at 390, 768 and 1440px, covering the image, exact body/header/footer colors, white text, mobile menu, translation, aspect ratio/content width, overflow and navigation away. HTTP 200 for /drinks, / and /reservation. Public reservation status remains `onlineReservationsEnabled: false`. No data/settings mutation was performed. No remaining gate for this scoped page. Prior deployment remains the rollback target. Evidence logs are in /tmp/buffet-drinks-*.log and screenshots in ignored test-results/. This verification-only documentation is committed locally to avoid an unnecessary second deployment.
