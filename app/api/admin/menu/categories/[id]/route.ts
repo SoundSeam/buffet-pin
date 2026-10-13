@@ -4,7 +4,8 @@ import { ZodError } from "zod";
 
 import { db } from "@/lib/db";
 import { menuCategoryUpdateSchema } from "@/lib/orders/validation";
-import { getAdminUser } from "@/lib/supabase/auth";
+import { getStaffUser } from "@/lib/supabase/auth";
+import { recordCatalogMutation } from "@/lib/orders/catalog-audit";
 
 export const dynamic = "force-dynamic";
 
@@ -13,11 +14,6 @@ function errorResponse(status: number, code: string, message: string, details?: 
     { ok: false, error: { code, message, ...(details ? { details } : {}) } },
     { status },
   );
-}
-
-async function requireAdminResponse() {
-  const user = await getAdminUser();
-  return user ? null : errorResponse(401, "UNAUTHORIZED", "Admin access required.");
 }
 
 function isNotFound(error: unknown) {
@@ -31,14 +27,18 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const unauthorized = await requireAdminResponse();
-  if (unauthorized) return unauthorized;
+  const actor = await getStaffUser("CATALOG_WRITE");
+  if (!actor) return errorResponse(401, "UNAUTHORIZED", "Admin access required.");
 
   const { id } = await params;
 
   try {
     const payload = menuCategoryUpdateSchema.parse(await request.json());
-    const category = await db.menuCategory.update({ where: { id }, data: payload });
+    const category = await db.$transaction(async (tx) => {
+      const updated = await tx.menuCategory.update({ where: { id }, data: payload });
+      await recordCatalogMutation(tx, actor, "CATALOG_CATEGORY_UPDATED", "MenuCategory", updated.id, { changedFields: Object.keys(payload) });
+      return updated;
+    });
 
     return NextResponse.json({ ok: true, data: { category } });
   } catch (error) {
@@ -57,15 +57,19 @@ export async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const unauthorized = await requireAdminResponse();
-  if (unauthorized) return unauthorized;
+  const actor = await getStaffUser("CATALOG_WRITE");
+  if (!actor) return errorResponse(401, "UNAUTHORIZED", "Admin access required.");
 
   const { id } = await params;
 
   try {
-    const category = await db.menuCategory.update({
-      where: { id },
-      data: { isActive: false },
+    const category = await db.$transaction(async (tx) => {
+      const updated = await tx.menuCategory.update({
+        where: { id },
+        data: { isActive: false },
+      });
+      await recordCatalogMutation(tx, actor, "CATALOG_CATEGORY_DEACTIVATED", "MenuCategory", updated.id);
+      return updated;
     });
 
     return NextResponse.json({ ok: true, data: { category } });

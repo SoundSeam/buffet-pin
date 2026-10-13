@@ -6,3 +6,10 @@ node_modules
 .env.local
 .DS_Store
 *.tsbuildinfo
+coverage
+playwright-report
+test-results
+cdk.out
+
+# Generated assets and private release/database snapshots stay local.
+/output/

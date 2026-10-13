@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { RESERVATIONS_ENABLED } from "@/lib/site-flags";
 import { motion } from "framer-motion";
 import { useTranslation } from "@/components/providers/language-provider";
 import {
@@ -9,9 +10,12 @@ import {
   smoothEase,
   staggerGroupVariants,
 } from "@/components/home/smooth-reveal";
+import { buffetPinMedia } from "@/lib/media";
 
 export default function CtaStrip() {
   const { copy } = useTranslation();
+
+  if (!RESERVATIONS_ENABLED) return null;
 
   return (
     <section
@@ -38,7 +42,7 @@ export default function CtaStrip() {
         }}
       >
         <source
-          src="https://soundseam-origin.s3.us-east-2.amazonaws.com/misc/BuffetPinReel.mp4"
+          src={buffetPinMedia.reel}
           type="video/mp4"
         />
       </motion.video>

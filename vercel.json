@@ -1,9 +1,3 @@
 {
-  "buildCommand": "prisma migrate deploy && npm run build",
-  "crons": [
-    {
-      "path": "/api/cron/send-reminders",
-      "schedule": "* * * * *"
-    }
-  ]
+  "buildCommand": "prisma migrate deploy && npm run build"
 }

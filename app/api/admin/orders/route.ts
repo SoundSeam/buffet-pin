@@ -9,7 +9,7 @@ import { z, ZodError } from "zod";
 
 import { db } from "@/lib/db";
 import { adminOrderInclude, serializeAdminOrder } from "@/lib/orders/admin";
-import { getAdminUser } from "@/lib/supabase/auth";
+import { getStaffUser } from "@/lib/supabase/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -26,8 +26,8 @@ function errorResponse(status: number, code: string, message: string, details?: 
 }
 
 export async function GET(request: Request) {
-  const user = await getAdminUser();
-  if (!user) {
+  const actor = await getStaffUser("ORDERS_READ");
+  if (!actor) {
     return errorResponse(401, "UNAUTHORIZED", "Admin access required.");
   }
 
@@ -82,7 +82,7 @@ export async function GET(request: Request) {
         ],
       };
 
-  const [orders, drivers] = await Promise.all([
+  const [orders, drivers, settings] = await Promise.all([
     db.order.findMany({
       where,
       orderBy: [{ createdAt: "desc" }],
@@ -99,6 +99,11 @@ export async function GET(request: Request) {
         phone: true,
       },
     }),
+    db.restaurantOrderSettings.upsert({
+      where: { id: 1 },
+      update: {},
+      create: { id: 1 },
+    }),
   ]);
 
   return NextResponse.json({
@@ -106,6 +111,16 @@ export async function GET(request: Request) {
     data: {
       orders: orders.map(serializeAdminOrder),
       drivers,
+      intake: {
+        onlineOrderingEnabled: settings.onlineOrderingEnabled,
+        paused: Boolean(settings.intakePausedAt),
+        pausedAt: settings.intakePausedAt?.toISOString() ?? null,
+        pauseReason: settings.intakePauseReason,
+        missedAcceptanceCount: settings.missedAcceptanceCount,
+        missedAcceptancePauseThreshold:
+          settings.missedAcceptancePauseThreshold,
+        acceptanceWindowMinutes: settings.acceptanceWindowMinutes,
+      },
     },
   });
 }

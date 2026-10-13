@@ -5,7 +5,6 @@ import { NextResponse } from "next/server";
 
 import { db } from "@/lib/db";
 import { getCronSecret } from "@/lib/env";
-import { ensureReminderDeliveryTrackingSchema } from "@/lib/reservations/reminder-schema";
 import { sendReservationReminderSms } from "@/lib/sms";
 
 export const dynamic = "force-dynamic";
@@ -90,8 +89,6 @@ export async function GET(request: Request) {
       error: { code: "UNAUTHORIZED", message: "Invalid cron authorization." },
     });
   }
-
-  await ensureReminderDeliveryTrackingSchema(db);
 
   const now = new Date();
   const window = reminderWindow(now);

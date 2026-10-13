@@ -20,6 +20,7 @@ export type CloverClient = {
     body: unknown,
     options?: { headers?: Record<string, string> },
   ): Promise<TResponse>;
+  get<TResponse>(path: string): Promise<TResponse>;
 };
 
 function joinUrl(baseUrl: string, path: string): string {
@@ -52,9 +53,10 @@ export function createCloverClient(config = getCloverConfig()): CloverClient {
         method: "POST",
         headers: {
           accept: "application/json",
-          authorization: `Bearer ${config.privateToken}`,
+          authorization: `Bearer ${config.platformToken}`,
           "content-type": "application/json",
           "X-Clover-Merchant-Id": config.merchantId,
+          "User-Agent": "BuffetPinDirect/1.0",
           ...options?.headers,
         },
         body: JSON.stringify(body),
@@ -70,6 +72,27 @@ export function createCloverClient(config = getCloverConfig()): CloverClient {
         );
       }
 
+      return responseBody as TResponse;
+    },
+    async get<TResponse>(path: string): Promise<TResponse> {
+      const response = await fetch(joinUrl(config.apiBaseUrl, path), {
+        method: "GET",
+        headers: {
+          accept: "application/json",
+          authorization: `Bearer ${config.platformToken}`,
+          "X-Clover-Merchant-Id": config.merchantId,
+          "User-Agent": "BuffetPinDirect/1.0",
+        },
+        cache: "no-store",
+      });
+      const responseBody = await readResponseBody(response);
+      if (!response.ok) {
+        throw new CloverApiError(
+          `Clover API request failed with status ${response.status}.`,
+          response.status,
+          responseBody,
+        );
+      }
       return responseBody as TResponse;
     },
   };

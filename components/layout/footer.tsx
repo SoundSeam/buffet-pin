@@ -2,9 +2,9 @@
 
 import { FaFacebookF, FaInstagram } from "react-icons/fa";
 import { useTranslation } from "@/components/providers/language-provider";
+import { buffetPinMedia } from "@/lib/media";
 
-const LOGO_HORIZONTAL =
-  "https://soundseam-origin.s3.us-east-2.amazonaws.com/misc/Buffet+PIN-Logo+Square.png";
+const LOGO_HORIZONTAL = buffetPinMedia.logoSquare;
 
 export default function Footer() {
   const { copy } = useTranslation();

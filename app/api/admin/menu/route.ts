@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { db } from "@/lib/db";
-import { getAdminUser } from "@/lib/supabase/auth";
+import { getStaffUser } from "@/lib/supabase/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +13,7 @@ function errorResponse(status: number, code: string, message: string) {
 }
 
 async function requireAdminResponse() {
-  const user = await getAdminUser();
+  const user = await getStaffUser("CATALOG_WRITE");
   return user ? null : errorResponse(401, "UNAUTHORIZED", "Admin access required.");
 }
 

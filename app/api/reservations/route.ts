@@ -1,5 +1,6 @@
 import { Prisma, ReservationStatus } from "@prisma/client";
 import { NextResponse } from "next/server";
+import { RESERVATIONS_ENABLED } from "@/lib/site-flags";
 import { ZodError } from "zod";
 
 import {
@@ -9,6 +10,7 @@ import {
   getReservationPhoneRateLimitKey,
 } from "@/lib/abuse-protection";
 import { db } from "@/lib/db";
+import { dispatchAggregateJobs } from "@/lib/async-jobs/dispatch";
 import { generateConfirmationCode } from "@/lib/reservations/codes";
 import {
   ReservationRuleError,
@@ -129,6 +131,14 @@ async function sendAdminReservationAlert(reservation: {
 }
 
 export async function POST(request: Request) {
+  if (!RESERVATIONS_ENABLED) {
+    return errorResponse(
+      503,
+      "RESERVATIONS_DISABLED",
+      "Online reservations are currently unavailable.",
+    );
+  }
+
   const clientRateLimit = await consumeRateLimit(
     db,
     PUBLIC_ENDPOINT_RATE_LIMITS.reservationCreateClient,
@@ -234,6 +244,8 @@ export async function POST(request: Request) {
           isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
         },
       );
+
+      await dispatchAggregateJobs("Reservation", reservation.id);
 
       await Promise.all([
         sendConfirmationSmsAndMarkSent(reservation),

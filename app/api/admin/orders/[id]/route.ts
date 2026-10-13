@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { getSerializedAdminOrder } from "@/lib/orders/admin";
-import { getAdminUser } from "@/lib/supabase/auth";
+import { getStaffUser } from "@/lib/supabase/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -21,8 +21,8 @@ export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const user = await getAdminUser();
-  if (!user) {
+  const actor = await getStaffUser("ORDERS_READ");
+  if (!actor) {
     return errorResponse(401, "UNAUTHORIZED", "Admin access required.");
   }
 

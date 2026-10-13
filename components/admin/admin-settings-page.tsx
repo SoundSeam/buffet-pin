@@ -1,9 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
+import {
+  AdminPage,
+  AdminPageHeader,
+} from "@/components/admin/admin-page-ui";
 import { useTranslation } from "@/components/providers/language-provider";
 
 type SlotCapacityFormRow = {
@@ -204,25 +207,12 @@ export default function AdminSettingsPage() {
   };
 
   return (
-    <section className="pb-20 pt-36 lg:pt-40" style={{ background: "#FFFFFF" }}>
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div>
-          <Link
-            href="/admin/reservations"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-[#062F24]/70 transition hover:text-[#062F24]"
-          >
-            <ArrowLeft size={14} aria-hidden="true" />
-            {settingsCopy.backToReservations}
-          </Link>
-          <h1 className="mt-4 text-3xl font-extrabold leading-none text-[#062F24]">
-            {settingsCopy.title}
-          </h1>
-          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[#062F24]/65">
-            {settingsCopy.description}
-          </p>
-        </div>
-
-        <div className="mt-6 flex flex-wrap items-center gap-3">
+    <AdminPage>
+      <AdminPageHeader
+        title={settingsCopy.title}
+        description={settingsCopy.description}
+        actions={
+          <>
             <button
               type="button"
               className={buttonClass}
@@ -242,7 +232,9 @@ export default function AdminSettingsPage() {
               {saving ? <Loader2 size={14} className="mr-2 inline animate-spin" aria-hidden="true" /> : null}
               {saving ? settingsCopy.saving : settingsCopy.saveChanges}
             </button>
-        </div>
+          </>
+        }
+      />
 
         {error ? (
           <p
@@ -332,7 +324,6 @@ export default function AdminSettingsPage() {
             </div>
           </section>
         )}
-      </div>
-    </section>
+    </AdminPage>
   );
 }

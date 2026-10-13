@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { RESERVATIONS_ENABLED } from "@/lib/site-flags";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -11,11 +12,10 @@ import {
   blurItemVariants,
   staggerGroupVariants,
 } from "@/components/home/smooth-reveal";
+import { buffetPinMedia } from "@/lib/media";
 
-const LOGO =
-  "https://soundseam-origin.s3.us-east-2.amazonaws.com/misc/Buffet+PIN-Logo+Horizontal.png";
-const LOGO_BLACK =
-  "https://soundseam-origin.s3.us-east-2.amazonaws.com/misc/Buffet+PIN-Logo+HorizontalBlack.png";
+const LOGO = buffetPinMedia.logoHorizontal;
+const LOGO_BLACK = buffetPinMedia.logoHorizontalBlack;
 const HEADER_GREEN = "#041F18";
 
 export default function Navbar() {
@@ -90,9 +90,11 @@ export default function Navbar() {
                 </Link>
               ))}
 
-              <Link href="/reservation" className={reserveClassName}>
-                {copy.navbar.reserve}
-              </Link>
+              {RESERVATIONS_ENABLED && (
+                <Link href="/reservation" className={reserveClassName}>
+                  {copy.navbar.reserve}
+                </Link>
+              )}
             </div>
 
             <div className="flex items-center gap-3 lg:hidden">
@@ -119,9 +121,11 @@ export default function Navbar() {
                 </Link>
               ))}
 
-              <Link href="/reservation" className={mobileReserveClassName}>
-                {copy.navbar.reserve}
-              </Link>
+              {RESERVATIONS_ENABLED && (
+                <Link href="/reservation" className={mobileReserveClassName}>
+                  {copy.navbar.reserve}
+                </Link>
+              )}
             </div>
           </div>
         ) : null}
@@ -167,17 +171,19 @@ export default function Navbar() {
               </motion.div>
             ))}
 
-            <motion.div variants={blurItemVariants}>
-              <Link href="/reservation" className={reserveClassName}>
-                <AnimatedWords
-                  as="span"
-                  className="inline-flex"
-                  reveal="mount"
-                  stagger={0.04}
-                  text={copy.navbar.reserve}
-                />
-              </Link>
-            </motion.div>
+            {RESERVATIONS_ENABLED && (
+              <motion.div variants={blurItemVariants}>
+                <Link href="/reservation" className={reserveClassName}>
+                  <AnimatedWords
+                    as="span"
+                    className="inline-flex"
+                    reveal="mount"
+                    stagger={0.04}
+                    text={copy.navbar.reserve}
+                  />
+                </Link>
+              </motion.div>
+            )}
           </motion.div>
 
           <motion.div className="flex items-center gap-3 lg:hidden" variants={blurItemVariants}>
@@ -212,9 +218,11 @@ export default function Navbar() {
                 </Link>
               ))}
 
-              <Link href="/reservation" className={mobileReserveClassName}>
-                {copy.navbar.reserve}
-              </Link>
+              {RESERVATIONS_ENABLED && (
+                <Link href="/reservation" className={mobileReserveClassName}>
+                  {copy.navbar.reserve}
+                </Link>
+              )}
             </div>
           </motion.div>
         )}

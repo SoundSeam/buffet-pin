@@ -8,6 +8,7 @@ import {
   blurItemVariants,
   staggerGroupVariants,
 } from "@/components/home/smooth-reveal";
+import { buffetPinMedia } from "@/lib/media";
 
 const HOURS = [
   { dayKey: "monday", lunchHours: "11:30am - 2:30pm", lunchPrice: "$24.95", dinnerHours: "4:30pm - 9pm", dinnerPrice: "$33.95" },
@@ -25,10 +26,8 @@ const GOOGLE_MAPS_URL =
   "https://maps.app.goo.gl/9qoswmW14dh1AJVh7?g_st=ic";
 const APPLE_MAPS_URL =
   "https://maps.apple.com/place?address=3-90%20Boul%20St-Jean-Baptiste,%20Ch%C3%A2teauguay%20QC%20J6K%203A6,%20Canada&coordinate=45.360646,-73.713994&name=Buffet%20Pin%20Chateauguay&map=explore";
-const GOOGLE_MAPS_ICON =
-  "https://soundseam-origin.s3.us-east-2.amazonaws.com/misc/Google_Maps_iOS_26.webp";
-const APPLE_MAPS_ICON =
-  "https://soundseam-origin.s3.us-east-2.amazonaws.com/misc/Apple_Maps_iOS_26_icon.png";
+const GOOGLE_MAPS_ICON = buffetPinMedia.googleMapsIcon;
+const APPLE_MAPS_ICON = buffetPinMedia.appleMapsIcon;
 const NOTE_ICONS = [GiFamilyHouse, GiBabyFace, GiAlarmClock, GiRecycle] as const;
 
 export default function LocationHours() {

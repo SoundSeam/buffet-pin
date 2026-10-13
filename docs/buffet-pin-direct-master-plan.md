@@ -1,5 +1,7 @@
 # Buffet Pin Direct Master Plan
 
+> Current payment implementation note: Clover Hosted Checkout remains available as a fallback, but the embedded iframe/Ecommerce API mode is documented in `docs/clover-checkout-modes.md`. Treat older Hosted-only flow descriptions in this master plan as historical planning context.
+
 This document is the shared implementation brief for Buffet Pin Direct. Every implementation thread should read this before touching code. The goal is not only to add features, but to keep the system coherent: orders, money, fulfillment, customer status, notifications, and driver work must all agree on one source of truth.
 
 ## First Principles Goal

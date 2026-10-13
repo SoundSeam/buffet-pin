@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { RESERVATIONS_ENABLED } from "@/lib/site-flags";
 import { ZodError } from "zod";
 
 import {
@@ -45,6 +46,14 @@ function errorResponse(
 }
 
 export async function POST(request: Request) {
+  if (!RESERVATIONS_ENABLED) {
+    return errorResponse(
+      503,
+      "RESERVATIONS_DISABLED",
+      "Online reservations are currently unavailable.",
+    );
+  }
+
   const clientRateLimit = await consumeRateLimit(
     db,
     PUBLIC_ENDPOINT_RATE_LIMITS.availabilityClient,

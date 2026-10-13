@@ -14,6 +14,7 @@ import {
   RefreshCw,
   Truck,
 } from "lucide-react";
+import { useRealtimeInvalidation } from "@/lib/realtime/use-realtime-invalidation";
 
 type AssignmentStatus =
   | "ASSIGNED"
@@ -65,7 +66,7 @@ type DriverOrder = {
 type DriverInfo = {
   id: string;
   name: string;
-  email: string;
+  email: string | null;
   phone: string | null;
 };
 
@@ -90,6 +91,26 @@ const nextStatus = {
   ARRIVING_SOON: "DELIVERED",
   DELIVERED: null,
 } satisfies Record<AssignmentStatus, AssignmentStatus | null>;
+
+const buttonClass =
+  "inline-flex items-center justify-center gap-2 rounded-button px-4 py-2.5 text-sm font-semibold transition-all duration-300 hover:opacity-90 focus-visible:outline-none focus-visible:outline-0 disabled:cursor-not-allowed disabled:opacity-50";
+const primaryButtonStyle = {
+  background: "#062F24",
+  border: "1px solid #062F24",
+  color: "#FFFFFF",
+};
+const quietButtonStyle = {
+  background: "rgba(6,47,36,0.05)",
+  border: "1px solid rgba(6,47,36,0.12)",
+  color: "#062F24",
+};
+const statusSurfaceMeta: Record<AssignmentStatus, { color: string; background: string }> = {
+  ASSIGNED: { color: "#7C5A16", background: "#FFF7D6" },
+  PICKED_UP: { color: "#065F46", background: "#DDF7E8" },
+  ON_THE_WAY: { color: "#065F46", background: "#DDF7E8" },
+  ARRIVING_SOON: { color: "#065F46", background: "#DDF7E8" },
+  DELIVERED: { color: "#17456B", background: "#DDEEFF" },
+};
 
 function formatTime(value: string | null) {
   if (!value) return "Not set";
@@ -119,10 +140,16 @@ function phoneHref(phone: string) {
 }
 
 function StatusBadge({ status }: { status: AssignmentStatus | null }) {
+  const activeStatus = status ?? "ASSIGNED";
+  const meta = statusSurfaceMeta[activeStatus];
+
   return (
-    <span className="inline-flex items-center gap-2 rounded-button bg-[rgba(6,47,36,0.08)] px-3 py-2 text-xs font-extrabold uppercase tracking-wide text-[#062F24]">
+    <span
+      className="inline-flex items-center gap-2 rounded-button px-3 py-1 text-xs font-bold"
+      style={meta}
+    >
       <Truck size={14} aria-hidden="true" />
-      {status ? statusLabel[status] : "Assigned"}
+      {statusLabel[activeStatus]}
     </span>
   );
 }
@@ -131,22 +158,22 @@ function OrderSummaryCard({ order }: { order: DriverOrder }) {
   return (
     <Link
       href={`/driver/orders/${order.id}`}
-      className="block rounded-surface border border-[rgba(6,47,36,0.1)] bg-white p-5 text-[#062F24] shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+      className="block rounded-surface border border-[#062F24]/10 bg-white p-5 text-[#062F24] shadow-sm transition hover:bg-[rgba(6,47,36,0.03)]"
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-bold uppercase text-[#8A6D3F]">Order {order.publicCode}</p>
-          <h2 className="mt-1 text-xl font-extrabold">{order.customer.name}</h2>
+          <p className="text-sm font-semibold text-[#062F24]/60">Order {order.publicCode}</p>
+          <h2 className="mt-1 text-xl font-bold">{order.customer.name}</h2>
         </div>
         <StatusBadge status={order.assignmentStatus} />
       </div>
       <div className="mt-4 grid gap-3 text-sm text-[#062F24]/75 sm:grid-cols-2">
         <p className="inline-flex items-start gap-2">
-          <MapPin size={16} className="mt-0.5 shrink-0 text-[#C9A56A]" aria-hidden="true" />
+          <MapPin size={16} className="mt-0.5 shrink-0 text-[#062F24]/55" aria-hidden="true" />
           <span>{order.deliveryAddress.formatted || "Address unavailable"}</span>
         </p>
         <p className="inline-flex items-center gap-2">
-          <Clock3 size={16} className="text-[#C9A56A]" aria-hidden="true" />
+          <Clock3 size={16} className="text-[#062F24]/55" aria-hidden="true" />
           {formatWindow(order.estimatedDeliveryStartAt, order.estimatedDeliveryEndAt)}
         </p>
       </div>
@@ -168,14 +195,17 @@ function OrderDetail({
 
   return (
     <div className="space-y-5">
-      <div className="rounded-surface border border-[rgba(6,47,36,0.1)] bg-white p-5 text-[#062F24] shadow-sm">
+      <div className="rounded-surface border border-[#062F24]/10 bg-white p-5 text-[#062F24] shadow-sm">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-bold uppercase text-[#8A6D3F]">Order {order.publicCode}</p>
-            <h1 className="mt-1 text-3xl font-extrabold leading-tight">{order.customer.name}</h1>
+            <p className="text-sm font-semibold text-[#062F24]/60">Order {order.publicCode}</p>
+            <h1 className="mt-2 text-3xl font-extrabold leading-none text-[#062F24]">
+              {order.customer.name}
+            </h1>
             <a
               href={phoneHref(order.customer.phone)}
-              className="mt-4 inline-flex items-center gap-2 rounded-button bg-[#062F24] px-4 py-3 text-sm font-extrabold text-white transition hover:opacity-90"
+              className={`${buttonClass} mt-4`}
+              style={primaryButtonStyle}
             >
               <Phone size={16} aria-hidden="true" />
               {order.customer.phone}
@@ -185,23 +215,24 @@ function OrderDetail({
         </div>
 
         <div className="mt-6 grid gap-4 lg:grid-cols-[1.4fr_1fr]">
-          <div className="rounded-surface border border-[rgba(6,47,36,0.1)] bg-[rgba(6,47,36,0.04)] p-4">
-            <p className="text-xs font-bold uppercase text-[#8A6D3F]">Address</p>
+          <div className="rounded-surface border border-[#062F24]/10 bg-[rgba(6,47,36,0.04)] p-4">
+            <p className="text-sm font-semibold text-[#062F24]/60">Address</p>
             <p className="mt-2 text-lg font-bold">{order.deliveryAddress.formatted}</p>
             {order.deliveryAddress.mapUrl ? (
               <a
                 href={order.deliveryAddress.mapUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="mt-4 inline-flex items-center gap-2 rounded-button border border-[rgba(6,47,36,0.16)] bg-white px-4 py-3 text-sm font-extrabold text-[#062F24] transition hover:opacity-90"
+                className={`${buttonClass} mt-4`}
+                style={quietButtonStyle}
               >
                 <Navigation size={16} aria-hidden="true" />
                 Open map
               </a>
             ) : null}
           </div>
-          <div className="rounded-surface border border-[rgba(6,47,36,0.1)] bg-[rgba(201,165,106,0.12)] p-4">
-            <p className="text-xs font-bold uppercase text-[#8A6D3F]">Delivery window</p>
+          <div className="rounded-surface border border-[#062F24]/10 bg-[rgba(6,47,36,0.04)] p-4">
+            <p className="text-sm font-semibold text-[#062F24]/60">Delivery window</p>
             <p className="mt-2 text-lg font-bold">
               {formatWindow(order.estimatedDeliveryStartAt, order.estimatedDeliveryEndAt)}
             </p>
@@ -214,8 +245,8 @@ function OrderDetail({
         </div>
       </div>
 
-      <div className="rounded-surface border border-[rgba(6,47,36,0.1)] bg-white p-5 text-[#062F24] shadow-sm">
-        <h2 className="text-xl font-extrabold">Status</h2>
+      <div className="rounded-surface border border-[#062F24]/10 bg-white p-5 text-[#062F24] shadow-sm">
+        <h2 className="text-xl font-bold">Status</h2>
         <div className="mt-4 flex flex-wrap gap-3">
           {(["PICKED_UP", "ON_THE_WAY", "ARRIVING_SOON", "DELIVERED"] as const).map((status) => {
             const enabled = next === status;
@@ -233,10 +264,10 @@ function OrderDetail({
                 type="button"
                 disabled={!enabled || Boolean(updating)}
                 onClick={() => onStatusUpdate(status)}
-                className="inline-flex min-w-36 items-center justify-center gap-2 rounded-button border px-4 py-3 text-sm font-extrabold transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                className={`${buttonClass} min-w-36`}
                 style={{
                   background: complete ? "#062F24" : "#FFFFFF",
-                  borderColor: complete ? "#062F24" : "rgba(6,47,36,0.16)",
+                  border: complete ? "1px solid #062F24" : "1px solid rgba(6,47,36,0.12)",
                   color: complete ? "#FFFFFF" : "#062F24",
                 }}
               >
@@ -255,9 +286,9 @@ function OrderDetail({
       </div>
 
       <div className="grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
-        <div className="rounded-surface border border-[rgba(6,47,36,0.1)] bg-white p-5 text-[#062F24] shadow-sm">
-          <h2 className="text-xl font-extrabold">Order contents</h2>
-          <div className="mt-4 divide-y divide-[rgba(6,47,36,0.1)]">
+        <div className="rounded-surface border border-[#062F24]/10 bg-white p-5 text-[#062F24] shadow-sm">
+          <h2 className="text-xl font-bold">Order contents</h2>
+          <div className="mt-4 divide-y divide-[#062F24]/10">
             {order.items.map((item) => (
               <div key={item.id} className="py-4 first:pt-0 last:pb-0">
                 <div className="flex items-start justify-between gap-4">
@@ -274,12 +305,12 @@ function OrderDetail({
                       </ul>
                     ) : null}
                     {item.specialInstructions ? (
-                      <p className="mt-2 rounded-button bg-[rgba(201,165,106,0.14)] px-3 py-2 text-sm font-semibold text-[#062F24]">
+                      <p className="mt-2 rounded-surface border border-[#062F24]/10 bg-[rgba(6,47,36,0.04)] px-3 py-2 text-sm font-semibold text-[#062F24]">
                         {item.specialInstructions}
                       </p>
                     ) : null}
                   </div>
-                  <span className="rounded-button bg-[rgba(6,47,36,0.08)] px-3 py-2 text-sm font-extrabold">
+                  <span className="rounded-button bg-[rgba(6,47,36,0.05)] px-3 py-1 text-sm font-bold">
                     x{item.quantity}
                   </span>
                 </div>
@@ -288,17 +319,17 @@ function OrderDetail({
           </div>
         </div>
 
-        <div className="rounded-surface border border-[rgba(6,47,36,0.1)] bg-white p-5 text-[#062F24] shadow-sm">
-          <h2 className="text-xl font-extrabold">Delivery notes</h2>
+        <div className="rounded-surface border border-[#062F24]/10 bg-white p-5 text-[#062F24] shadow-sm">
+          <h2 className="text-xl font-bold">Delivery notes</h2>
           <div className="mt-4 space-y-4 text-sm text-[#062F24]/75">
             <div>
-              <p className="text-xs font-bold uppercase text-[#8A6D3F]">Instructions</p>
+              <p className="text-sm font-semibold text-[#062F24]/60">Instructions</p>
               <p className="mt-1">
                 {order.deliveryAddress.instructions || "No delivery instructions."}
               </p>
             </div>
             <div>
-              <p className="text-xs font-bold uppercase text-[#8A6D3F]">Customer notes</p>
+              <p className="text-sm font-semibold text-[#062F24]/60">Customer notes</p>
               <p className="mt-1">{order.customerNotes || "No customer notes."}</p>
             </div>
           </div>
@@ -350,12 +381,14 @@ export default function DriverOrdersPage({ orderId }: { orderId?: string }) {
 
   useEffect(() => {
     void load();
-    const intervalId = window.setInterval(() => {
-      void load();
-    }, POLL_INTERVAL_MS);
-
-    return () => window.clearInterval(intervalId);
   }, [load]);
+
+  const refreshFromEvent = useCallback(() => { void load(); }, [load]);
+  useRealtimeInvalidation({
+    tokenRequest: { scope: "driver" },
+    onInvalidate: refreshFromEvent,
+    fallbackIntervalMs: POLL_INTERVAL_MS,
+  });
 
   const visibleOrders = useMemo(
     () =>
@@ -399,32 +432,35 @@ export default function DriverOrdersPage({ orderId }: { orderId?: string }) {
   };
 
   return (
-    <section className="min-h-screen bg-[#F7F4ED] px-4 pb-12 pt-8 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-5xl">
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+    <section className="min-h-screen pb-20 pt-8 lg:pt-10" style={{ background: "#FFFFFF" }}>
+      <div className={`mx-auto px-6 lg:px-8 ${orderId ? "max-w-5xl" : "max-w-7xl"}`}>
+        <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
           <div>
             {orderId ? (
               <Link
                 href="/driver/orders"
-                className="mb-3 inline-flex items-center gap-2 text-sm font-bold text-[#062F24]"
+                className="mb-4 inline-flex items-center gap-2 text-sm font-semibold text-[#062F24]/70 transition hover:text-[#062F24]"
               >
                 <ArrowLeft size={16} aria-hidden="true" />
                 Orders
               </Link>
             ) : null}
-            <p className="text-xs font-bold uppercase text-[#8A6D3F]">Driver</p>
-            <h1 className="mt-1 text-3xl font-extrabold leading-tight text-[#062F24]">
+            <h1 className="text-3xl font-extrabold leading-none text-[#062F24]">
               {orderId ? "Delivery details" : driver?.name ?? "Assigned deliveries"}
             </h1>
+            <p className="mt-3 text-sm font-semibold text-[#062F24]/65">
+              Driver deliveries refresh every {Math.round(POLL_INTERVAL_MS / 1000)} seconds.
+            </p>
           </div>
           <button
             type="button"
             onClick={() => void load(true)}
             disabled={refreshing}
-            className="inline-flex items-center justify-center gap-2 rounded-button border border-[rgba(6,47,36,0.16)] bg-white px-4 py-3 text-sm font-extrabold text-[#062F24] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+            className={buttonClass}
+            style={quietButtonStyle}
           >
             <RefreshCw
-              size={16}
+              size={14}
               className={refreshing ? "animate-spin" : ""}
               aria-hidden="true"
             />
@@ -434,36 +470,63 @@ export default function DriverOrdersPage({ orderId }: { orderId?: string }) {
 
         {error ? (
           <p
-            className="mb-5 rounded-surface border border-red-900/20 bg-red-900/10 px-4 py-3 text-sm font-semibold text-red-800"
+            className="mt-6 rounded-surface border border-red-900/20 bg-red-900/10 p-4 text-sm text-red-800"
             role="alert"
           >
             {error}
           </p>
         ) : null}
 
-        {loading ? (
-          <div className="flex min-h-64 items-center justify-center rounded-surface border border-[rgba(6,47,36,0.1)] bg-white text-[#062F24]">
-            <Loader2 size={22} className="animate-spin" aria-hidden="true" />
-          </div>
-        ) : orderId ? (
-          order ? (
-            <OrderDetail order={order} updating={updating} onStatusUpdate={updateStatus} />
-          ) : (
-            <div className="rounded-surface border border-[rgba(6,47,36,0.1)] bg-white p-8 text-[#062F24]">
-              Assigned order not found.
+        <div className="mt-8">
+          {loading ? (
+            <div className="flex items-center gap-3 rounded-surface border border-[#062F24]/10 bg-white p-6 text-[#062F24] shadow-sm">
+              <Loader2 size={16} className="animate-spin" aria-hidden="true" />
+              Loading deliveries
             </div>
-          )
-        ) : visibleOrders.length > 0 ? (
-          <div className="grid gap-4">
-            {visibleOrders.map((driverOrder) => (
-              <OrderSummaryCard key={driverOrder.id} order={driverOrder} />
-            ))}
-          </div>
-        ) : (
-          <div className="rounded-surface border border-[rgba(6,47,36,0.1)] bg-white p-8 text-[#062F24]">
-            No assigned deliveries.
-          </div>
-        )}
+          ) : orderId ? (
+            order ? (
+              <OrderDetail order={order} updating={updating} onStatusUpdate={updateStatus} />
+            ) : (
+              <div className="rounded-surface border border-[#062F24]/10 bg-white p-8 text-[#062F24] shadow-sm">
+                Assigned order not found.
+              </div>
+            )
+          ) : visibleOrders.length > 0 ? (
+            <div className="grid gap-4 lg:grid-cols-2">
+              {visibleOrders.map((driverOrder) => (
+                <OrderSummaryCard key={driverOrder.id} order={driverOrder} />
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-surface border border-[#062F24]/10 bg-white p-8 text-[#062F24] shadow-sm">
+              No assigned deliveries.
+            </div>
+          )}
+        </div>
+      </div>
+      <div
+        className="fixed bottom-4 left-4 z-[60] sm:bottom-6 sm:left-6"
+        style={{
+          bottom: "max(1rem, env(safe-area-inset-bottom))",
+          left: "max(1rem, env(safe-area-inset-left))",
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => void load(true)}
+          disabled={refreshing || loading}
+          aria-label={refreshing || loading ? "Refreshing deliveries" : "Refresh deliveries"}
+          className="inline-flex min-h-0 items-center rounded-button-group border border-white/20 bg-[#062F24] p-1 transition-all"
+        >
+          <span className="inline-flex min-h-0 items-center gap-2 rounded-icon px-3 py-2 text-xs font-semibold leading-none text-white">
+            <RefreshCw
+              size={14}
+              aria-hidden="true"
+              className={refreshing || loading ? "animate-spin" : ""}
+            />
+            {refreshing || loading ? "Refreshing" : "Refresh"}
+          </span>
+        </button>
       </div>
     </section>
   );

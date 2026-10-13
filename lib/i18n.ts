@@ -271,6 +271,7 @@ export const translations = {
       ],
     },
     reservation: {
+      callToReserve: "Appelez pour réserver.",
       form: {
         title: "Faire une réservation",
         description:
@@ -805,6 +806,7 @@ export const translations = {
       ],
     },
     reservation: {
+      callToReserve: "Call to reserve.",
       form: {
         title: "Make a Reservation",
         description:

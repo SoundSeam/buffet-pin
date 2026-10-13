@@ -53,6 +53,11 @@ export const PUBLIC_ENDPOINT_RATE_LIMITS = {
     limit: 3,
     windowMs: 60 * 60_000,
   },
+  checkoutCreateClient: {
+    scope: "public-checkout-create-client",
+    limit: 8,
+    windowMs: 15 * 60_000,
+  },
 } satisfies Record<string, PublicRateLimitConfig>;
 
 const RATE_LIMIT_RETENTION_MS = 24 * 60 * 60_000;

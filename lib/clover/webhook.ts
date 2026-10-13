@@ -29,6 +29,7 @@ export type CloverPaymentWebhook = {
   localPaymentId: string | null;
   localOrderId: string | null;
   localOrderPublicCode: string | null;
+  localIdempotencyKey: string | null;
   paymentStatus: OrderPaymentStatus | null;
   paidAt: Date | null;
   failedAt: Date | null;
@@ -369,6 +370,12 @@ export function normalizeCloverWebhook(payload: Record<string, unknown>): Clover
     ["data", "metadata", "publicCode"],
     ["data", "metadata", "orderPublicCode"],
   ]);
+  const localIdempotencyKey = getFirstString(payload, [
+    ["metadata", "idempotencyKey"],
+    ["metadata", "providerIdempotencyKey"],
+    ["data", "metadata", "idempotencyKey"],
+    ["data", "metadata", "providerIdempotencyKey"],
+  ]);
   const paymentStatus = derivePaymentStatus(payload);
   const eventTimestamp = deriveEventTimestamp(payload);
   const failureCode = getFirstString(payload, [
@@ -393,6 +400,7 @@ export function normalizeCloverWebhook(payload: Record<string, unknown>): Clover
     localPaymentId,
     localOrderId,
     localOrderPublicCode,
+    localIdempotencyKey,
     paymentStatus,
     paidAt: paymentStatus === OrderPaymentStatus.PAID ? eventTimestamp ?? new Date() : null,
     failedAt: paymentStatus === OrderPaymentStatus.FAILED ? eventTimestamp ?? new Date() : null,
@@ -459,6 +467,7 @@ export function buildRawProviderData(
       checkoutSessionId: webhook.checkoutSessionId,
       providerPaymentId: webhook.providerPaymentId,
       providerOrderId: webhook.providerOrderId,
+      localIdempotencyKey: webhook.localIdempotencyKey,
       payload: webhook.payload,
     },
   });

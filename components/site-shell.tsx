@@ -7,11 +7,17 @@ type SiteShellProps = {
   children: ReactNode;
   header?: ReactNode;
   footer?: boolean;
+  languageToggle?: boolean;
 };
 
-export default function SiteShell({ children, header, footer = true }: SiteShellProps) {
+export default function SiteShell({
+  children,
+  header,
+  footer = true,
+  languageToggle = true,
+}: SiteShellProps) {
   return (
-    <div className="min-h-screen bg-[#041F18]">
+    <div className={`min-h-screen ${footer ? "bg-[#041F18]" : "bg-white"}`}>
       <a href="#main-content" className="skip-link">
         Skip to content
       </a>
@@ -19,15 +25,17 @@ export default function SiteShell({ children, header, footer = true }: SiteShell
       <main id="main-content" tabIndex={-1}>
         {children}
       </main>
-      <div
-        className="fixed bottom-4 right-4 z-[60] sm:bottom-6 sm:right-6"
-        style={{
-          bottom: "max(1rem, env(safe-area-inset-bottom))",
-          right: "max(1rem, env(safe-area-inset-right))",
-        }}
-      >
-        <LanguageToggle />
-      </div>
+      {languageToggle ? (
+        <div
+          className="fixed bottom-4 right-4 z-[60] sm:bottom-6 sm:right-6"
+          style={{
+            bottom: "max(1rem, env(safe-area-inset-bottom))",
+            right: "max(1rem, env(safe-area-inset-right))",
+          }}
+        >
+          <LanguageToggle />
+        </div>
+      ) : null}
       {footer ? <Footer /> : null}
     </div>
   );

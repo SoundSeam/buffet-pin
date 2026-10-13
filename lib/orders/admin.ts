@@ -9,6 +9,7 @@ import {
 } from "@prisma/client";
 
 import { db } from "@/lib/db";
+import { dispatchAggregateJobs } from "@/lib/async-jobs/dispatch";
 import { notifyOrderFulfillmentStatus } from "@/lib/orders/notifications";
 import { canTransitionFulfillmentStatus } from "@/lib/orders/status";
 
@@ -35,6 +36,20 @@ export const adminOrderInclude = {
   driverAssignment: {
     include: {
       driver: true,
+    },
+  },
+  printJobs: { orderBy: { createdAt: "desc" } },
+  packingChecks: { orderBy: { verifiedAt: "asc" } },
+  deliveryStops: {
+    orderBy: { createdAt: "desc" },
+    take: 3,
+    include: {
+      proof: {
+        select: { id: true, status: true, storedAt: true },
+      },
+      run: {
+        include: { driver: { select: { id: true, name: true } } },
+      },
     },
   },
 } satisfies Prisma.OrderInclude;
@@ -65,11 +80,17 @@ function toPrismaJson(value: unknown): Prisma.InputJsonValue {
 export function serializeAdminOrder(order: AdminOrderRow) {
   return {
     id: order.id,
-    publicCode: order.publicCode,
+    publicCode: order.orderNumber,
+    orderNumber: order.orderNumber,
     serviceType: order.serviceType,
     paymentStatus: order.paymentStatus,
     refundStatus: order.refundStatus,
     fulfillmentStatus: order.fulfillmentStatus,
+    productionStatus: order.productionStatus,
+    dispatchStatus: order.dispatchStatus,
+    deliveryZoneNameSnapshot: order.deliveryZoneNameSnapshot,
+    promisedDeliveryStartAt: toIso(order.promisedDeliveryStartAt),
+    promisedDeliveryEndAt: toIso(order.promisedDeliveryEndAt),
     customer: {
       id: order.customerId,
       name: order.customerName,
@@ -97,6 +118,11 @@ export function serializeAdminOrder(order: AdminOrderRow) {
     estimatedReadyEndAt: toIso(order.estimatedReadyEndAt),
     estimatedDeliveryStartAt: toIso(order.estimatedDeliveryStartAt),
     estimatedDeliveryEndAt: toIso(order.estimatedDeliveryEndAt),
+    acceptanceDeadlineAt: toIso(order.acceptanceDeadlineAt),
+    acceptanceDecisionAt: toIso(order.acceptanceDecisionAt),
+    acceptanceTimedOutAt: toIso(order.acceptanceTimedOutAt),
+    preparationExtendedMinutes: order.preparationExtendedMinutes,
+    readyForDeliveryAt: toIso(order.readyForDeliveryAt),
     totals: {
       itemsSubtotalCents: order.itemsSubtotalCents,
       taxableSubtotalCents: order.taxableSubtotalCents,
@@ -116,8 +142,37 @@ export function serializeAdminOrder(order: AdminOrderRow) {
     rejectedAt: toIso(order.rejectedAt),
     cancelledAt: toIso(order.cancelledAt),
     completedAt: toIso(order.completedAt),
+    preparationStartedAt: toIso(order.preparationStartedAt),
+    packingStartedAt: toIso(order.packingStartedAt),
+    packedAt: toIso(order.packedAt),
+    atDispatchDeskAt: toIso(order.atDispatchDeskAt),
+    deliveryRun: order.deliveryStops[0]
+      ? {
+          id: order.deliveryStops[0].run.id,
+          runNumber: order.deliveryStops[0].run.runNumber,
+          status: order.deliveryStops[0].run.status,
+          position: order.deliveryStops[0].position,
+          stopStatus: order.deliveryStops[0].status,
+          handedOffAt: toIso(order.deliveryStops[0].run.handedOffAt),
+          driver: order.deliveryStops[0].run.driver,
+          proof: order.deliveryStops[0].proof
+            ? {
+                id: order.deliveryStops[0].proof.id,
+                status: order.deliveryStops[0].proof.status,
+                storedAt: order.deliveryStops[0].proof.storedAt.toISOString(),
+              }
+            : null,
+        }
+      : null,
     createdAt: order.createdAt.toISOString(),
     updatedAt: order.updatedAt.toISOString(),
+    printJobs: order.printJobs,
+    packingChecks: order.packingChecks.map((check) => ({
+      ...check,
+      verifiedAt: check.verifiedAt.toISOString(),
+      createdAt: check.createdAt.toISOString(),
+      updatedAt: check.updatedAt.toISOString(),
+    })),
     items: order.items.map((item) => ({
       id: item.id,
       menuItemId: item.menuItemId,
@@ -320,6 +375,7 @@ export async function updateOrderFulfillmentStatus({
   });
 
   if (result.changed) {
+    await dispatchAggregateJobs("Order", orderId);
     await notifyOrderFulfillmentStatus(orderId, status, {
       actorId,
       actorLabel,
@@ -453,6 +509,8 @@ export async function assignOrderDriver({
       include: adminOrderInclude,
     });
   });
+
+  await dispatchAggregateJobs("Order", orderId);
 
   await notifyOrderFulfillmentStatus(orderId, OrderFulfillmentStatus.DRIVER_ASSIGNED, {
     actorId,

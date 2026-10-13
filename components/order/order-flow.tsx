@@ -1,10 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import Link from "next/link";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Check,
   ChevronRight,
   DoorOpen,
   ImageIcon,
@@ -18,6 +16,7 @@ import {
   X,
 } from "lucide-react";
 import { FaStar } from "react-icons/fa";
+import { buffetPinMedia } from "@/lib/media";
 
 type Step = "menu" | "checkout";
 type ServiceType = "DELIVERY";
@@ -127,13 +126,6 @@ type PublicOrderSettings = {
   freeDeliveryThresholdCents: number | null;
 };
 
-type CheckoutSuccess = {
-  publicCode: string;
-  paymentStatus: string;
-  fulfillmentStatus: string;
-  checkoutUrl: string | null;
-};
-
 type AddressSuggestion = {
   placeId: string;
   description: string;
@@ -155,9 +147,64 @@ type Props = {
   initialStep: Step;
 };
 
+type CheckoutConfig =
+  | { checkoutMode: "hosted" }
+  | {
+      checkoutMode: "iframe";
+      clover: {
+        env: "sandbox" | "production";
+        merchantId: string;
+        publicAccessKey: string;
+        sdkUrl: string;
+      };
+    };
+
+type CloverElementName = "CARD_NUMBER" | "CARD_DATE" | "CARD_CVV" | "CARD_POSTAL_CODE";
+
+type CloverElementEvent = Partial<
+  Record<CloverElementName, { error?: string; touched?: boolean; complete?: boolean }>
+>;
+
+type CloverFieldStatus = {
+  touched: boolean;
+  complete: boolean;
+  error: string;
+};
+
+type CloverElement = {
+  mount(selector: string): void;
+  addEventListener(eventName: "change" | "blur", handler: (event: CloverElementEvent) => void): void;
+  unmount?: () => void;
+  destroy?: () => void;
+};
+
+type CloverElements = {
+  create(type: CloverElementName, styles?: Record<string, unknown>): CloverElement;
+};
+
+type CloverTokenResult = {
+  token?: string;
+  errors?: Record<string, string | { error?: string }>;
+};
+
+type CloverInstance = {
+  elements(): CloverElements;
+  createToken(): Promise<CloverTokenResult>;
+};
+
+type CloverConstructor = new (
+  publicAccessKey: string,
+  options?: { merchantId?: string; locale?: string },
+) => CloverInstance;
+
+declare global {
+  interface Window {
+    Clover?: CloverConstructor;
+  }
+}
+
 const CART_STORAGE_KEY = "buffet-pin-public-cart-v1";
-const ORDER_HERO_IMAGE =
-  "https://soundseam-origin.s3.us-east-2.amazonaws.com/misc/BuffetPinFood.png";
+const ORDER_HERO_IMAGE = buffetPinMedia.food;
 
 const emptyCart: CartState = {
   items: [],
@@ -194,14 +241,144 @@ const closedOrderingErrorCodes = new Set([
   "PICKUP_DISABLED",
   "DELIVERY_DISABLED",
 ]);
+const cloverElementContainers: Record<CloverElementName, string> = {
+  CARD_NUMBER: "clover-card-number",
+  CARD_DATE: "clover-card-date",
+  CARD_CVV: "clover-card-cvv",
+  CARD_POSTAL_CODE: "clover-card-postal-code",
+};
+const cloverElementNames = Object.keys(cloverElementContainers) as CloverElementName[];
+const emptyCloverFieldStatus: Record<CloverElementName, CloverFieldStatus> = {
+  CARD_NUMBER: { touched: false, complete: false, error: "" },
+  CARD_DATE: { touched: false, complete: false, error: "" },
+  CARD_CVV: { touched: false, complete: false, error: "" },
+  CARD_POSTAL_CODE: { touched: false, complete: false, error: "" },
+};
 const GST_RATE_PPM = 50000;
 const QST_RATE_PPM = 99750;
 
-function formatMoney(cents: number) {
+function formatMoney(cents: number, currency = "CAD") {
   return new Intl.NumberFormat("en-CA", {
     style: "currency",
-    currency: "CAD",
+    currency,
   }).format(cents / 100);
+}
+
+function loadScript(src: string) {
+  return new Promise<void>((resolve, reject) => {
+    const existing = document.querySelector<HTMLScriptElement>(`script[src="${src}"]`);
+
+    if (existing) {
+      if (existing.dataset.loaded === "true") {
+        resolve();
+        return;
+      }
+
+      existing.addEventListener("load", () => resolve(), { once: true });
+      existing.addEventListener("error", () => reject(new Error("Unable to load Clover payment form.")), {
+        once: true,
+      });
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = src;
+    script.async = true;
+    script.addEventListener(
+      "load",
+      () => {
+        script.dataset.loaded = "true";
+        resolve();
+      },
+      { once: true },
+    );
+    script.addEventListener("error", () => reject(new Error("Unable to load Clover payment form.")), {
+      once: true,
+    });
+    document.head.appendChild(script);
+  });
+}
+
+function getCloverErrorMessage(error: unknown) {
+  if (typeof error === "string" && error.trim()) {
+    return error;
+  }
+
+  if (error && typeof error === "object" && "error" in error) {
+    const nested = (error as { error?: unknown }).error;
+    if (typeof nested === "string" && nested.trim()) {
+      return nested;
+    }
+  }
+
+  return "Please check your card details.";
+}
+
+function lockCloverIframe(containerId: string) {
+  const container = document.getElementById(containerId);
+
+  if (!container) {
+    return null;
+  }
+
+  const cloverInputFont =
+    'Arimo, Arial, Helvetica, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+
+  container.style.fontFamily = cloverInputFont;
+
+  const applyIframeStyles = () => {
+    container.querySelectorAll<HTMLIFrameElement>("iframe").forEach((iframe) => {
+      iframe.setAttribute("scrolling", "no");
+      iframe.style.border = "0";
+      iframe.style.display = "block";
+      iframe.style.fontFamily = cloverInputFont;
+      iframe.style.height = "100%";
+      iframe.style.maxHeight = "100%";
+      iframe.style.minHeight = "0";
+      iframe.style.overflow = "hidden";
+      iframe.style.width = "100%";
+    });
+  };
+
+  applyIframeStyles();
+
+  const observer = new MutationObserver(applyIframeStyles);
+  observer.observe(container, { childList: true, subtree: true });
+  return observer;
+}
+
+function styleCloverInjectedAssets() {
+  const applyStyles = () => {
+    const privacyLink = document.querySelector<HTMLAnchorElement>(
+      'a[href*="clover.com/privacy-policy"]',
+    );
+    const lockImage = document.querySelector<HTMLImageElement>('img[src*="/lock.png"]');
+    const cloverSymbol = document.querySelector<HTMLImageElement>('img[src*="clover-symbol"]');
+    const intermediateFrame = document.querySelector<HTMLIFrameElement>(
+      'iframe[src*="element=INTERMEDIATE"]',
+    );
+
+    intermediateFrame?.parentElement?.classList.add("buffet-clover-hidden-frame");
+    privacyLink?.classList.add("buffet-clover-privacy-link");
+    lockImage?.classList.add("buffet-clover-branding-icon");
+    cloverSymbol?.classList.add("buffet-clover-branding-icon");
+
+    const brandingRoot =
+      privacyLink?.closest("div") ??
+      cloverSymbol?.closest("div") ??
+      lockImage?.closest("div") ??
+      null;
+
+    if (brandingRoot && brandingRoot !== document.body) {
+      brandingRoot.classList.add("buffet-clover-branding");
+    }
+  };
+
+  applyStyles();
+
+  const observer = new MutationObserver(applyStyles);
+  observer.observe(document.body, { childList: true, subtree: true });
+  return observer;
 }
 
 function dollarsToCents(value: string) {
@@ -319,7 +496,20 @@ export default function OrderFlow({ initialStep }: Props) {
   const [draftTipAmountDollars, setDraftTipAmountDollars] = useState("");
   const [pricedCart, setPricedCart] = useState<PricedCart | null>(null);
   const [checkoutClosed, setCheckoutClosed] = useState(false);
-  const [success, setSuccess] = useState<CheckoutSuccess | null>(null);
+  const [checkoutConfig, setCheckoutConfig] = useState<CheckoutConfig | null>(null);
+  const [checkoutConfigLoading, setCheckoutConfigLoading] = useState(false);
+  const [cloverReady, setCloverReady] = useState(false);
+  const [cloverLoading, setCloverLoading] = useState(false);
+  const [cloverFields, setCloverFields] =
+    useState<Record<CloverElementName, CloverFieldStatus>>(emptyCloverFieldStatus);
+  const [paymentError, setPaymentError] = useState("");
+  const [paymentAttemptIdempotencyKey, setPaymentAttemptIdempotencyKey] = useState<string | null>(null);
+  const cloverInstanceRef = useRef<CloverInstance | null>(null);
+  const cloverElementsRef = useRef<CloverElement[]>([]);
+  const cloverIframeObserversRef = useRef<MutationObserver[]>([]);
+  const cloverAssetObserverRef = useRef<MutationObserver | null>(null);
+  const cloverMountedRef = useRef(false);
+  const placingOrderRef = useRef(false);
 
   const itemById = useMemo(() => {
     return new Map(categories.flatMap((category) => category.items.map((item) => [item.id, item])));
@@ -382,13 +572,34 @@ export default function OrderFlow({ initialStep }: Props) {
     fallbackQstCents +
     fallbackTipCents +
     fallbackDeliveryFeeCents;
+  const isIframeCheckout = checkoutConfig?.checkoutMode === "iframe";
+  const isCustomerValid = Boolean(cart.customer.name.trim()) && Boolean(cart.customer.phone.trim());
+  const areCloverFieldsValid =
+    !isIframeCheckout ||
+    (cloverReady &&
+      cloverElementNames.every((name) => cloverFields[name].complete && !cloverFields[name].error));
   const canPlaceOrder =
     cart.items.length > 0 &&
     hasSelectedDeliveryAddress &&
+    isCustomerValid &&
     Boolean(pricedCart) &&
+    Boolean(checkoutConfig) &&
     !pricingLoading &&
-    !checkoutClosed;
-  const placeOrderButtonLabel = checkoutClosed ? "Closed" : "Place order";
+    !checkoutClosed &&
+    !checkoutConfigLoading &&
+    !cloverLoading &&
+    areCloverFieldsValid;
+  const payableTotalCents =
+    pricedCart?.totalCents ??
+    (checkoutClosed && cart.items.length > 0 ? fallbackTotalCents : null);
+  const checkoutCurrency = pricedCart?.currency ?? "CAD";
+  const placeOrderButtonLabel = placingOrder
+    ? "Processing..."
+    : checkoutClosed
+    ? "Closed"
+    : payableTotalCents !== null
+      ? `Pay ${formatMoney(payableTotalCents, checkoutCurrency)}`
+      : "Pay";
 
   useEffect(() => {
     setStep(initialStep);
@@ -422,6 +633,265 @@ export default function OrderFlow({ initialStep }: Props) {
 
     void loadMenu();
   }, []);
+
+  useEffect(() => {
+    if (step !== "checkout" || checkoutConfig) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const loadCheckoutConfig = async () => {
+      setCheckoutConfigLoading(true);
+
+      try {
+        const response = await fetch("/api/checkout/config", { cache: "no-store" });
+        const result = await response.json();
+
+        if (cancelled) {
+          return;
+        }
+
+        if (!result.ok) {
+          setError(result.error?.message ?? "Unable to load payment settings.");
+          return;
+        }
+
+        setCheckoutConfig(result.data as CheckoutConfig);
+      } catch {
+        if (!cancelled) {
+          setError("Unable to load payment settings.");
+        }
+      } finally {
+        if (!cancelled) {
+          setCheckoutConfigLoading(false);
+        }
+      }
+    };
+
+    void loadCheckoutConfig();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [checkoutConfig, step]);
+
+  useEffect(() => {
+    setPaymentAttemptIdempotencyKey(null);
+  }, [pricingSignature]);
+
+  useEffect(() => {
+    setPaymentError("");
+  }, [pricingSignature, cart.customer.name, cart.customer.phone]);
+
+  useEffect(() => {
+    if (step !== "checkout" || checkoutConfig?.checkoutMode !== "iframe" || cloverMountedRef.current) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const mountClover = async () => {
+      setCloverLoading(true);
+      setCloverReady(false);
+      setPaymentError("");
+      setCloverFields(emptyCloverFieldStatus);
+      cloverIframeObserversRef.current.forEach((observer) => observer.disconnect());
+      cloverIframeObserversRef.current = [];
+      cloverAssetObserverRef.current?.disconnect();
+      cloverAssetObserverRef.current = styleCloverInjectedAssets();
+
+      try {
+        await loadScript(checkoutConfig.clover.sdkUrl);
+
+        if (cancelled) {
+          return;
+        }
+
+        if (!window.Clover) {
+          throw new Error("Clover payment form did not initialize.");
+        }
+
+        const locale = cart.customer.language === "FR" ? "fr-CA" : "en-CA";
+        const clover = new window.Clover(checkoutConfig.clover.publicAccessKey, {
+          merchantId: checkoutConfig.clover.merchantId,
+          locale,
+        });
+        const elements = clover.elements();
+        const cloverInputFont =
+          'Arimo, Arial, Helvetica, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+        const cloverInputFontImportant =
+          'Arimo, Arial, Helvetica, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important';
+        const cloverInputFontShorthand =
+          '500 16px/20px Arimo, Arial, Helvetica, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+        const noScrollFontStyles = {
+          boxSizing: "border-box",
+          font: cloverInputFontShorthand,
+          fontFamily: cloverInputFontImportant,
+          fontKerning: "normal",
+          fontOpticalSizing: "auto",
+          fontSize: "16px",
+          fontStyle: "normal",
+          fontSynthesis: "none",
+          fontVariant: "normal",
+          fontWeight: "500",
+          letterSpacing: "0",
+          scrollbarWidth: "none",
+          textRendering: "geometricPrecision",
+          WebkitFontSmoothing: "antialiased",
+        };
+        const styles = {
+          "*": {
+            ...noScrollFontStyles,
+            scrollbarWidth: "none",
+          },
+          "*::before": noScrollFontStyles,
+          "*::after": noScrollFontStyles,
+          html: {
+            ...noScrollFontStyles,
+            fontFamily: cloverInputFont,
+            height: "100%",
+            margin: "0",
+            overflow: "hidden",
+            scrollbarWidth: "none",
+          },
+          body: {
+            ...noScrollFontStyles,
+            fontFamily: cloverInputFont,
+            height: "100%",
+            margin: "0",
+            overflow: "hidden",
+            scrollbarWidth: "none",
+          },
+          "::-webkit-scrollbar": {
+            display: "none",
+            height: "0",
+            width: "0",
+          },
+          input: {
+            ...noScrollFontStyles,
+            color: "#000000",
+            font: cloverInputFontShorthand,
+            fontSize: "16px",
+            fontFamily: cloverInputFontImportant,
+            fontWeight: "500",
+            height: "20px",
+            lineHeight: "20px",
+            marginTop: "14px",
+            overflow: "hidden",
+            padding: "0",
+            scrollbarWidth: "none",
+            verticalAlign: "middle",
+          },
+          "body input": {
+            ...noScrollFontStyles,
+            color: "#000000",
+            font: cloverInputFontShorthand,
+            fontFamily: cloverInputFontImportant,
+            height: "20px",
+            lineHeight: "20px",
+            marginTop: "14px",
+            overflow: "hidden",
+            padding: "0",
+            scrollbarWidth: "none",
+            verticalAlign: "middle",
+          },
+          "input:focus": {
+            ...noScrollFontStyles,
+            color: "#000000",
+            font: cloverInputFontShorthand,
+            fontFamily: cloverInputFontImportant,
+            outline: "0",
+          },
+          "input::placeholder": {
+            color: "#737373",
+            font: cloverInputFontShorthand,
+            fontFamily: cloverInputFontImportant,
+            fontWeight: "500",
+            opacity: "1",
+          },
+          "input::-webkit-input-placeholder": {
+            color: "#737373",
+            font: cloverInputFontShorthand,
+            fontFamily: cloverInputFontImportant,
+            fontWeight: "500",
+            opacity: "1",
+          },
+          "input:-webkit-autofill": {
+            ...noScrollFontStyles,
+            font: cloverInputFontShorthand,
+            fontFamily: cloverInputFontImportant,
+            WebkitTextFillColor: "#000000",
+          },
+          "input::-webkit-scrollbar": {
+            display: "none",
+            height: "0",
+            width: "0",
+          },
+        };
+        const mountedElements: CloverElement[] = [];
+        const updateFieldStatus = (event: CloverElementEvent) => {
+          setPaymentError("");
+          setCloverFields((current) => {
+            const next = { ...current };
+
+            for (const key of cloverElementNames) {
+              const fieldEvent = event[key];
+
+              if (!fieldEvent) {
+                continue;
+              }
+
+              const errorMessage = fieldEvent.error ?? "";
+              const touched = fieldEvent.touched ?? current[key].touched;
+              next[key] = {
+                touched,
+                complete: fieldEvent.complete ?? (touched && !errorMessage),
+                error: errorMessage,
+              };
+            }
+
+            return next;
+          });
+        };
+
+        for (const elementName of cloverElementNames) {
+          const element = elements.create(elementName, styles);
+          element.addEventListener("change", updateFieldStatus);
+          element.addEventListener("blur", updateFieldStatus);
+          element.mount(`#${cloverElementContainers[elementName]}`);
+          mountedElements.push(element);
+          const observer = lockCloverIframe(cloverElementContainers[elementName]);
+          if (observer) {
+            cloverIframeObserversRef.current.push(observer);
+          }
+        }
+
+        cloverInstanceRef.current = clover;
+        cloverElementsRef.current = mountedElements;
+        cloverMountedRef.current = true;
+        setCloverReady(true);
+      } catch {
+        if (!cancelled) {
+          setError("Unable to load secure card fields. Please refresh and try again.");
+        }
+      } finally {
+        if (!cancelled) {
+          setCloverLoading(false);
+        }
+      }
+    };
+
+    void mountClover();
+
+    return () => {
+      cancelled = true;
+      cloverIframeObserversRef.current.forEach((observer) => observer.disconnect());
+      cloverIframeObserversRef.current = [];
+      cloverAssetObserverRef.current?.disconnect();
+      cloverAssetObserverRef.current = null;
+    };
+  }, [cart.customer.language, checkoutConfig, step]);
 
   useEffect(() => {
     const formatted = formatDeliveryAddressInput(cart.deliveryAddress);
@@ -494,7 +964,6 @@ export default function OrderFlow({ initialStep }: Props) {
     const { resetPricing = true } = options;
 
     setError("");
-    setSuccess(null);
     if (resetPricing) {
       setPricedCart(null);
       setCheckoutClosed(false);
@@ -678,7 +1147,7 @@ export default function OrderFlow({ initialStep }: Props) {
   }, []);
 
   useEffect(() => {
-    if (step !== "checkout" || success || cart.items.length === 0 || !hasSelectedDeliveryAddress) {
+    if (step !== "checkout" || cart.items.length === 0 || !hasSelectedDeliveryAddress) {
       setPricingLoading(false);
       return;
     }
@@ -692,47 +1161,146 @@ export default function OrderFlow({ initialStep }: Props) {
       window.clearTimeout(timeoutId);
       controller.abort();
     };
-  }, [cart.items.length, hasSelectedDeliveryAddress, priceCart, pricingCart, pricingSignature, step, success]);
+  }, [cart.items.length, hasSelectedDeliveryAddress, priceCart, pricingCart, pricingSignature, step]);
 
   const placeOrder = async () => {
+    if (placingOrderRef.current) {
+      return;
+    }
+
     if (!cart.customer.name.trim() || !cart.customer.phone.trim()) {
       setError("Name and phone are required.");
       return;
     }
 
+    if (!checkoutConfig) {
+      setError("Payment settings are still loading.");
+      return;
+    }
+
+    placingOrderRef.current = true;
     setPlacingOrder(true);
     setError("");
+    setPaymentError("");
 
     try {
+      let cloverPayment: { source: string; idempotencyKey: string } | undefined;
+
+      if (checkoutConfig.checkoutMode === "iframe") {
+        const clover = cloverInstanceRef.current;
+
+        if (!clover || !cloverReady) {
+          setPaymentError("Secure card fields are still loading.");
+          return;
+        }
+
+        if (!areCloverFieldsValid) {
+          setPaymentError("Please complete the card details before paying.");
+          return;
+        }
+
+        const tokenResult = await clover.createToken();
+
+        if (tokenResult.errors) {
+          const messages = Object.values(tokenResult.errors).map(getCloverErrorMessage);
+          setPaymentError(messages[0] ?? "Please check your card details.");
+          return;
+        }
+
+        if (!tokenResult.token) {
+          setPaymentError("Unable to verify your card details. Please try again.");
+          return;
+        }
+
+        const idempotencyKey = paymentAttemptIdempotencyKey ?? crypto.randomUUID();
+        setPaymentAttemptIdempotencyKey(idempotencyKey);
+        cloverPayment = {
+          source: tokenResult.token,
+          idempotencyKey,
+        };
+      }
+
       const response = await fetch("/api/checkout/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(buildCheckoutPayload(cart)),
+        body: JSON.stringify({
+          ...buildCheckoutPayload(cart),
+          ...(cloverPayment ? { cloverPayment } : {}),
+        }),
       });
       const result = await response.json();
 
       if (!result.ok) {
         const code = result.error?.code;
+        const isPaymentError =
+          checkoutConfig.checkoutMode === "iframe" &&
+          (code === "CLOVER_PAYMENT_DECLINED" ||
+            code === "CLOVER_SOURCE_REQUIRED" ||
+            code === "CLOVER_PAYMENT_FAILED" ||
+            code === "VALIDATION_ERROR");
+        const message =
+          code === "CLOVER_PAYMENT_DECLINED"
+            ? "Your card was declined. Please check your card details or use another card."
+            : result.error?.message ?? "Unable to create checkout.";
 
-        setError(result.error?.message ?? "Unable to create checkout.");
+        if (isPaymentError) {
+          setPaymentError(message);
+        } else {
+          setError(message);
+        }
         setCheckoutClosed(closedOrderingErrorCodes.has(code));
         if (closedOrderingErrorCodes.has(code)) {
           setPricedCart(null);
         }
+        if (
+          checkoutConfig.checkoutMode === "iframe" &&
+          (code === "CLOVER_PAYMENT_DECLINED" ||
+            code === "CLOVER_SOURCE_REQUIRED" ||
+            code === "VALIDATION_ERROR")
+        ) {
+          setPaymentAttemptIdempotencyKey(null);
+        }
         return;
       }
 
-      setSuccess({
-        publicCode: result.data.order.publicCode,
-        paymentStatus: result.data.order.paymentStatus,
-        fulfillmentStatus: result.data.order.fulfillmentStatus,
-        checkoutUrl: result.data.payment.checkoutUrl,
-      });
+      if (checkoutConfig.checkoutMode === "iframe") {
+        const publicCode = result.data?.order?.publicCode;
+        const trackingUrl = (result.data?.trackingUrl ?? result.data?.order?.trackingUrl) as
+          | string
+          | undefined;
+
+        if (!publicCode) {
+          setError("Payment completed, but the order status link was missing.");
+          return;
+        }
+
+        setPricedCart(null);
+        setCart(emptyCart);
+        setPaymentAttemptIdempotencyKey(null);
+        window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(emptyCart));
+        window.location.assign(trackingUrl ?? `/order/${encodeURIComponent(publicCode)}`);
+        return;
+      }
+
+      const checkoutUrl = result.data.payment.checkoutUrl;
+
+      if (!checkoutUrl) {
+        setError("Unable to open Clover checkout.");
+        return;
+      }
+
       setPricedCart(null);
       setCart(emptyCart);
+      window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(emptyCart));
+      window.location.assign(checkoutUrl);
     } catch {
-      setError("Unable to create checkout.");
+      if (checkoutConfig?.checkoutMode === "iframe") {
+        setPaymentError("We could not complete the payment. Please try again.");
+      } else {
+        setError("Unable to create checkout.");
+      }
     } finally {
+      placingOrderRef.current = false;
       setPlacingOrder(false);
     }
   };
@@ -1290,30 +1858,31 @@ export default function OrderFlow({ initialStep }: Props) {
 
   const renderCheckoutTotalRows = () => {
     const totals = pricedCart;
+    const currency = totals?.currency ?? "CAD";
     const shouldShowFallbackTotals = !totals && checkoutClosed && cart.items.length > 0;
     const pendingValue = pricingLoading ? "Calculating..." : "--";
     const gstValue = totals
-      ? formatMoney(totals.gstCents)
+      ? formatMoney(totals.gstCents, currency)
       : shouldShowFallbackTotals
         ? formatMoney(fallbackGstCents)
         : pendingValue;
     const qstValue = totals
-      ? formatMoney(totals.qstCents)
+      ? formatMoney(totals.qstCents, currency)
       : shouldShowFallbackTotals
         ? formatMoney(fallbackQstCents)
         : pendingValue;
     const deliveryFeeValue = totals
-      ? formatMoney(totals.deliveryFeeCents)
+      ? formatMoney(totals.deliveryFeeCents, currency)
       : shouldShowFallbackTotals
         ? formatMoney(fallbackDeliveryFeeCents)
         : pendingValue;
     const tipValue = totals
-      ? formatMoney(totals.tipCents)
+      ? formatMoney(totals.tipCents, currency)
       : shouldShowFallbackTotals
         ? formatMoney(fallbackTipCents)
         : pendingValue;
     const totalValue = totals
-      ? formatMoney(totals.totalCents)
+      ? formatMoney(totals.totalCents, currency)
       : pricingLoading
         ? "Calculating..."
         : checkoutClosed
@@ -1327,7 +1896,7 @@ export default function OrderFlow({ initialStep }: Props) {
         <div className="flex justify-between gap-4">
           <span>Item subtotal</span>
           <span className="font-medium text-black">
-            {formatMoney(totals?.itemsSubtotalCents ?? clientSubtotal)}
+            {formatMoney(totals?.itemsSubtotalCents ?? clientSubtotal, currency)}
           </span>
         </div>
         <div className="flex justify-between gap-4">
@@ -1408,140 +1977,178 @@ export default function OrderFlow({ initialStep }: Props) {
     </aside>
   );
 
-  const renderCheckoutSuccess = () => (
-    <div className="rounded-[16px] bg-white p-8 text-center text-black">
-      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-black text-white">
-        <Check size={26} aria-hidden="true" />
-      </div>
-      <h2 className="mt-5 text-2xl font-extrabold">Order created</h2>
-      <p className="mt-3 text-sm leading-6 text-neutral-600">
-        Your order code is <span className="font-extrabold text-black">{success?.publicCode}</span>.
-        Payment is still pending and will only be marked paid after Clover webhook reconciliation.
-      </p>
-      {success?.checkoutUrl ? (
-        <a
-          href={success.checkoutUrl}
-          className="mt-6 inline-flex min-h-12 items-center justify-center rounded-button bg-black px-6 py-3 font-extrabold text-white"
-        >
-          Continue to payment
-        </a>
-      ) : (
-        <p className="mt-6 rounded-button bg-neutral-100 p-4 text-sm leading-6 text-neutral-700">
-          Clover checkout is not configured yet, so no payment redirect was created.
-        </p>
-      )}
-      <Link
-        href="/order"
-        className="mt-5 inline-flex items-center justify-center rounded-button bg-neutral-100 px-5 py-3 font-bold text-black"
-      >
-        Start another order
-      </Link>
-    </div>
-  );
+  const renderCloverPaymentFields = () => {
+    if (checkoutConfig?.checkoutMode !== "iframe") {
+      return null;
+    }
+
+    const fieldClass =
+      "flex h-12 w-full items-center overflow-hidden rounded-button border border-neutral-200 bg-white px-4 text-black transition focus-within:bg-white focus-within:outline-none focus-within:ring-2 focus-within:ring-black [&_*]:[scrollbar-width:none] [&>iframe]:!m-0 [&>iframe]:!block [&>iframe]:!h-full [&>iframe]:!max-h-full [&>iframe]:!min-h-0 [&>iframe]:!w-full [&>iframe]:!overflow-hidden [&>iframe]:!border-0";
+    const errorClass = "mt-1 min-h-5 text-xs font-semibold leading-5 text-[#7A211B]";
+    const renderPaymentField = (name: CloverElementName, label: string) => {
+      const status = cloverFields[name];
+
+      return (
+        <div className="min-h-[86px]">
+          <label
+            htmlFor={cloverElementContainers[name]}
+            className="mb-2 block text-sm font-extrabold text-black"
+          >
+            {label}
+          </label>
+          <div className="relative">
+            <div
+              id={cloverElementContainers[name]}
+              className={`${fieldClass} ${
+                status.error ? "border-[#A33A31] bg-[#FFF6F4]" : ""
+              } ${cloverLoading ? "pointer-events-none opacity-0" : ""}`}
+            />
+            {cloverLoading ? (
+              <div className="absolute inset-0 h-12 animate-pulse rounded-button bg-neutral-100" />
+            ) : null}
+          </div>
+          <p className={errorClass} role="alert">
+            {status.error}
+          </p>
+        </div>
+      );
+    };
+
+    return (
+      <section className="rounded-[16px] bg-white p-5 text-black sm:p-6">
+        <div className="flex min-h-8 items-center justify-between gap-3">
+          <h2 className="text-2xl font-extrabold">Payment</h2>
+          {cloverLoading ? (
+            <span className="inline-flex items-center gap-2 text-sm font-semibold text-neutral-500">
+              <Loader2 className="animate-spin" size={16} aria-hidden="true" />
+              Loading
+            </span>
+          ) : null}
+        </div>
+
+        <div className="mt-5 grid gap-3">
+          {renderPaymentField("CARD_NUMBER", "Card number")}
+
+          <div className="grid gap-3 sm:grid-cols-3">
+            {renderPaymentField("CARD_DATE", "Expiry")}
+            {renderPaymentField("CARD_CVV", "CVV")}
+            {renderPaymentField("CARD_POSTAL_CODE", "Postal code")}
+          </div>
+        </div>
+
+        <div className="mt-1 min-h-11">
+          {paymentError ? (
+            <p
+              className="rounded-button border border-[#F0C7C1] bg-[#FFF6F4] px-4 py-3 text-sm font-semibold leading-5 text-[#7A211B]"
+              role="alert"
+            >
+              {paymentError}
+            </p>
+          ) : null}
+        </div>
+      </section>
+    );
+  };
 
   const renderCheckout = () => (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
       <div className="space-y-6">
-        {success ? (
-          renderCheckoutSuccess()
-        ) : (
-          <>
-            <section className="rounded-[16px] bg-white p-5 text-black sm:p-6">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <h2 className="text-2xl font-extrabold">
-                  Delivery details
-                </h2>
-              </div>
+        <section className="rounded-[16px] bg-white p-5 text-black sm:p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <h2 className="text-2xl font-extrabold">
+              Delivery details
+            </h2>
+          </div>
 
-              <div className="mt-6 space-y-5">
-                {renderDeliveryFields()}
-              </div>
-            </section>
+          <div className="mt-6 space-y-5">
+            {renderDeliveryFields()}
+          </div>
+        </section>
 
-            <section className="rounded-[16px] bg-white p-5 text-black sm:p-6">
-              {renderTipControls()}
-            </section>
+        <section className="rounded-[16px] bg-white p-5 text-black sm:p-6">
+          {renderTipControls()}
+        </section>
 
-            <section className="rounded-[16px] bg-white p-5 text-black sm:p-6">
-              <h2 className="text-2xl font-extrabold">Payment</h2>
+        <section className="rounded-[16px] bg-white p-5 text-black sm:p-6">
+          <h2 className="text-2xl font-extrabold">Contact details</h2>
 
-              <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                <input
-                  value={cart.customer.name}
-                  onChange={(event) =>
-                    updateCart((current) => ({
-                      ...current,
-                      customer: { ...current.customer, name: event.target.value },
-                    }), { resetPricing: false })
-                  }
-                  placeholder="Name"
-                  className={checkoutFieldClass}
-                />
-                <input
-                  value={cart.customer.phone}
-                  onChange={(event) =>
-                    updateCart((current) => ({
-                      ...current,
-                      customer: { ...current.customer, phone: event.target.value },
-                    }), { resetPricing: false })
-                  }
-                  placeholder="Phone"
-                  className={checkoutFieldClass}
-                />
-                <input
-                  value={cart.customer.email}
-                  onChange={(event) =>
-                    updateCart((current) => ({
-                      ...current,
-                      customer: { ...current.customer, email: event.target.value },
-                    }), { resetPricing: false })
-                  }
-                  placeholder="Email"
-                  className={checkoutFieldClass}
-                />
-                <select
-                  value={cart.customer.language}
-                  onChange={(event) =>
-                    updateCart((current) => ({
-                      ...current,
-                      customer: {
-                        ...current.customer,
-                        language: event.target.value as Language,
-                      },
-                    }), { resetPricing: false })
-                  }
-                  className={checkoutFieldClass}
-                >
-                  <option value="FR">French</option>
-                  <option value="EN">English</option>
-                </select>
-              </div>
-
-              <textarea
-                value={cart.customerNotes}
-                onChange={(event) =>
-                  updateCart(
-                    (current) => ({ ...current, customerNotes: event.target.value }),
-                    { resetPricing: false },
-                  )
-                }
-                placeholder="Order notes"
-                rows={4}
-                className={`${checkoutFieldClass} mt-3 w-full`}
-              />
-            </section>
-
-            <button
-              type="button"
-              onClick={placeOrder}
-              disabled={placingOrder || !canPlaceOrder}
-              className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-button bg-black px-5 py-4 text-base font-extrabold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-45"
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <input
+              value={cart.customer.name}
+              onChange={(event) =>
+                updateCart((current) => ({
+                  ...current,
+                  customer: { ...current.customer, name: event.target.value },
+                }), { resetPricing: false })
+              }
+              placeholder="Name"
+              className={checkoutFieldClass}
+            />
+            <input
+              value={cart.customer.phone}
+              onChange={(event) =>
+                updateCart((current) => ({
+                  ...current,
+                  customer: { ...current.customer, phone: event.target.value },
+                }), { resetPricing: false })
+              }
+              placeholder="Phone"
+              className={checkoutFieldClass}
+            />
+            <input
+              value={cart.customer.email}
+              onChange={(event) =>
+                updateCart((current) => ({
+                  ...current,
+                  customer: { ...current.customer, email: event.target.value },
+                }), { resetPricing: false })
+              }
+              placeholder="Email"
+              className={checkoutFieldClass}
+            />
+            <select
+              value={cart.customer.language}
+              onChange={(event) =>
+                updateCart((current) => ({
+                  ...current,
+                  customer: {
+                    ...current.customer,
+                    language: event.target.value as Language,
+                  },
+                }), { resetPricing: false })
+              }
+              className={checkoutFieldClass}
             >
-              {placingOrder ? <Loader2 className="animate-spin" size={18} aria-hidden="true" /> : null}
-              {placeOrderButtonLabel}
-            </button>
-          </>
-        )}
+              <option value="FR">French</option>
+              <option value="EN">English</option>
+            </select>
+          </div>
+
+          <textarea
+            value={cart.customerNotes}
+            onChange={(event) =>
+              updateCart(
+                (current) => ({ ...current, customerNotes: event.target.value }),
+                { resetPricing: false },
+              )
+            }
+            placeholder="Order notes"
+            rows={4}
+            className={`${checkoutFieldClass} mt-3 w-full`}
+          />
+        </section>
+
+        {renderCloverPaymentFields()}
+
+        <button
+          type="button"
+          onClick={placeOrder}
+          disabled={placingOrder || !canPlaceOrder}
+          className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-button bg-black px-5 py-4 text-base font-extrabold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-45"
+        >
+          {placingOrder ? <Loader2 className="animate-spin" size={18} aria-hidden="true" /> : null}
+          {placeOrderButtonLabel}
+        </button>
       </div>
       {renderCheckoutSummary()}
     </div>
@@ -1557,27 +2164,27 @@ export default function OrderFlow({ initialStep }: Props) {
       ) : null}
       <div className="flex justify-between">
         <span>Items</span>
-        <span className="font-bold">{formatMoney(totals.itemsSubtotalCents)}</span>
+        <span className="font-bold">{formatMoney(totals.itemsSubtotalCents, totals.currency)}</span>
       </div>
       <div className="flex justify-between">
         <span>GST</span>
-        <span className="font-bold">{formatMoney(totals.gstCents)}</span>
+        <span className="font-bold">{formatMoney(totals.gstCents, totals.currency)}</span>
       </div>
       <div className="flex justify-between">
         <span>QST</span>
-        <span className="font-bold">{formatMoney(totals.qstCents)}</span>
+        <span className="font-bold">{formatMoney(totals.qstCents, totals.currency)}</span>
       </div>
       <div className="flex justify-between">
         <span>Delivery</span>
-        <span className="font-bold">{formatMoney(totals.deliveryFeeCents)}</span>
+        <span className="font-bold">{formatMoney(totals.deliveryFeeCents, totals.currency)}</span>
       </div>
       <div className="flex justify-between">
         <span>Tip</span>
-        <span className="font-bold">{formatMoney(totals.tipCents)}</span>
+        <span className="font-bold">{formatMoney(totals.tipCents, totals.currency)}</span>
       </div>
       <div className="flex justify-between border-t border-[rgba(6,47,36,0.1)] pt-3 text-base">
         <span className="font-extrabold">Total</span>
-        <span className="font-extrabold">{formatMoney(totals.totalCents)}</span>
+        <span className="font-extrabold">{formatMoney(totals.totalCents, totals.currency)}</span>
       </div>
     </div>
   );

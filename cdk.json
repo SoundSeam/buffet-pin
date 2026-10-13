@@ -1,0 +1,10 @@
+{
+  "app": "node infra/aws/app.mjs",
+  "context": {
+    "stage": "production",
+    "appUrl": "https://www.buffetpin.com",
+    "vercelTeam": "sounds-soundseamcos-projects",
+    "vercelProject": "buffet-pin",
+    "alertEmail": "kookupbeats@gmail.com"
+  }
+}

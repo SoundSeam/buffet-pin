@@ -20,7 +20,6 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
-  ArrowLeft,
   ExternalLink,
   GripVertical,
   ImageIcon,
@@ -33,6 +32,10 @@ import {
 } from "lucide-react";
 
 import ModalShell from "@/components/a11y/modal-shell";
+import {
+  AdminPage,
+  AdminPageHeader,
+} from "@/components/admin/admin-page-ui";
 
 type DrinkCategory = {
   id: string;
@@ -684,23 +687,11 @@ export default function AdminDrinksPage() {
   );
 
   return (
-    <section className="min-h-screen bg-white pb-20 pt-36 lg:pt-40">
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <Link
-          href="/admin/reservations"
-          className="inline-flex items-center gap-2 text-sm font-semibold text-[#062F24]/70 transition hover:text-[#062F24] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#062F24]"
-        >
-          <ArrowLeft size={14} aria-hidden="true" />
-          Reservations
-        </Link>
-
-        <div className="mt-4 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
-          <div>
-            <h1 className="text-3xl font-extrabold leading-none text-[#062F24]">Drinks</h1>
-            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[#062F24]/65">
-              Organize the menu the same way your guests see it.
-            </p>
-          </div>
+    <AdminPage>
+      <AdminPageHeader
+        title="Drinks"
+        description="Organize the menu the same way your guests see it."
+        actions={
           <Link
             href="/drinks"
             target="_blank"
@@ -711,7 +702,8 @@ export default function AdminDrinksPage() {
             <ExternalLink size={15} aria-hidden="true" />
             Preview menu
           </Link>
-        </div>
+        }
+      />
 
         {error ? (
           <p className="mt-6 rounded-surface border border-red-900/20 bg-red-900/10 p-4 text-sm text-red-800" role="alert">
@@ -857,8 +849,6 @@ export default function AdminDrinksPage() {
             </main>
           </div>
         )}
-      </div>
-
       {drinkEditor ? (
         <ModalShell labelledBy="drink-editor-title" onClose={() => closeDrinkEditor()} panelClassName="max-w-3xl border border-[rgba(6,47,36,0.08)] bg-[#FBFCFA] !p-0">
           <div className="flex items-start justify-between border-b border-[rgba(6,47,36,0.1)] px-5 py-4 sm:px-7">
@@ -933,6 +923,6 @@ export default function AdminDrinksPage() {
           </div>
         </ModalShell>
       ) : null}
-    </section>
+    </AdminPage>
   );
 }

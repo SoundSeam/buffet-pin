@@ -1,8 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
-import { ArrowLeft, Loader2, Plus, Save, Trash2 } from "lucide-react";
+import { Loader2, Plus, Save, Trash2 } from "lucide-react";
+
+import {
+  AdminPage,
+  AdminPageHeader,
+} from "@/components/admin/admin-page-ui";
 
 type Category = {
   id: string;
@@ -216,24 +220,11 @@ export default function AdminMenuPage() {
     }).then(() => setAssignmentDraft({ menuItemId: "", modifierGroupId: "" }));
 
   return (
-    <section className="pb-20 pt-36 lg:pt-40" style={{ background: "#FFFFFF" }}>
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <Link
-          href="/admin/reservations"
-          className="inline-flex items-center gap-2 text-sm font-semibold text-[#062F24]/70 transition hover:text-[#062F24]"
-        >
-          <ArrowLeft size={14} aria-hidden="true" />
-          Reservations
-        </Link>
-        <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-extrabold leading-none text-[#062F24]">
-              Menu
-            </h1>
-            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[#062F24]/65">
-              Manage mock categories, items, availability, modifier groups, and prices used by server pricing.
-            </p>
-          </div>
+    <AdminPage>
+      <AdminPageHeader
+        title="Menu"
+        description="Manage mock categories, items, availability, modifier groups, and prices used by server pricing."
+        actions={
           <button
             type="button"
             className={buttonClass}
@@ -244,7 +235,8 @@ export default function AdminMenuPage() {
             {loading ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
             Refresh
           </button>
-        </div>
+        }
+      />
 
         {error ? (
           <div className="mt-6 rounded-surface border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
@@ -727,7 +719,6 @@ export default function AdminMenuPage() {
             </div>
           </section>
         </div>
-      </div>
-    </section>
+    </AdminPage>
   );
 }

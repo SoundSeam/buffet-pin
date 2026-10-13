@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { RESERVATIONS_ENABLED } from "@/lib/site-flags";
 import { motion } from "framer-motion";
 import { useTranslation } from "@/components/providers/language-provider";
 import {
@@ -9,6 +10,7 @@ import {
   smoothEase,
   staggerGroupVariants,
 } from "@/components/home/smooth-reveal";
+import { buffetPinMedia } from "@/lib/media";
 
 export default function HeroSection() {
   const { copy } = useTranslation();
@@ -43,7 +45,7 @@ export default function HeroSection() {
         }}
       >
         <source
-          src="https://soundseam-origin.s3.us-east-2.amazonaws.com/misc/Buffet+Pin+Hero+Background+Final.mp4"
+          src={buffetPinMedia.heroBackground}
           type="video/mp4"
         />
       </motion.video>
@@ -105,25 +107,27 @@ export default function HeroSection() {
                   />
                 </Link>
               </motion.div>
-              <motion.div variants={blurItemVariants} className="w-full sm:w-auto">
-                <Link
-                  href="/reservation"
-                  className="inline-flex w-full items-center justify-center rounded-button border px-6 py-3.5 text-[0.95rem] font-semibold transition-all duration-300 hover:opacity-90 sm:w-auto sm:px-10 sm:py-4 sm:text-lg"
-                  style={{
-                    background: "#F4E8D2",
-                    borderColor: "#F4E8D2",
-                    color: "#062F24",
-                  }}
-                >
-                  <AnimatedWords
-                    as="span"
-                    className="inline-flex"
-                    reveal="mount"
-                    stagger={0.04}
-                    text={copy.home.hero.reservationCta}
-                  />
-                </Link>
-              </motion.div>
+              {RESERVATIONS_ENABLED && (
+                <motion.div variants={blurItemVariants} className="w-full sm:w-auto">
+                  <Link
+                    href="/reservation"
+                    className="inline-flex w-full items-center justify-center rounded-button border px-6 py-3.5 text-[0.95rem] font-semibold transition-all duration-300 hover:opacity-90 sm:w-auto sm:px-10 sm:py-4 sm:text-lg"
+                    style={{
+                      background: "#F4E8D2",
+                      borderColor: "#F4E8D2",
+                      color: "#062F24",
+                    }}
+                  >
+                    <AnimatedWords
+                      as="span"
+                      className="inline-flex"
+                      reveal="mount"
+                      stagger={0.04}
+                      text={copy.home.hero.reservationCta}
+                    />
+                  </Link>
+                </motion.div>
+              )}
             </motion.div>
           </motion.div>
         </div>

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 
 import { db } from "@/lib/db";
+import { dispatchAggregateJobs } from "@/lib/async-jobs/dispatch";
 import {
   ReservationRuleError,
   assertBeforeGuestModifyCutoff,
@@ -347,6 +348,8 @@ export async function PATCH(request: Request) {
       }
 
       const { previousReservation, updatedReservation } = updateResult;
+
+      await dispatchAggregateJobs("Reservation", updatedReservation.id);
 
       await sendAdminReservationUpdateAlert(
         previousReservation,

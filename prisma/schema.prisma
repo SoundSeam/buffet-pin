@@ -70,9 +70,11 @@ enum NotificationChannel {
 
 enum NotificationStatus {
   PENDING
+  SUBMITTING
   SENT
   DELIVERED
   FAILED
+  UNKNOWN
   SKIPPED
 }
 
@@ -90,6 +92,142 @@ enum DriverAssignmentStatus {
   ON_THE_WAY
   ARRIVING_SOON
   DELIVERED
+  CANCELLED
+}
+
+enum PrintJobPurpose {
+  INITIAL
+  REPRINT
+  FALLBACK
+}
+
+enum PrintJobStatus {
+  PENDING
+  SUBMITTING
+  SUBMITTED
+  PRINTING
+  PRINTED
+  FAILED
+  UNKNOWN
+  CANCELLED
+}
+
+enum OrderProductionStatus {
+  AWAITING_ACCEPTANCE
+  ACCEPTED
+  PREPARING
+  PACKING
+  PACKED
+  AT_DISPATCH_DESK
+  REJECTED
+  CANCELLED
+}
+
+enum OrderDispatchStatus {
+  UNASSIGNED
+  RUN_PLANNED
+  READY_FOR_PICKUP
+  PICKED_UP
+  EN_ROUTE
+  DELIVERED
+  EXCEPTION
+  CANCELLED
+}
+
+enum StaffRole {
+  MANAGER
+  OPERATOR
+  DISPATCHER
+  REPORTING
+  TECHNICAL
+}
+
+enum CatalogOwnership {
+  APP_OWNED
+  CLOVER_OWNED
+}
+
+enum CatalogEntityType {
+  CATEGORY
+  ITEM
+  MODIFIER_GROUP
+  MODIFIER_OPTION
+  TAX_RATE
+  ORDER_TYPE
+  SERVICE_CHARGE
+}
+
+enum CatalogMappingStatus {
+  VERIFIED
+  STALE
+  MISSING
+  DISABLED
+  AMBIGUOUS
+}
+
+enum RefundIntentStatus {
+  PENDING
+  SUBMITTING
+  UNKNOWN
+  SUCCEEDED
+  FAILED
+  REQUIRES_REVIEW
+}
+
+enum OperationalAlertSeverity {
+  INFO
+  WARNING
+  CRITICAL
+}
+
+enum OperationalAlertStatus {
+  OPEN
+  ACKNOWLEDGED
+  RESOLVED
+}
+
+enum DeliveryRunStatus {
+  DRAFT
+  APPROVED
+  ASSIGNED
+  READY
+  PICKED_UP
+  EN_ROUTE
+  COMPLETED
+  CANCELLED
+  EXCEPTION
+}
+
+enum DeliveryStopStatus {
+  PLANNED
+  BAG_VERIFIED
+  PICKED_UP
+  EN_ROUTE
+  ARRIVED
+  DELIVERED
+  FAILED
+  RETURNED_TO_DESK
+  CANCELLED
+}
+
+enum DeliveryProofStatus {
+  STORED
+  FAILED
+  REPLACED
+}
+
+enum AsyncJobLane {
+  CRITICAL
+  NOTIFICATION
+}
+
+enum AsyncJobState {
+  PENDING
+  DISPATCHING
+  DISPATCHED
+  RUNNING
+  COMPLETED
+  FAILED
   CANCELLED
 }
 
@@ -170,36 +308,80 @@ model PublicApiRateLimit {
 }
 
 model MenuCategory {
-  id          String     @id @default(cuid())
-  name        String
-  description String?
-  sortOrder   Int        @default(0)
-  isActive    Boolean    @default(true)
-  items       MenuItem[]
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id                String     @id @default(cuid())
+  name              String
+  description       String?
+  sortOrder         Int        @default(0)
+  isActive          Boolean    @default(true)
+  isDeliveryChannel Boolean    @default(true)
+  items             MenuItem[]
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
 
   @@index([isActive, sortOrder])
 }
 
 model MenuItem {
-  id             String                  @id @default(cuid())
-  categoryId     String
-  category       MenuCategory            @relation(fields: [categoryId], references: [id], onDelete: Restrict)
-  name           String
-  description    String?
-  priceCents     Int
-  imageUrl       String?
-  sortOrder      Int                     @default(0)
-  isAvailable    Boolean                 @default(true)
-  isActive       Boolean                 @default(true)
-  modifierGroups MenuItemModifierGroup[]
-  orderItems     OrderItem[]
-  createdAt      DateTime                @default(now())
-  updatedAt      DateTime                @updatedAt
+  id                String                  @id @default(cuid())
+  categoryId        String
+  category          MenuCategory            @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  name              String
+  description       String?
+  priceCents        Int
+  imageUrl          String?
+  sortOrder         Int                     @default(0)
+  isAvailable       Boolean                 @default(true)
+  isActive          Boolean                 @default(true)
+  isDeliveryChannel Boolean                 @default(true)
+  modifierGroups    MenuItemModifierGroup[]
+  orderItems        OrderItem[]
+  createdAt         DateTime                @default(now())
+  updatedAt         DateTime                @updatedAt
 
   @@index([categoryId, sortOrder])
   @@index([isAvailable, isActive])
+}
+
+model CatalogConfiguration {
+  id                            Int              @id @default(1)
+  ownership                     CatalogOwnership @default(APP_OWNED)
+  provider                      String           @default("clover")
+  requiredTaxMappingKey         String           @default("quebec-combined")
+  requiredGstTaxMappingKey      String           @default("quebec-gst")
+  requiredQstTaxMappingKey      String           @default("quebec-qst")
+  requiredOrderTypeKey          String           @default("delivery")
+  requiredDeliveryFeeMappingKey String           @default("delivery-fee")
+  maxMappingAgeMinutes          Int              @default(1440)
+  lastSyncStartedAt             DateTime?
+  lastSyncCompletedAt           DateTime?
+  lastSyncError                 String?
+  createdAt                     DateTime         @default(now())
+  updatedAt                     DateTime         @updatedAt
+}
+
+model ProviderCatalogMapping {
+  id                  String               @id @default(cuid())
+  provider            String               @default("clover")
+  entityType          CatalogEntityType
+  localKey            String
+  providerId          String
+  status              CatalogMappingStatus @default(MISSING)
+  localFingerprint    String
+  providerFingerprint String?
+  providerUpdatedAt   DateTime?
+  verifiedAt          DateTime?
+  issueCode           String?
+  issueMessage        String?
+  providerSnapshot    Json?
+  semanticExpectation Json?
+  semanticApprovedBy  String?
+  semanticApprovedAt  DateTime?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  @@unique([provider, entityType, localKey])
+  @@unique([provider, entityType, providerId])
+  @@index([provider, status, entityType])
 }
 
 model ModifierGroup {
@@ -288,64 +470,182 @@ model CustomerAddress {
 }
 
 model Order {
-  id                       String                 @id @default(cuid())
-  publicCode               String                 @unique
-  serviceType              OrderServiceType
-  paymentStatus            OrderPaymentStatus     @default(PENDING)
-  refundStatus             OrderRefundStatus      @default(NOT_REQUIRED)
-  fulfillmentStatus        OrderFulfillmentStatus @default(DRAFT)
-  customerId               String
-  customer                 Customer               @relation(fields: [customerId], references: [id], onDelete: Restrict)
-  customerAddressId        String?
-  customerAddress          CustomerAddress?       @relation(fields: [customerAddressId], references: [id], onDelete: SetNull)
-  customerName             String
-  customerPhone            String
-  customerEmail            String?
-  deliveryAddressLine1     String?
-  deliveryAddressLine2     String?
-  deliveryCity             String?
-  deliveryProvince         String?
-  deliveryPostalCode       String?
-  deliveryCountry          String?
-  deliveryLatitude         Float?
-  deliveryLongitude        Float?
-  deliveryDistanceKm       Float?
-  deliveryInstructions     String?
-  isAsap                   Boolean                @default(true)
-  requestedFor             DateTime?
-  estimatedReadyStartAt    DateTime?
-  estimatedReadyEndAt      DateTime?
-  estimatedDeliveryStartAt DateTime?
-  estimatedDeliveryEndAt   DateTime?
-  itemsSubtotalCents       Int
-  taxableSubtotalCents     Int
-  gstCents                 Int                    @default(0)
-  qstCents                 Int                    @default(0)
-  taxCents                 Int
-  tipCents                 Int                    @default(0)
-  deliveryFeeCents         Int                    @default(0)
-  discountCents            Int                    @default(0)
-  totalCents               Int
-  currency                 String                 @default("CAD")
-  customerNotes            String?
-  internalNotes            String?
-  rejectionReason          String?
-  acceptedAt               DateTime?
-  rejectedAt               DateTime?
-  cancelledAt              DateTime?
-  completedAt              DateTime?
-  createdAt                DateTime               @default(now())
-  updatedAt                DateTime               @updatedAt
-  items                    OrderItem[]
-  payments                 Payment[]
-  events                   OrderEvent[]
-  notifications            Notification[]
-  driverAssignment         DriverAssignment?
+  id                          String                 @id @default(cuid())
+  publicCode                  String                 @unique
+  legacyPublicTrackingEnabled Boolean                @default(false)
+  trackingToken               String                 @unique @default(dbgenerated("(gen_random_uuid())::text"))
+  orderNumber                 String                 @unique @default(dbgenerated("('BP-'::text || upper(substr(md5((gen_random_uuid())::text), 1, 10)))"))
+  serviceType                 OrderServiceType
+  paymentStatus               OrderPaymentStatus     @default(PENDING)
+  refundStatus                OrderRefundStatus      @default(NOT_REQUIRED)
+  fulfillmentStatus           OrderFulfillmentStatus @default(DRAFT)
+  productionStatus            OrderProductionStatus  @default(AWAITING_ACCEPTANCE)
+  dispatchStatus              OrderDispatchStatus    @default(UNASSIGNED)
+  customerId                  String
+  customer                    Customer               @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  customerAddressId           String?
+  customerAddress             CustomerAddress?       @relation(fields: [customerAddressId], references: [id], onDelete: SetNull)
+  customerName                String
+  customerPhone               String
+  customerEmail               String?
+  deliveryAddressLine1        String?
+  deliveryAddressLine2        String?
+  deliveryCity                String?
+  deliveryProvince            String?
+  deliveryPostalCode          String?
+  deliveryCountry             String?
+  deliveryLatitude            Float?
+  deliveryLongitude           Float?
+  deliveryDistanceKm          Float?
+  deliveryZoneIdSnapshot      String?
+  deliveryZoneNameSnapshot    String?
+  deliveryInstructions        String?
+  isAsap                      Boolean                @default(true)
+  requestedFor                DateTime?
+  estimatedReadyStartAt       DateTime?
+  estimatedReadyEndAt         DateTime?
+  estimatedDeliveryStartAt    DateTime?
+  estimatedDeliveryEndAt      DateTime?
+  promisedDeliveryStartAt     DateTime?
+  promisedDeliveryEndAt       DateTime?
+  dispatchDeadlineAt          DateTime?
+  acceptanceDeadlineAt        DateTime?
+  acceptanceDecisionAt        DateTime?
+  acceptanceTimedOutAt        DateTime?
+  itemsSubtotalCents          Int
+  taxableSubtotalCents        Int
+  gstCents                    Int                    @default(0)
+  qstCents                    Int                    @default(0)
+  taxCents                    Int
+  tipCents                    Int                    @default(0)
+  deliveryFeeCents            Int                    @default(0)
+  discountCents               Int                    @default(0)
+  totalCents                  Int
+  currency                    String                 @default("CAD")
+  customerNotes               String?
+  internalNotes               String?
+  rejectionReason             String?
+  acceptedAt                  DateTime?
+  preparationStartedAt        DateTime?
+  preparationExtendedMinutes  Int                    @default(0)
+  readyForDeliveryAt          DateTime?
+  packingStartedAt            DateTime?
+  packedAt                    DateTime?
+  atDispatchDeskAt            DateTime?
+  rejectedAt                  DateTime?
+  cancelledAt                 DateTime?
+  completedAt                 DateTime?
+  createdAt                   DateTime               @default(now())
+  updatedAt                   DateTime               @updatedAt
+  items                       OrderItem[]
+  payments                    Payment[]
+  events                      OrderEvent[]
+  notifications               Notification[]
+  driverAssignment            DriverAssignment?
+  externalOrders              ExternalOrder[]
+  printJobs                   PrintJob[]
+  deliveryStops               DeliveryStop[]
+  packingChecks               PackingCheck[]
+  refundIntents               RefundIntent[]
+  machineTestGrant            MachineTestGrant?
 
   @@index([paymentStatus, refundStatus, fulfillmentStatus, serviceType, createdAt])
   @@index([customerId])
   @@index([customerAddressId])
   @@index([createdAt])
+  @@index([orderNumber])
+  @@index([trackingToken])
+  @@index([productionStatus, dispatchStatus, createdAt])
+  @@index([productionStatus, acceptanceDeadlineAt])
+}
+
+model MachineTestGrant {
+  id               String    @id @default(cuid())
+  tokenHash        String    @unique
+  createdByStaffId String
+  createdByLabel   String?
+  expiresAt        DateTime
+  consumedAt       DateTime?
+  revokedAt        DateTime?
+  orderId          String?   @unique
+  order            Order?    @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  createdAt        DateTime  @default(now())
+
+  @@index([expiresAt, consumedAt, revokedAt])
+  @@index([createdByStaffId, createdAt])
+}
+
+model OrderNumberSequence {
+  serviceDate DateTime @id @db.Date
+  nextValue   Int      @default(1)
+  updatedAt   DateTime @updatedAt
+}
+
+model ExternalOrder {
+  id                  String          @id @default(cuid())
+  orderId             String
+  order               Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  provider            PaymentProvider
+  providerOrderId     String?
+  state               String
+  requestKey          String          @unique
+  submissionToken     String?
+  submissionStartedAt DateTime?
+  sanitizedData       Json?
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  @@unique([provider, providerOrderId])
+  @@unique([orderId, provider])
+  @@index([state, updatedAt])
+  @@index([submissionStartedAt])
+}
+
+model PrintJob {
+  id                   String          @id @default(cuid())
+  orderId              String
+  order                Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  initialForOrderId    String?         @unique
+  purpose              PrintJobPurpose
+  status               PrintJobStatus  @default(PENDING)
+  idempotencyKey       String          @unique
+  providerPrintEventId String?         @unique
+  attempts             Int             @default(0)
+  reason               String?
+  requestedByActorType OrderActorType
+  requestedByActorId   String?
+  requestedByLabel     String?
+  sanitizedRequest     Json?
+  sanitizedObservation Json?
+  lastErrorCode        String?
+  lastErrorMessage     String?
+  submittedAt          DateTime?
+  observedAt           DateTime?
+  resolvedAt           DateTime?
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+
+  @@index([status, createdAt])
+  @@index([orderId, createdAt])
+}
+
+model PackingCheck {
+  id                       String    @id @default(cuid())
+  orderId                  String
+  order                    Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderItemId              String
+  orderItem                OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  expectedQuantity         Int
+  verifiedQuantity         Int
+  instructionsAcknowledged Boolean
+  actorId                  String
+  actorLabel               String?
+  verifiedAt               DateTime  @default(now())
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+
+  @@unique([orderId, orderItemId])
+  @@index([orderId, verifiedAt])
 }
 
 model OrderItem {
@@ -363,6 +663,7 @@ model OrderItem {
   specialInstructions         String?
   sortOrder                   Int                 @default(0)
   modifiers                   OrderItemModifier[]
+  packingChecks               PackingCheck[]
   createdAt                   DateTime            @default(now())
   updatedAt                   DateTime            @updatedAt
 
@@ -388,57 +689,179 @@ model OrderItemModifier {
 }
 
 model Payment {
-  id                  String                @id @default(cuid())
-  orderId             String
-  order               Order                 @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  provider            PaymentProvider
-  status              OrderPaymentStatus    @default(PENDING)
-  refundStatus        OrderRefundStatus     @default(NOT_REQUIRED)
-  amountCents         Int
-  refundedAmountCents Int                   @default(0)
-  currency            String                @default("CAD")
-  checkoutSessionId   String?               @unique
-  providerPaymentId   String?               @unique
-  providerOrderId     String?
-  hostedCheckoutUrl   String?
-  sessionExpiresAt    DateTime?
-  paidAt              DateTime?
-  failedAt            DateTime?
-  refundRequestedAt   DateTime?
-  refundedAt          DateTime?
-  failureCode         String?
-  failureMessage      String?
-  rawProviderData     Json?
-  webhookEvents       PaymentWebhookEvent[]
-  createdAt           DateTime              @default(now())
-  updatedAt           DateTime              @updatedAt
+  id                         String                @id @default(cuid())
+  orderId                    String
+  order                      Order                 @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  provider                   PaymentProvider
+  status                     OrderPaymentStatus    @default(PENDING)
+  refundStatus               OrderRefundStatus     @default(NOT_REQUIRED)
+  amountCents                Int
+  refundedAmountCents        Int                   @default(0)
+  currency                   String                @default("CAD")
+  checkoutSessionId          String?               @unique
+  providerIdempotencyKey     String?               @unique
+  checkoutRequestFingerprint String?
+  providerPaymentId          String?               @unique
+  providerOrderId            String?
+  hostedCheckoutUrl          String?
+  sessionExpiresAt           DateTime?
+  paidAt                     DateTime?
+  failedAt                   DateTime?
+  refundRequestedAt          DateTime?
+  refundedAt                 DateTime?
+  failureCode                String?
+  failureMessage             String?
+  rawProviderData            Json?
+  webhookEvents              PaymentWebhookEvent[]
+  refundIntents              RefundIntent[]
+  createdAt                  DateTime              @default(now())
+  updatedAt                  DateTime              @updatedAt
 
   @@index([orderId])
   @@index([provider, status])
   @@index([refundStatus])
 }
 
-model PaymentWebhookEvent {
-  id                String          @id @default(cuid())
-  provider          PaymentProvider
-  providerEventId   String
-  eventType         String
-  checkoutSessionId String?
+model RefundIntent {
+  id                     String             @id @default(cuid())
+  requestKey             String             @unique
+  orderId                String
+  order                  Order              @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  paymentId              String
+  payment                Payment            @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+  status                 RefundIntentStatus @default(PENDING)
+  amountCents            Int
+  currency               String             @default("CAD")
+  reason                 String
+  actorId                String
+  actorLabel             String?
+  providerRefundId       String?            @unique
+  providerIdempotencyKey String             @unique
+  attemptCount           Int                @default(0)
+  lastErrorCode          String?
+  lastErrorMessage       String?
+  requestPayload         Json?
+  providerResponse       Json?
+  submittedAt            DateTime?
+  lastAttemptAt          DateTime?
+  resolvedAt             DateTime?
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
+
+  @@index([orderId, status])
+  @@index([paymentId, status])
+  @@index([status, updatedAt])
+}
+
+model OperationalAlert {
+  id             String                   @id @default(cuid())
+  alertKey       String                   @unique
+  category       String
+  severity       OperationalAlertSeverity
+  status         OperationalAlertStatus   @default(OPEN)
+  entityType     String?
+  entityId       String?
+  orderNumber    String?
+  summary        String
+  details        Json?
+  firstSeenAt    DateTime                 @default(now())
+  lastSeenAt     DateTime                 @default(now())
+  acknowledgedAt DateTime?
+  acknowledgedBy String?
+  resolvedAt     DateTime?
+  resolutionNote String?
+  createdAt      DateTime                 @default(now())
+  updatedAt      DateTime                 @updatedAt
+
+  @@index([status, severity, lastSeenAt])
+  @@index([category, status])
+  @@index([entityType, entityId])
+}
+
+model OperationalAuditEvent {
+  id         String         @id @default(cuid())
+  actorType  OrderActorType
+  actorId    String?
+  actorLabel String?
+  eventType  String
+  entityType String
+  entityId   String
+  reason     String?
+  metadata   Json?
+  createdAt  DateTime       @default(now())
+
+  @@index([entityType, entityId, createdAt])
+  @@index([eventType, createdAt])
+}
+
+model ReconciliationImport {
+  id               String                   @id @default(cuid())
+  serviceDate      String
+  timezone         String
+  source           String
+  importedBy       String
+  importedByLabel  String?
+  providerRowCount Int
+  providerRows     Json
+  report           Json
+  variances        ReconciliationVariance[]
+  createdAt        DateTime                 @default(now())
+
+  @@index([serviceDate, createdAt])
+}
+
+model ReconciliationVariance {
+  id                String                 @id @default(cuid())
+  importId          String
+  import            ReconciliationImport   @relation(fields: [importId], references: [id], onDelete: Cascade)
+  varianceKey       String
+  alertKey          String
+  status            OperationalAlertStatus @default(OPEN)
   providerPaymentId String?
-  paymentId         String?
-  payment           Payment?        @relation(fields: [paymentId], references: [id], onDelete: SetNull)
-  payload           Json
-  processedAt       DateTime?
-  createdAt         DateTime        @default(now())
+  orderId           String?
+  orderNumber       String?
+  reasons           Json
+  localSnapshot     Json?
+  providerSnapshot  Json?
+  acknowledgedAt    DateTime?
+  acknowledgedBy    String?
+  resolvedAt        DateTime?
+  resolvedBy        String?
+  resolutionNote    String?
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+
+  @@unique([importId, varianceKey])
+  @@index([status, createdAt])
+  @@index([providerPaymentId])
+}
+
+model PaymentWebhookEvent {
+  id                  String          @id @default(cuid())
+  provider            PaymentProvider
+  providerEventId     String
+  eventType           String
+  checkoutSessionId   String?
+  providerPaymentId   String?
+  paymentId           String?
+  payment             Payment?        @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+  payload             Json
+  processingStartedAt DateTime?
+  processingToken     String?
+  processedAt         DateTime?
+  createdAt           DateTime        @default(now())
 
   @@unique([provider, providerEventId])
   @@index([checkoutSessionId])
   @@index([providerPaymentId])
   @@index([paymentId])
+  @@index([processingStartedAt])
+  @@index([processingToken])
 }
 
 model OrderEvent {
   id                    String                  @id @default(cuid())
+  requestKey            String?                 @unique
   orderId               String
   order                 Order                   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   actorType             OrderActorType
@@ -449,6 +872,10 @@ model OrderEvent {
   toPaymentStatus       OrderPaymentStatus?
   fromFulfillmentStatus OrderFulfillmentStatus?
   toFulfillmentStatus   OrderFulfillmentStatus?
+  fromProductionStatus  OrderProductionStatus?
+  toProductionStatus    OrderProductionStatus?
+  fromDispatchStatus    OrderDispatchStatus?
+  toDispatchStatus      OrderDispatchStatus?
   message               String?
   metadata              Json?
   createdAt             DateTime                @default(now())
@@ -465,10 +892,13 @@ model Notification {
   recipient         String
   channel           NotificationChannel
   templateKey       String
+  idempotencyKey    String              @unique
   body              String
   status            NotificationStatus  @default(PENDING)
   provider          String?
   providerMessageId String?             @unique
+  attemptCount      Int                 @default(0)
+  lastAttemptAt     DateTime?
   sentAt            DateTime?
   deliveredAt       DateTime?
   failedAt          DateTime?
@@ -483,35 +913,236 @@ model Notification {
   @@index([recipient])
 }
 
+model AsyncJob {
+  id                 String        @id @default(cuid())
+  kind               String
+  lane               AsyncJobLane
+  aggregateType      String
+  aggregateId        String
+  payloadVersion     Int           @default(1)
+  payload            Json?
+  dedupeKey          String        @unique
+  runAt              DateTime      @default(now())
+  state              AsyncJobState @default(PENDING)
+  dispatchAttempts   Int           @default(0)
+  processingAttempts Int           @default(0)
+  queueMessageId     String?
+  scheduleName       String?       @unique
+  leaseToken         String?
+  leaseExpiresAt     DateTime?
+  dispatchedAt       DateTime?
+  startedAt          DateTime?
+  completedAt        DateTime?
+  failedAt           DateTime?
+  lastErrorCode      String?
+  lastErrorMessage   String?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  @@index([state, runAt])
+  @@index([lane, state, runAt])
+  @@index([aggregateType, aggregateId, createdAt])
+  @@index([leaseExpiresAt])
+}
+
 model DeliveryZone {
-  id                         String   @id @default(cuid())
+  id                         String                  @id @default(cuid())
+  configurationKey           String?                 @unique
   name                       String
-  isActive                   Boolean  @default(true)
+  isActive                   Boolean                 @default(true)
   centerLatitude             Float
   centerLongitude            Float
   radiusKm                   Float
-  deliveryFeeCents           Int      @default(0)
-  minimumOrderCents          Int      @default(0)
+  boundaryGeoJson            Json?
+  displayColor               String?
+  description                String?
+  targetDriveMinutes         Int?
+  deliveryFeeCents           Int                     @default(0)
+  minimumOrderCents          Int                     @default(0)
   freeDeliveryThresholdCents Int?
-  sortOrder                  Int      @default(0)
-  createdAt                  DateTime @default(now())
-  updatedAt                  DateTime @updatedAt
+  sortOrder                  Int                     @default(0)
+  createdAt                  DateTime                @default(now())
+  updatedAt                  DateTime                @updatedAt
+  driverEligibilities        DriverZoneEligibility[]
 
   @@index([isActive, sortOrder])
 }
 
 model Driver {
-  id             String             @id @default(cuid())
-  supabaseUserId String?            @unique
-  email          String             @unique
-  name           String
-  phone          String?
-  isActive       Boolean            @default(true)
-  assignments    DriverAssignment[]
-  createdAt      DateTime           @default(now())
-  updatedAt      DateTime           @updatedAt
+  id                String                  @id @default(cuid())
+  email             String?                 @unique
+  name              String
+  phone             String?
+  isActive          Boolean                 @default(true)
+  sessionVersion    Int                     @default(0)
+  assignments       DriverAssignment[]
+  accessTokens      DriverAccessToken[]
+  deliveryRuns      DeliveryRun[]
+  deliveryProofs    DeliveryProof[]
+  zoneEligibilities DriverZoneEligibility[]
+  shifts            DriverShift[]
+  createdAt         DateTime                @default(now())
+  updatedAt         DateTime                @updatedAt
 
   @@index([isActive])
+}
+
+model DriverShift {
+  id        String   @id @default(cuid())
+  driverId  String
+  driver    Driver   @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  startsAt  DateTime
+  endsAt    DateTime
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([driverId, isActive, startsAt, endsAt])
+}
+
+model DriverZoneEligibility {
+  id             String       @id @default(cuid())
+  driverId       String
+  driver         Driver       @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  deliveryZoneId String
+  deliveryZone   DeliveryZone @relation(fields: [deliveryZoneId], references: [id], onDelete: Cascade)
+  isActive       Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([driverId, deliveryZoneId])
+  @@index([deliveryZoneId, isActive])
+}
+
+model StaffMember {
+  id           String             @id @default(cuid())
+  email        String             @unique
+  displayName  String
+  authUserId   String?            @unique
+  role         StaffRole
+  isActive     Boolean            @default(true)
+  revokedAt    DateTime?
+  accessEvents StaffAccessEvent[]
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  @@index([role, isActive])
+}
+
+model StaffAccessEvent {
+  id            String         @id @default(cuid())
+  staffMemberId String
+  staffMember   StaffMember    @relation(fields: [staffMemberId], references: [id], onDelete: Restrict)
+  eventType     String
+  actorType     OrderActorType
+  actorId       String?
+  actorLabel    String?
+  fromRole      StaffRole?
+  toRole        StaffRole?
+  reason        String?
+  metadata      Json?
+  createdAt     DateTime       @default(now())
+
+  @@index([staffMemberId, createdAt])
+}
+
+model DeliveryRun {
+  id                       String            @id @default(cuid())
+  runNumber                String            @unique
+  requestKey               String            @unique
+  status                   DeliveryRunStatus @default(DRAFT)
+  zoneIdSnapshot           String
+  zoneNameSnapshot         String
+  capacity                 Int               @default(4)
+  driverId                 String?
+  driver                   Driver?           @relation(fields: [driverId], references: [id], onDelete: Restrict)
+  approvedByActorId        String?
+  approvedByActorLabel     String?
+  crossZoneOverride        Boolean           @default(false)
+  overrideReason           String?
+  routeExplanation         String?
+  routingStatus            String?
+  estimatedDurationSeconds Int?
+  estimatedDistanceMeters  Int?
+  plannedDepartureAt       DateTime?
+  approvedAt               DateTime?
+  handedOffAt              DateTime?
+  handedOffByActorId       String?
+  handedOffByActorLabel    String?
+  dispatchedAt             DateTime?
+  pickedUpAt               DateTime?
+  completedAt              DateTime?
+  cancelledAt              DateTime?
+  stops                    DeliveryStop[]
+  createdAt                DateTime          @default(now())
+  updatedAt                DateTime          @updatedAt
+
+  @@index([status, createdAt])
+  @@index([driverId, status])
+}
+
+model DeliveryStop {
+  id               String             @id @default(cuid())
+  runId            String
+  run              DeliveryRun        @relation(fields: [runId], references: [id], onDelete: Cascade)
+  orderId          String
+  order            Order              @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  position         Int
+  status           DeliveryStopStatus @default(PLANNED)
+  etaAt            DateTime?
+  bagVerifiedAt    DateTime?
+  bagVerifiedBy    String?
+  pickedUpAt       DateTime?
+  arrivedAt        DateTime?
+  deliveredAt      DateTime?
+  failedAt         DateTime?
+  returnedToDeskAt DateTime?
+  cancelledAt      DateTime?
+  exceptionCode    String?
+  exceptionNote    String?
+  proof            DeliveryProof?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  @@unique([runId, position])
+  @@unique([runId, orderId])
+  @@index([orderId, status])
+}
+
+model DeliveryProof {
+  id             String              @id @default(cuid())
+  stopId         String              @unique
+  stop           DeliveryStop        @relation(fields: [stopId], references: [id], onDelete: Restrict)
+  driverId       String
+  driver         Driver              @relation(fields: [driverId], references: [id], onDelete: Restrict)
+  status         DeliveryProofStatus @default(STORED)
+  mimeType       String
+  byteSize       Int
+  checksumSha256 String
+  imageBytes     Bytes
+  capturedAt     DateTime
+  storedAt       DateTime            @default(now())
+  replacedAt     DateTime?
+  failureCode    String?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  @@index([driverId, createdAt])
+  @@index([status, storedAt])
+}
+
+model DriverAccessToken {
+  id         String    @id @default(cuid())
+  driverId   String
+  driver     Driver    @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  tokenHash  String    @unique
+  label      String?
+  createdAt  DateTime  @default(now())
+  lastUsedAt DateTime?
+  revokedAt  DateTime?
+  expiresAt  DateTime?
+
+  @@index([driverId, revokedAt])
 }
 
 model DriverAssignment {
@@ -532,29 +1163,44 @@ model DriverAssignment {
 }
 
 model RestaurantOrderSettings {
-  id                            Int      @id @default(1)
-  onlineOrderingEnabled         Boolean  @default(false)
-  pickupEnabled                 Boolean  @default(true)
-  deliveryEnabled               Boolean  @default(false)
-  scheduledOrdersEnabled        Boolean  @default(false)
-  asapOnly                      Boolean  @default(true)
-  restaurantLatitude            Float?
-  restaurantLongitude           Float?
-  deliveryRadiusKm              Float    @default(8)
-  deliveryFeeCents              Int      @default(0)
-  minimumDeliveryOrderCents     Int      @default(0)
-  freeDeliveryThresholdCents    Int?
-  defaultPickupPrepMinutes      Int      @default(25)
-  defaultDeliveryPrepMinutes    Int      @default(45)
-  busyModeEnabled               Boolean  @default(false)
-  busyModeExtraMinutes          Int      @default(0)
-  maxActiveOrders               Int?
-  orderCutoffMinutesBeforeClose Int?
-  gstRatePpm                    Int      @default(50000)
-  qstRatePpm                    Int      @default(99750)
-  orderAdminSmsRecipient        String?
-  createdAt                     DateTime @default(now())
-  updatedAt                     DateTime @updatedAt
+  id                             Int       @id @default(1)
+  onlineOrderingEnabled          Boolean   @default(false)
+  pickupEnabled                  Boolean   @default(false)
+  deliveryEnabled                Boolean   @default(false)
+  scheduledOrdersEnabled         Boolean   @default(false)
+  asapOnly                       Boolean   @default(true)
+  restaurantLatitude             Float?
+  restaurantLongitude            Float?
+  deliveryRadiusKm               Float     @default(8)
+  deliveryFeeCents               Int       @default(0)
+  minimumDeliveryOrderCents      Int       @default(0)
+  freeDeliveryThresholdCents     Int?
+  defaultPickupPrepMinutes       Int       @default(25)
+  defaultDeliveryPrepMinutes     Int       @default(45)
+  busyModeEnabled                Boolean   @default(false)
+  busyModeExtraMinutes           Int       @default(0)
+  maxActiveOrders                Int?
+  dispatchMaxWaitMinutes         Int       @default(10)
+  dispatchDeadlineBufferMinutes  Int       @default(20)
+  dispatchLowDemandReleaseCount  Int       @default(2)
+  orderCutoffMinutesBeforeClose  Int?
+  gstRatePpm                     Int       @default(50000)
+  qstRatePpm                     Int       @default(99750)
+  orderAdminSmsRecipient         String?
+  acceptanceWindowMinutes        Int       @default(12)
+  missedAcceptancePauseThreshold Int       @default(2)
+  missedAcceptanceCount          Int       @default(0)
+  intakePausedAt                 DateTime?
+  intakePauseReason              String?
+  intakePausedBy                 String?
+  proofRetentionDays             Int       @default(30)
+  partialRefundsEnabled          Boolean   @default(false)
+  receiptLegalName               String?
+  receiptAddress                 String?
+  receiptPhone                   String?
+  receiptTaxRegistration         String?
+  createdAt                      DateTime  @default(now())
+  updatedAt                      DateTime  @updatedAt
 }
 
 model DrinkCategory {

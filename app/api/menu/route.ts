@@ -7,11 +7,11 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   const [categories, settings] = await Promise.all([
     db.menuCategory.findMany({
-      where: { isActive: true },
+      where: { isActive: true, isDeliveryChannel: true },
       orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
       include: {
         items: {
-          where: { isActive: true, isAvailable: true },
+          where: { isActive: true, isAvailable: true, isDeliveryChannel: true },
           orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
           include: {
             modifierGroups: {
