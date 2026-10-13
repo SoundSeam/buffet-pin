@@ -1,7 +1,7 @@
 # Online reservation guest limit
 
 ## Milestone
-Scoped reservation policy update; CODE_COMPLETE; 2026-09-10. Branch `codex/reservation-five-guest-limit`, isolated at `/Users/daniel/buffet-pin-reservation-limit` from deployed main commit `c69a427`. Production baseline: READY Vercel `dpl_BPhPw6DJPQEGvvbBaxzZPcPEUutq`.
+Scoped reservation policy update; VERIFIED; 2026-09-10. Branch `codex/reservation-five-guest-limit`, isolated at `/Users/daniel/buffet-pin-reservation-limit` from deployed main commit `c69a427`. Production baseline: READY Vercel `dpl_BPhPw6DJPQEGvvbBaxzZPcPEUutq`.
 
 ## Goal / current and required behavior
 Existing public form offers 6–15 guests. Change existing options to 1–5 and existing French/English copy to require a call for 6+. Add no UI elements or layout changes. Enforce the same rule in public availability, creation and booking edits. Production's persisted booking switch is currently false and stays unchanged.
@@ -45,9 +45,18 @@ No migration or production database changes. Existing records/settings stay byte
 - Exact deployment source independently verified through Vercel deployment API: gitSource.sha is `c69a4272fd9021838372b4badb0f44141a8cb1da`, matching this branch's parent.
 - Final diff reviewed for server bypasses, staff/shared-rule regressions, historical records, transaction/capacity behavior, UI scope, secrets and documentation. No dependency, migration, asset, switch or ordering code changes.
 
-Production deployment/live smoke remain NOT_RUN pending explicit publishing authorization. Production availability is still false; do not enable it as part of publishing this policy.
+Production deployment and smoke: PASS after explicit user authorization ("Deploy"). Production availability remains false; enabled booking behavior is verified in the isolated test environment, without enabling live booking or submitting a real reservation.
 
 Tests use Node 22.23.2: the host's default Node 23.3.0 cannot load the existing Vitest CommonJS config with its ESM dependency. No dependency or config upgrade is included. Database/browser setup uses the existing `reservation-settings-switch.md` procedure and disposable sentinel, never `.env` or production data. The two database files run serially because the existing switch suite verifies a single preserved sentinel.
 
 ## Rollback
 Revert this isolated application patch; no database rollback required. Keep the persisted availability flag unchanged.
+
+
+## Production deployment — 2026-09-10
+
+User explicitly authorized deployment. Fast-forwarded `origin/main` from `c69a427` to feature commit `596414a7e8b8d3e5f7f3d1ae04d89222c2f0857d`. Vercel deployment `dpl_Es4t7seC12mLypaok3bKUjv6sprt` is READY and aliased to `https://www.buffetpin.com`; deployment API independently confirms the exact feature SHA. No unrelated original-worktree changes were included.
+
+The production build passed and reported **No pending migrations to apply**. Live desktop/mobile (1440px/390px) home and reservation pages pass: correct closed-booking UI, French/English call message, existing telephone link, loaded CloudFront images and no horizontal overflow. The public status endpoint still reports `onlineReservationsEnabled: false`; booking and availability POSTs still fail closed with 503/RESERVATIONS_DISABLED. Admin settings GET remains 401 without authentication. The live client bundle contains the updated 1–5 policy and 6+ phone copy. Production screenshots, PII-free check results and build logs are retained in ignored `.vercel/`.
+
+No availability-setting mutation, real reservation submission, SMS, charge, refund, schema change or provider operation was performed. Live enabled-booking submission was intentionally not exercised; prior local API/database/browser coverage proves that path. Rollback target is prior READY deployment `dpl_BPhPw6DJPQEGvvbBaxzZPcPEUutq` / commit `c69a427`; no database rollback is required. This final documentation-only record is committed locally to avoid triggering an unnecessary second deployment.
