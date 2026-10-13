@@ -1,27 +1,11 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
-
 import { db } from "@/lib/db";
-import {
-  PUBLIC_ORDER_CODE_LENGTH,
-  normalizePublicOrderCode,
-} from "@/lib/orders/codes";
 import { publicOrderSelect, serializePublicOrder } from "@/lib/orders/customer";
+import {
+  parseTrackingCredential,
+} from "@/lib/orders/tracking-credential";
 
 export const dynamic = "force-dynamic";
-
-const publicCodeSchema = z.object({
-  publicCode: z
-    .string()
-    .trim()
-    .transform(normalizePublicOrderCode)
-    .pipe(
-      z
-        .string()
-        .length(PUBLIC_ORDER_CODE_LENGTH)
-        .regex(/^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]+$/),
-    ),
-});
 
 function errorResponse(status: number, code: string, message: string, details?: unknown) {
   return NextResponse.json(
@@ -34,9 +18,10 @@ export async function GET(
   _request: Request,
   { params }: { params: Promise<{ publicCode: string }> },
 ) {
-  const parsedParams = publicCodeSchema.safeParse(await params);
+  const routeParams = await params;
+  const credential = parseTrackingCredential(routeParams.publicCode);
 
-  if (!parsedParams.success) {
+  if (!credential) {
     return errorResponse(
       400,
       "INVALID_ORDER_CODE",
@@ -44,8 +29,15 @@ export async function GET(
     );
   }
 
-  const order = await db.order.findUnique({
-    where: { publicCode: parsedParams.data.publicCode },
+  const order = await db.order.findFirst({
+    where: {
+      ...(credential.kind === "token"
+        ? { trackingToken: credential.value }
+        : {
+            publicCode: credential.value,
+            legacyPublicTrackingEnabled: true,
+          }),
+    },
     select: publicOrderSelect,
   });
 

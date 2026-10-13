@@ -1,7 +1,9 @@
 import {
   DriverAssignmentStatus,
+  OrderDispatchStatus,
   OrderFulfillmentStatus,
   OrderPaymentStatus,
+  OrderProductionStatus,
   OrderRefundStatus,
 } from "@prisma/client";
 
@@ -14,7 +16,7 @@ export const allowedPaymentTransitions = {
     OrderPaymentStatus.REFUNDED,
     OrderPaymentStatus.PARTIALLY_REFUNDED,
   ],
-  [OrderPaymentStatus.FAILED]: [],
+  [OrderPaymentStatus.FAILED]: [OrderPaymentStatus.PAID],
   [OrderPaymentStatus.REFUNDED]: [],
   [OrderPaymentStatus.PARTIALLY_REFUNDED]: [OrderPaymentStatus.REFUNDED],
 } as const satisfies Record<OrderPaymentStatus, readonly OrderPaymentStatus[]>;
@@ -81,6 +83,64 @@ export const allowedFulfillmentTransitions = {
   readonly OrderFulfillmentStatus[]
 >;
 
+export const allowedProductionTransitions = {
+  [OrderProductionStatus.AWAITING_ACCEPTANCE]: [
+    OrderProductionStatus.ACCEPTED,
+    OrderProductionStatus.REJECTED,
+    OrderProductionStatus.CANCELLED,
+  ],
+  [OrderProductionStatus.ACCEPTED]: [
+    OrderProductionStatus.PREPARING,
+    OrderProductionStatus.CANCELLED,
+  ],
+  [OrderProductionStatus.PREPARING]: [
+    OrderProductionStatus.PACKING,
+    OrderProductionStatus.CANCELLED,
+  ],
+  [OrderProductionStatus.PACKING]: [
+    OrderProductionStatus.PACKED,
+    OrderProductionStatus.CANCELLED,
+  ],
+  [OrderProductionStatus.PACKED]: [
+    OrderProductionStatus.AT_DISPATCH_DESK,
+    OrderProductionStatus.CANCELLED,
+  ],
+  [OrderProductionStatus.AT_DISPATCH_DESK]: [OrderProductionStatus.CANCELLED],
+  [OrderProductionStatus.REJECTED]: [],
+  [OrderProductionStatus.CANCELLED]: [],
+} as const satisfies Record<OrderProductionStatus, readonly OrderProductionStatus[]>;
+
+export const allowedDispatchTransitions = {
+  [OrderDispatchStatus.UNASSIGNED]: [
+    OrderDispatchStatus.RUN_PLANNED,
+    OrderDispatchStatus.CANCELLED,
+  ],
+  [OrderDispatchStatus.RUN_PLANNED]: [
+    OrderDispatchStatus.READY_FOR_PICKUP,
+    OrderDispatchStatus.UNASSIGNED,
+    OrderDispatchStatus.CANCELLED,
+  ],
+  [OrderDispatchStatus.READY_FOR_PICKUP]: [
+    OrderDispatchStatus.PICKED_UP,
+    OrderDispatchStatus.UNASSIGNED,
+    OrderDispatchStatus.CANCELLED,
+  ],
+  [OrderDispatchStatus.PICKED_UP]: [
+    OrderDispatchStatus.EN_ROUTE,
+    OrderDispatchStatus.EXCEPTION,
+  ],
+  [OrderDispatchStatus.EN_ROUTE]: [
+    OrderDispatchStatus.DELIVERED,
+    OrderDispatchStatus.EXCEPTION,
+  ],
+  [OrderDispatchStatus.EXCEPTION]: [
+    OrderDispatchStatus.UNASSIGNED,
+    OrderDispatchStatus.CANCELLED,
+  ],
+  [OrderDispatchStatus.DELIVERED]: [],
+  [OrderDispatchStatus.CANCELLED]: [],
+} as const satisfies Record<OrderDispatchStatus, readonly OrderDispatchStatus[]>;
+
 export const allowedDriverAssignmentTransitions = {
   [DriverAssignmentStatus.ASSIGNED]: [
     DriverAssignmentStatus.PICKED_UP,
@@ -132,4 +192,18 @@ export function canTransitionDriverAssignmentStatus(
   toStatus: DriverAssignmentStatus,
 ): boolean {
   return includesStatus(allowedDriverAssignmentTransitions[fromStatus], toStatus);
+}
+
+export function canTransitionProductionStatus(
+  fromStatus: OrderProductionStatus,
+  toStatus: OrderProductionStatus,
+): boolean {
+  return includesStatus(allowedProductionTransitions[fromStatus], toStatus);
+}
+
+export function canTransitionDispatchStatus(
+  fromStatus: OrderDispatchStatus,
+  toStatus: OrderDispatchStatus,
+): boolean {
+  return includesStatus(allowedDispatchTransitions[fromStatus], toStatus);
 }

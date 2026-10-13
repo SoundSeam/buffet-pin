@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { getDriverSession } from "@/lib/driver-access";
 import { listDriverOrders } from "@/lib/orders/driver";
-import { getDriverUser } from "@/lib/supabase/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -10,21 +10,21 @@ function errorResponse(status: number, code: string, message: string) {
 }
 
 export async function GET() {
-  const driverUser = await getDriverUser();
-  if (!driverUser) {
+  const driverSession = await getDriverSession();
+  if (!driverSession) {
     return errorResponse(401, "UNAUTHORIZED", "Driver access required.");
   }
 
-  const orders = await listDriverOrders(driverUser.driver.id);
+  const orders = await listDriverOrders(driverSession.driver.id);
 
   return NextResponse.json({
     ok: true,
     data: {
       driver: {
-        id: driverUser.driver.id,
-        name: driverUser.driver.name,
-        email: driverUser.driver.email,
-        phone: driverUser.driver.phone,
+        id: driverSession.driver.id,
+        name: driverSession.driver.name,
+        email: driverSession.driver.email,
+        phone: driverSession.driver.phone,
       },
       orders,
     },

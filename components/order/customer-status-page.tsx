@@ -14,6 +14,14 @@ import {
   Utensils,
   UserCheck,
 } from "lucide-react";
+import { useRealtimeInvalidation } from "@/lib/realtime/use-realtime-invalidation";
+
+const pageContainerClass = "mx-auto max-w-7xl px-6 lg:px-8";
+const cardClass = "rounded-surface border border-[rgba(6,47,36,0.1)] bg-white p-5 text-[#062F24] shadow-sm sm:p-6";
+const secondaryButtonClass =
+  "inline-flex items-center justify-center gap-2 rounded-button border border-[#F4E8D2]/25 px-5 py-3 font-bold text-[#F4E8D2] transition hover:bg-white/10 disabled:opacity-60";
+const primaryButtonClass =
+  "inline-flex items-center justify-center rounded-button bg-[#C9A56A] px-5 py-3 font-extrabold text-[#062F24] transition hover:bg-[#D6B77F]";
 
 type PaymentStatus = "PENDING" | "PAID" | "FAILED" | "REFUNDED" | "PARTIALLY_REFUNDED";
 type RefundStatus = "NOT_REQUIRED" | "REQUIRED" | "PENDING" | "SUCCEEDED" | "PARTIAL" | "FAILED";
@@ -48,6 +56,7 @@ type PublicOrder = {
     startAt: string | null;
     endAt: string | null;
   };
+  acceptanceDeadlineAt: string | null;
   totals: {
     itemsSubtotalCents: number;
     taxCents: number;
@@ -92,11 +101,11 @@ const statusLabel = {
   DRAFT: "Order received",
   AWAITING_PAYMENT: "Order received",
   AWAITING_ACCEPTANCE: "Waiting confirmation",
-  ACCEPTED: "Accepted",
+  ACCEPTED: "Preparing",
   PREPARING: "Preparing",
-  READY_FOR_PICKUP: "Ready for delivery",
-  DRIVER_ASSIGNED: "Driver assigned",
-  PICKED_UP: "Picked up",
+  READY_FOR_PICKUP: "Preparing",
+  DRIVER_ASSIGNED: "Preparing",
+  PICKED_UP: "Preparing",
   ON_THE_WAY: "On the way",
   ARRIVING_SOON: "Arriving soon",
   DELIVERED: "Delivered",
@@ -155,15 +164,16 @@ function currentStatusDescription(order: PublicOrder) {
   }
 
   if (order.paymentStatus !== "PAID") {
-    return "The page updates after Clover confirms payment.";
+    return "Payment submitted. We're waiting for Clover confirmation. This page will update automatically.";
   }
 
   if (order.fulfillmentStatus === "AWAITING_ACCEPTANCE") {
-    return "The restaurant is reviewing your paid order.";
+    const deadline = formatDateTime(order.acceptanceDeadlineAt);
+    return `Payment confirmed. The restaurant is reviewing your order${deadline ? ` and will respond by ${deadline}` : ""}.`;
   }
 
   if (order.fulfillmentStatus === "READY_FOR_PICKUP") {
-    return "Your order is ready for the delivery handoff.";
+    return "Your order is prepared and waiting for the physical driver handoff.";
   }
 
   if (order.fulfillmentStatus === "ON_THE_WAY") {
@@ -279,51 +289,33 @@ export default function CustomerStatusPage({ publicCode }: { publicCode: string 
     void loadOrder();
   }, [loadOrder]);
 
-  useEffect(() => {
-    let intervalId: ReturnType<typeof setInterval> | null = null;
-
-    const startPolling = () => {
-      if (intervalId || document.visibilityState !== "visible") return;
-
-      intervalId = setInterval(() => {
-        if (document.visibilityState === "visible") {
-          void loadOrder({ background: true });
-        }
-      }, 12_000);
-    };
-
-    const stopPolling = () => {
-      if (!intervalId) return;
-      clearInterval(intervalId);
-      intervalId = null;
-    };
-
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible") {
-        void loadOrder({ background: true });
-        startPolling();
-      } else {
-        stopPolling();
-      }
-    };
-
-    startPolling();
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-
-    return () => {
-      stopPolling();
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
+  const refreshFromEvent = useCallback(() => {
+    void loadOrder({ background: true });
   }, [loadOrder]);
+  useRealtimeInvalidation({
+    tokenRequest: { scope: "order", credential: publicCode },
+    onInvalidate: refreshFromEvent,
+    fallbackIntervalMs: 12_000,
+  });
 
   const timeline = useMemo(() => (order ? buildTimeline(order) : []), [order]);
 
   if (loading) {
     return (
-      <section className="bg-white px-6 py-28 text-[#062F24] lg:px-8">
-        <div className="mx-auto flex max-w-3xl items-center gap-3">
-          <Loader2 size={22} className="animate-spin" aria-hidden="true" />
-          <p className="font-semibold">Loading order status...</p>
+      <section className="bg-white pb-20 text-[#062F24]">
+        <div className="bg-[#062F24] pb-16 pt-28 lg:pt-32">
+          <div className={pageContainerClass}>
+            <p className="text-sm font-bold uppercase text-[#C9A56A]">Order status</p>
+            <h1 className="mt-4 text-4xl font-extrabold leading-tight text-[#F4E8D2]">
+              Loading your order
+            </h1>
+          </div>
+        </div>
+        <div className={`${pageContainerClass} mt-10`}>
+          <div className={`${cardClass} flex items-center gap-3`}>
+            <Loader2 size={22} className="animate-spin" aria-hidden="true" />
+            <p className="font-semibold">Loading order status...</p>
+          </div>
         </div>
       </section>
     );
@@ -331,18 +323,26 @@ export default function CustomerStatusPage({ publicCode }: { publicCode: string 
 
   if (!order) {
     return (
-      <section className="bg-white px-6 py-28 text-[#062F24] lg:px-8">
-        <div className="mx-auto max-w-3xl">
-          <div className="rounded-surface border border-[rgba(159,42,42,0.18)] bg-[rgba(159,42,42,0.06)] p-6">
+      <section className="bg-white pb-20 text-[#062F24]">
+        <div className="bg-[#062F24] pb-16 pt-28 lg:pt-32">
+          <div className={pageContainerClass}>
+            <p className="text-sm font-bold uppercase text-[#C9A56A]">Order status</p>
+            <h1 className="mt-4 text-4xl font-extrabold leading-tight text-[#F4E8D2]">
+              Order not found
+            </h1>
+            <p className="mt-3 max-w-2xl text-base leading-7 text-[rgba(244,232,210,0.72)]">
+              Check the order code and try again.
+            </p>
+          </div>
+        </div>
+        <div className={`${pageContainerClass} mt-10`}>
+          <div className="rounded-surface border border-[rgba(159,42,42,0.18)] bg-[rgba(159,42,42,0.06)] p-5 text-[#062F24] shadow-sm sm:p-6">
             <AlertCircle size={24} className="text-[#9F2A2A]" aria-hidden="true" />
-            <h1 className="mt-4 text-3xl font-extrabold">Order not found</h1>
+            <h2 className="mt-4 text-2xl font-extrabold">We could not load this order</h2>
             <p className="mt-3 text-sm leading-6 text-[#062F24]/65">
               {error || "Check the order code and try again."}
             </p>
-            <Link
-              href="/order"
-              className="mt-6 inline-flex items-center justify-center rounded-button bg-[#C9A56A] px-5 py-3 font-extrabold text-[#062F24]"
-            >
+            <Link href="/order" className={`${primaryButtonClass} mt-6`}>
               Start an order
             </Link>
           </div>
@@ -354,7 +354,7 @@ export default function CustomerStatusPage({ publicCode }: { publicCode: string 
   return (
     <section className="bg-white pb-20 text-[#062F24]">
       <div className="bg-[#062F24] pb-16 pt-28 lg:pt-32">
-        <div className="mx-auto max-w-5xl px-6 lg:px-8">
+        <div className={pageContainerClass}>
           <p className="text-sm font-bold uppercase text-[#C9A56A]">Order {order.publicCode}</p>
           <div className="mt-4 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
             <div>
@@ -369,7 +369,7 @@ export default function CustomerStatusPage({ publicCode }: { publicCode: string 
               type="button"
               onClick={() => void loadOrder({ background: true })}
               disabled={refreshing}
-              className="inline-flex items-center justify-center gap-2 rounded-button border border-[#F4E8D2]/25 px-5 py-3 font-bold text-[#F4E8D2] transition hover:bg-white/10 disabled:opacity-60"
+              className={secondaryButtonClass}
             >
               {refreshing ? (
                 <Loader2 size={18} className="animate-spin" aria-hidden="true" />
@@ -382,9 +382,9 @@ export default function CustomerStatusPage({ publicCode }: { publicCode: string 
         </div>
       </div>
 
-      <div className="mx-auto mt-10 grid max-w-5xl gap-8 px-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:px-8">
+      <div className={`${pageContainerClass} mt-10 grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px]`}>
         <div className="space-y-8">
-          <div className="rounded-surface border border-[rgba(6,47,36,0.1)] bg-white p-6 shadow-sm">
+          <div className={cardClass}>
             <div className="flex items-center gap-3">
               <Clock size={22} className="text-[#C9A56A]" aria-hidden="true" />
               <h2 className="text-2xl font-extrabold">Timeline</h2>
@@ -401,7 +401,7 @@ export default function CustomerStatusPage({ publicCode }: { publicCode: string 
                     <div className="min-w-0 flex-1 border-b border-[rgba(6,47,36,0.08)] pb-5 last:border-b-0">
                       <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
                         <h3 className="text-base font-extrabold">{event.title}</h3>
-                        <time className="text-sm font-semibold text-[#062F24]/50">
+                        <time className="shrink-0 text-sm font-semibold text-[#062F24]/50">
                           {formatDateTime(event.createdAt)}
                         </time>
                       </div>
@@ -417,7 +417,7 @@ export default function CustomerStatusPage({ publicCode }: { publicCode: string 
             </div>
           </div>
 
-          <div className="rounded-surface border border-[rgba(6,47,36,0.1)] bg-white p-6 shadow-sm">
+          <div className={cardClass}>
             <div className="flex items-center gap-3">
               <ReceiptText size={22} className="text-[#C9A56A]" aria-hidden="true" />
               <h2 className="text-2xl font-extrabold">Items</h2>
@@ -426,7 +426,7 @@ export default function CustomerStatusPage({ publicCode }: { publicCode: string 
               {order.items.map((item, index) => (
                 <div key={`${item.name}-${index}`} className="py-5 first:pt-0 last:pb-0">
                   <div className="flex items-start justify-between gap-4">
-                    <div>
+                    <div className="min-w-0">
                       <p className="font-extrabold">
                         {item.quantity}x {item.name}
                       </p>
@@ -465,7 +465,7 @@ export default function CustomerStatusPage({ publicCode }: { publicCode: string 
         </div>
 
         <aside className="space-y-6">
-          <div className="rounded-surface border border-[rgba(6,47,36,0.1)] bg-white p-6 shadow-sm">
+          <div className={cardClass}>
             <h2 className="text-xl font-extrabold">Status</h2>
             <div className="mt-4">
               <Detail label="Fulfillment" value={statusLabel[order.fulfillmentStatus]} />
@@ -475,7 +475,7 @@ export default function CustomerStatusPage({ publicCode }: { publicCode: string 
             </div>
           </div>
 
-          <div className="rounded-surface border border-[rgba(6,47,36,0.1)] bg-white p-6 shadow-sm">
+          <div className={cardClass}>
             <h2 className="text-xl font-extrabold">Estimated Windows</h2>
             <div className="mt-4">
               <Detail
@@ -499,7 +499,7 @@ export default function CustomerStatusPage({ publicCode }: { publicCode: string 
             </div>
           </div>
 
-          <div className="rounded-surface border border-[rgba(6,47,36,0.1)] bg-white p-6 shadow-sm">
+          <div className={cardClass}>
             <h2 className="text-xl font-extrabold">Total</h2>
             <div className="mt-4">
               <Detail

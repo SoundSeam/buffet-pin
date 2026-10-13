@@ -8,6 +8,10 @@ import {
   type DeliveryAddressInput,
   deliveryValidationSchema,
 } from "@/lib/orders/validation";
+import {
+  parseDeliveryZonePolygon,
+  pointIsInDeliveryZonePolygon,
+} from "@/lib/orders/delivery-zone-geometry";
 
 type DeliveryDbClient = Prisma.TransactionClient | typeof db;
 
@@ -176,15 +180,30 @@ function calculateDeliveryFeeCents(
   return zone.deliveryFeeCents;
 }
 
-function selectMatchingZone(
+export function selectMatchingZone(
   zones: DeliveryZone[],
   destination: { latitude: number; longitude: number },
 ): { zone: DeliveryZone; zoneDistanceKm: number } {
+  const polygonMode = zones.some((zone) => zone.boundaryGeoJson !== null);
+
   for (const zone of zones) {
+    if (polygonMode && zone.boundaryGeoJson === null) continue;
+
     const zoneDistanceKm = calculateHaversineDistanceKm(
       { latitude: zone.centerLatitude, longitude: zone.centerLongitude },
       destination,
     );
+
+    if (zone.boundaryGeoJson !== null) {
+      const polygon = parseDeliveryZonePolygon(zone.boundaryGeoJson);
+
+      // A malformed configured polygon must fail closed; silently reverting to
+      // its legacy display circle could accept addresses outside approved roads.
+      if (polygon && pointIsInDeliveryZonePolygon(destination, polygon)) {
+        return { zone, zoneDistanceKm };
+      }
+      continue;
+    }
 
     if (zoneDistanceKm <= zone.radiusKm) {
       return { zone, zoneDistanceKm };
@@ -290,17 +309,6 @@ export async function validateDelivery(
     },
   );
 
-  if (distanceKm > settings.deliveryRadiusKm) {
-    throw new DeliveryValidationError(
-      "DELIVERY_OUT_OF_RANGE",
-      "This address is outside the delivery radius.",
-      {
-        distanceKm,
-        deliveryRadiusKm: settings.deliveryRadiusKm,
-      },
-    );
-  }
-
   const zones = await client.deliveryZone.findMany({
     where: { isActive: true },
     orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
@@ -310,6 +318,20 @@ export async function validateDelivery(
     throw new DeliveryValidationError(
       "DELIVERY_SETTINGS_INCOMPLETE",
       "At least one active delivery zone must be configured before delivery can be validated.",
+    );
+  }
+
+  // The global radius remains the compatibility boundary for legacy circular
+  // zones. Once polygon coverage is active, the polygon itself is authoritative.
+  const hasConfiguredPolygon = zones.some((zone) => zone.boundaryGeoJson !== null);
+  if (!hasConfiguredPolygon && distanceKm > settings.deliveryRadiusKm) {
+    throw new DeliveryValidationError(
+      "DELIVERY_OUT_OF_RANGE",
+      "This address is outside the delivery radius.",
+      {
+        distanceKm,
+        deliveryRadiusKm: settings.deliveryRadiusKm,
+      },
     );
   }
 

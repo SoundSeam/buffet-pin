@@ -8,8 +8,16 @@ import {
 import { NextResponse } from "next/server";
 
 import { db } from "@/lib/db";
+import { dispatchAggregateJobs } from "@/lib/async-jobs/dispatch";
 import { notifyPaymentConfirmed } from "@/lib/orders/notifications";
+import { ensureInitialPrintIntentInTransaction } from "@/lib/orders/print-jobs";
+import { submitInitialPrintForOrder } from "@/lib/clover/print-orders";
+import {
+  confirmPaymentInTransaction,
+  failPendingPaymentInTransaction,
+} from "@/lib/orders/payment-state";
 import { getEnv } from "@/lib/env";
+import { claimPaymentWebhookEvent, releaseUnprocessedPaymentWebhookEvent } from "@/lib/clover/webhook-claims";
 import {
   buildRawProviderData,
   getCloverSignatureHeader,
@@ -102,21 +110,36 @@ async function findMatchingPayment(
     }
   }
 
+  if (webhook.localIdempotencyKey) {
+    const payment = await tx.payment.findUnique({
+      where: { providerIdempotencyKey: webhook.localIdempotencyKey },
+      include: { order: true },
+    });
+
+    if (payment) {
+      return payment;
+    }
+  }
+
   return null;
 }
 
 async function markEventProcessed(
   tx: Prisma.TransactionClient,
   eventId: string,
+  processingToken: string,
   paymentId: string | null,
 ) {
-  await tx.paymentWebhookEvent.update({
-    where: { id: eventId },
+  const changed = await tx.paymentWebhookEvent.updateMany({
+    where: { id: eventId, processingToken, processedAt: null },
     data: {
       paymentId,
+      processingStartedAt: null,
+      processingToken: null,
       processedAt: new Date(),
     },
   });
+  if (changed.count !== 1) throw new Error("WEBHOOK_CLAIM_LOST");
 }
 
 export async function POST(request: Request) {
@@ -147,6 +170,7 @@ export async function POST(request: Request) {
 
   const webhook = normalizeCloverWebhook(parseResult.payload);
   let eventId: string;
+  let duplicate = false;
 
   try {
     const event = await db.paymentWebhookEvent.create({
@@ -175,36 +199,62 @@ export async function POST(request: Request) {
       },
     });
 
+    if (!existing) throw error;
+    if (existing.processedAt) {
+      return jsonResponse(200, { ok: true, duplicate: true, processed: true });
+    }
+    eventId = existing.id;
+    duplicate = true;
+  }
+
+  const claim = await claimPaymentWebhookEvent(db, eventId);
+  if (claim.status !== "CLAIMED") {
     return jsonResponse(200, {
       ok: true,
       duplicate: true,
-      processed: Boolean(existing?.processedAt),
+      processed: claim.status === "PROCESSED",
+      processing: claim.status === "PROCESSING",
     });
   }
 
   const result = await db.$transaction(async (tx) => {
+    await tx.$queryRaw`SELECT "id" FROM "PaymentWebhookEvent" WHERE "id" = ${eventId} FOR UPDATE`;
+    const claimedEvent = await tx.paymentWebhookEvent.findUniqueOrThrow({ where: { id: eventId } });
+    if (claimedEvent.processedAt || claimedEvent.processingToken !== claim.token) {
+      return { matched: false, orderId: null, paymentChangedToPaid: false, paymentStatus: null, fulfillmentStatus: null, claimLost: true };
+    }
     const payment = await findMatchingPayment(tx, webhook);
 
     if (!payment) {
-      await markEventProcessed(tx, eventId, null);
-
       return {
         matched: false,
         orderId: null,
         paymentChangedToPaid: false,
         paymentStatus: null,
         fulfillmentStatus: null,
+        claimLost: false,
       };
     }
 
     const fromPaymentStatus = payment.status;
     const fromOrderPaymentStatus = payment.order.paymentStatus;
     const fromFulfillmentStatus = payment.order.fulfillmentStatus;
-    const toPaymentStatus = nextPaymentStatus(fromPaymentStatus, webhook.paymentStatus);
-    const toOrderPaymentStatus = nextPaymentStatus(
+    let toPaymentStatus = nextPaymentStatus(fromPaymentStatus, webhook.paymentStatus);
+    let toOrderPaymentStatus = nextPaymentStatus(
       fromOrderPaymentStatus,
       webhook.paymentStatus,
     );
+    if (webhook.paymentStatus === OrderPaymentStatus.PAID) {
+      await confirmPaymentInTransaction(tx, payment.orderId, payment.id, webhook.paidAt ?? new Date());
+    } else if (webhook.paymentStatus === OrderPaymentStatus.FAILED) {
+      await failPendingPaymentInTransaction(tx, payment.orderId, payment.id);
+    }
+    const resolvedPayment = await tx.payment.findUniqueOrThrow({
+      where: { id: payment.id },
+      include: { order: true },
+    });
+    toPaymentStatus = resolvedPayment.status;
+    toOrderPaymentStatus = resolvedPayment.order.paymentStatus;
     const toFulfillmentStatus = nextFulfillmentStatus({
       paymentStatus: toOrderPaymentStatus,
       fulfillmentStatus: fromFulfillmentStatus,
@@ -213,7 +263,6 @@ export async function POST(request: Request) {
     await tx.payment.update({
       where: { id: payment.id },
       data: {
-        status: toPaymentStatus,
         providerPaymentId: payment.providerPaymentId ?? webhook.providerPaymentId,
         providerOrderId: payment.providerOrderId ?? webhook.providerOrderId,
         paidAt:
@@ -239,10 +288,16 @@ export async function POST(request: Request) {
     await tx.order.update({
       where: { id: payment.orderId },
       data: {
-        paymentStatus: toOrderPaymentStatus,
         fulfillmentStatus: toFulfillmentStatus,
       },
     });
+
+    if (toOrderPaymentStatus === OrderPaymentStatus.PAID) {
+      await ensureInitialPrintIntentInTransaction(tx, payment.orderId, {
+        actorType: OrderActorType.WEBHOOK,
+        actorLabel: "Clover",
+      });
+    }
 
     await tx.orderEvent.create({
       data: {
@@ -277,7 +332,7 @@ export async function POST(request: Request) {
       },
     });
 
-    await markEventProcessed(tx, eventId, payment.id);
+    await markEventProcessed(tx, eventId, claim.token, payment.id);
 
     return {
       matched: true,
@@ -287,16 +342,36 @@ export async function POST(request: Request) {
         toOrderPaymentStatus === OrderPaymentStatus.PAID,
       paymentStatus: toOrderPaymentStatus,
       fulfillmentStatus: toFulfillmentStatus,
+      claimLost: false,
     };
   });
 
+  if (result.claimLost) {
+    return jsonResponse(200, { ok: true, duplicate: true, processed: false, processing: true });
+  }
+
+  if (!result.matched) {
+    await releaseUnprocessedPaymentWebhookEvent(db, eventId, claim.token);
+  }
+
+  if (result.orderId) {
+    await dispatchAggregateJobs("Order", result.orderId);
+  }
   if (result.orderId && result.paymentChangedToPaid) {
     await notifyPaymentConfirmed(result.orderId);
   }
+  if (result.orderId && result.paymentStatus === OrderPaymentStatus.PAID) {
+    await submitInitialPrintForOrder(result.orderId).catch((error) => {
+      console.error("Initial print submission remains pending/exception", {
+        orderId: result.orderId,
+        error,
+      });
+    });
+  }
 
-  return jsonResponse(200, {
-    ok: true,
-    duplicate: false,
+  return jsonResponse(result.matched ? 200 : 503, {
+    ok: result.matched,
+    duplicate,
     data: result,
   });
 }

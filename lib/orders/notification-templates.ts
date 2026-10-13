@@ -9,6 +9,7 @@ export const orderNotificationTemplateKeys = {
   paymentConfirmed: "ORDER_PAYMENT_CONFIRMED",
   accepted: "ORDER_ACCEPTED",
   rejectedRefundPending: "ORDER_REJECTED_REFUND_PENDING",
+  cancelledRefundPending: "ORDER_CANCELLED_REFUND_PENDING",
   refundSucceeded: "ORDER_REFUND_SUCCEEDED",
   refundFailedAdminAlert: "ORDER_REFUND_FAILED_ADMIN_ALERT",
   preparing: "ORDER_PREPARING",
@@ -23,7 +24,8 @@ export type OrderNotificationTemplateKey =
   (typeof orderNotificationTemplateKeys)[keyof typeof orderNotificationTemplateKeys];
 
 type OrderTemplateInput = {
-  publicCode: string;
+  orderNumber: string;
+  trackingToken: string;
   serviceType: OrderServiceType;
   language: ReservationLanguage;
   customerName: string;
@@ -34,15 +36,15 @@ type OrderTemplateInput = {
 };
 
 type AdminRefundAlertInput = {
-  publicCode: string;
+  orderNumber: string;
   customerName: string;
   customerPhone: string;
   totalCents: number;
   errorMessage?: string | null;
 };
 
-function orderStatusUrl(publicCode: string): string {
-  return new URL(`/order/${publicCode}`, getAppUrl()).toString();
+function orderStatusUrl(trackingToken: string): string {
+  return new URL(`/order/${encodeURIComponent(trackingToken)}`, getAppUrl()).toString();
 }
 
 function formatTime(date: Date | null | undefined, language: ReservationLanguage): string | null {
@@ -66,60 +68,64 @@ export function renderOrderNotificationSms(
   templateKey: OrderNotificationTemplateKey,
   input: OrderTemplateInput,
 ): string {
-  const url = orderStatusUrl(input.publicCode);
+  const url = orderStatusUrl(input.trackingToken);
   const readyTime = formatTime(input.estimatedReadyEndAt, input.language);
   const deliveryTime = formatTime(input.estimatedDeliveryEndAt, input.language);
 
   if (input.language === "FR") {
     switch (templateKey) {
       case orderNotificationTemplateKeys.paymentConfirmed:
-        return `${RESTAURANT_NAME} : paiement confirme pour la commande ${input.publicCode}. Nous la confirmerons bientot.\n\nSuivi : ${url}`;
+        return `${RESTAURANT_NAME} : paiement confirme pour la commande ${input.orderNumber}. Nous la confirmerons bientot.\n\nSuivi : ${url}`;
       case orderNotificationTemplateKeys.accepted:
-        return `${RESTAURANT_NAME} : commande ${input.publicCode} acceptee.${readyTime ? ` Prete vers ${readyTime}.` : ""}\n\nSuivi : ${url}`;
+        return `${RESTAURANT_NAME} : commande ${input.orderNumber} acceptee.${readyTime ? ` Prete vers ${readyTime}.` : ""}\n\nSuivi : ${url}`;
       case orderNotificationTemplateKeys.rejectedRefundPending:
-        return `${RESTAURANT_NAME} : commande ${input.publicCode} refusee. Le remboursement est en traitement.${input.rejectionReason ? ` Raison : ${input.rejectionReason}` : ""}`;
+        return `${RESTAURANT_NAME} : commande ${input.orderNumber} refusee. Le remboursement est en traitement.${input.rejectionReason ? ` Raison : ${input.rejectionReason}` : ""}`;
+      case orderNotificationTemplateKeys.cancelledRefundPending:
+        return `${RESTAURANT_NAME} : commande ${input.orderNumber} annulee. Le remboursement est en traitement.\n\nSuivi : ${url}`;
       case orderNotificationTemplateKeys.refundSucceeded:
-        return `${RESTAURANT_NAME} : remboursement complete pour la commande ${input.publicCode}.`;
+        return `${RESTAURANT_NAME} : remboursement complete pour la commande ${input.orderNumber}.`;
       case orderNotificationTemplateKeys.preparing:
-        return `${RESTAURANT_NAME} : commande ${input.publicCode} en preparation.${readyTime ? ` Prete vers ${readyTime}.` : ""}\n\nSuivi : ${url}`;
+        return `${RESTAURANT_NAME} : commande ${input.orderNumber} en preparation.${readyTime ? ` Prete vers ${readyTime}.` : ""}\n\nSuivi : ${url}`;
       case orderNotificationTemplateKeys.ready:
-        return `${RESTAURANT_NAME} : commande ${input.publicCode} prete pour livraison.\n\nSuivi : ${url}`;
+        return `${RESTAURANT_NAME} : commande ${input.orderNumber} prete pour livraison.\n\nSuivi : ${url}`;
       case orderNotificationTemplateKeys.driverAssigned:
-        return `${RESTAURANT_NAME} : livreur assigne a la commande ${input.publicCode}${input.driverName ? ` (${input.driverName})` : ""}.${deliveryTime ? ` Arrivee estimee vers ${deliveryTime}.` : ""}\n\nSuivi : ${url}`;
+        return `${RESTAURANT_NAME} : livreur assigne a la commande ${input.orderNumber}${input.driverName ? ` (${input.driverName})` : ""}.${deliveryTime ? ` Arrivee estimee vers ${deliveryTime}.` : ""}\n\nSuivi : ${url}`;
       case orderNotificationTemplateKeys.onTheWay:
-        return `${RESTAURANT_NAME} : commande ${input.publicCode} en route.${deliveryTime ? ` Arrivee estimee vers ${deliveryTime}.` : ""}\n\nSuivi : ${url}`;
+        return `${RESTAURANT_NAME} : commande ${input.orderNumber} en route.${deliveryTime ? ` Arrivee estimee vers ${deliveryTime}.` : ""}\n\nSuivi : ${url}`;
       case orderNotificationTemplateKeys.arrivingSoon:
-        return `${RESTAURANT_NAME} : votre commande ${input.publicCode} arrive bientot.\n\nSuivi : ${url}`;
+        return `${RESTAURANT_NAME} : votre commande ${input.orderNumber} arrive bientot.\n\nSuivi : ${url}`;
       case orderNotificationTemplateKeys.delivered:
-        return `${RESTAURANT_NAME} : commande ${input.publicCode} livree. Merci!`;
+        return `${RESTAURANT_NAME} : commande ${input.orderNumber} livree. Merci!`;
       case orderNotificationTemplateKeys.refundFailedAdminAlert:
-        return `${RESTAURANT_NAME} : suivi requis pour la commande ${input.publicCode}.`;
+        return `${RESTAURANT_NAME} : suivi requis pour la commande ${input.orderNumber}.`;
     }
   }
 
   switch (templateKey) {
     case orderNotificationTemplateKeys.paymentConfirmed:
-      return `${RESTAURANT_NAME}: payment confirmed for order ${input.publicCode}. We will confirm your delivery soon.\n\nStatus: ${url}`;
+      return `${RESTAURANT_NAME}: payment confirmed for order ${input.orderNumber}. We will confirm your delivery soon.\n\nStatus: ${url}`;
     case orderNotificationTemplateKeys.accepted:
-      return `${RESTAURANT_NAME}: order ${input.publicCode} accepted.${readyTime ? ` Ready around ${readyTime}.` : ""}\n\nStatus: ${url}`;
+      return `${RESTAURANT_NAME}: order ${input.orderNumber} accepted.${readyTime ? ` Ready around ${readyTime}.` : ""}\n\nStatus: ${url}`;
     case orderNotificationTemplateKeys.rejectedRefundPending:
-      return `${RESTAURANT_NAME}: order ${input.publicCode} was rejected. Your refund is being processed.${input.rejectionReason ? ` Reason: ${input.rejectionReason}` : ""}`;
+      return `${RESTAURANT_NAME}: order ${input.orderNumber} was rejected. Your refund is being processed.${input.rejectionReason ? ` Reason: ${input.rejectionReason}` : ""}`;
+    case orderNotificationTemplateKeys.cancelledRefundPending:
+      return `${RESTAURANT_NAME}: order ${input.orderNumber} was cancelled. Your refund is being processed.\n\nStatus: ${url}`;
     case orderNotificationTemplateKeys.refundSucceeded:
-      return `${RESTAURANT_NAME}: refund completed for order ${input.publicCode}.`;
+      return `${RESTAURANT_NAME}: refund completed for order ${input.orderNumber}.`;
     case orderNotificationTemplateKeys.preparing:
-      return `${RESTAURANT_NAME}: order ${input.publicCode} is being prepared.${readyTime ? ` Ready around ${readyTime}.` : ""}\n\nStatus: ${url}`;
+      return `${RESTAURANT_NAME}: order ${input.orderNumber} is being prepared.${readyTime ? ` Ready around ${readyTime}.` : ""}\n\nStatus: ${url}`;
     case orderNotificationTemplateKeys.ready:
-      return `${RESTAURANT_NAME}: order ${input.publicCode} is ready for delivery.\n\nStatus: ${url}`;
+      return `${RESTAURANT_NAME}: order ${input.orderNumber} is ready for delivery.\n\nStatus: ${url}`;
     case orderNotificationTemplateKeys.driverAssigned:
-      return `${RESTAURANT_NAME}: driver assigned for order ${input.publicCode}${input.driverName ? ` (${input.driverName})` : ""}.${deliveryTime ? ` Estimated arrival around ${deliveryTime}.` : ""}\n\nStatus: ${url}`;
+      return `${RESTAURANT_NAME}: driver assigned for order ${input.orderNumber}${input.driverName ? ` (${input.driverName})` : ""}.${deliveryTime ? ` Estimated arrival around ${deliveryTime}.` : ""}\n\nStatus: ${url}`;
     case orderNotificationTemplateKeys.onTheWay:
-      return `${RESTAURANT_NAME}: order ${input.publicCode} is on the way.${deliveryTime ? ` Estimated arrival around ${deliveryTime}.` : ""}\n\nStatus: ${url}`;
+      return `${RESTAURANT_NAME}: order ${input.orderNumber} is on the way.${deliveryTime ? ` Estimated arrival around ${deliveryTime}.` : ""}\n\nStatus: ${url}`;
     case orderNotificationTemplateKeys.arrivingSoon:
-      return `${RESTAURANT_NAME}: your order ${input.publicCode} is arriving soon.\n\nStatus: ${url}`;
+      return `${RESTAURANT_NAME}: your order ${input.orderNumber} is arriving soon.\n\nStatus: ${url}`;
     case orderNotificationTemplateKeys.delivered:
-      return `${RESTAURANT_NAME}: order ${input.publicCode} delivered. Thank you!`;
+      return `${RESTAURANT_NAME}: order ${input.orderNumber} delivered. Thank you!`;
     case orderNotificationTemplateKeys.refundFailedAdminAlert:
-      return `${RESTAURANT_NAME}: order ${input.publicCode} needs follow-up.`;
+      return `${RESTAURANT_NAME}: order ${input.orderNumber} needs follow-up.`;
   }
 }
 
@@ -149,7 +155,7 @@ export function templateKeyForFulfillmentStatus(
 export function renderRefundFailedAdminSms(input: AdminRefundAlertInput): string {
   return [
     "Refund failed",
-    `Order: ${input.publicCode}`,
+    `Order: ${input.orderNumber}`,
     `Customer: ${input.customerName}`,
     `Phone: ${input.customerPhone}`,
     `Amount: ${formatMoney(input.totalCents)}`,

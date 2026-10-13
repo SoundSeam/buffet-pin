@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { z, ZodError } from "zod";
 
 import { db } from "@/lib/db";
+import { dispatchAggregateJobs } from "@/lib/async-jobs/dispatch";
 import {
   ReservationRuleError,
   assertCapacityForParty,
@@ -174,6 +175,8 @@ export async function PATCH(
     if (!reservation) {
       return errorResponse(404, "RESERVATION_NOT_FOUND", "Reservation not found.");
     }
+
+    await dispatchAggregateJobs("Reservation", reservation.id);
 
     return NextResponse.json({ ok: true, data: { reservation } });
   } catch (error) {

@@ -66,13 +66,35 @@ export const checkoutCustomerSchema = z.object({
 export const checkoutCreateSchema = priceCartSchema.extend({
   customer: checkoutCustomerSchema,
   customerNotes: nullableText(1000),
+  cloverPayment: z
+    .object({
+      source: z.string().trim().min(1).max(500),
+      idempotencyKey: z.string().trim().min(8).max(128).optional(),
+    })
+    .optional(),
 });
 
 export const orderSettingsUpdateSchema = z
   .object({
     onlineOrderingEnabled: z.coerce.boolean().optional(),
-    pickupEnabled: z.coerce.boolean().optional(),
+    pickupEnabled: z.literal(false).optional(),
     deliveryEnabled: z.coerce.boolean().optional(),
+    busyModeEnabled: z.coerce.boolean().optional(),
+    busyModeExtraMinutes: z.coerce.number().int().min(0).max(180).optional(),
+    maxActiveOrders: z.coerce.number().int().min(1).max(200).nullable().optional(),
+    acceptanceWindowMinutes: z.coerce.number().int().min(1).max(30).optional(),
+    missedAcceptancePauseThreshold: z.coerce
+      .number()
+      .int()
+      .min(1)
+      .max(10)
+      .optional(),
+    proofRetentionDays: z.coerce.number().int().min(1).max(365).optional(),
+    partialRefundsEnabled: z.coerce.boolean().optional(),
+    receiptLegalName: nullableText(200),
+    receiptAddress: nullableText(500),
+    receiptPhone: nullableText(40),
+    receiptTaxRegistration: nullableText(200),
     restaurantLatitude: z.coerce.number().min(-90).max(90).nullable().optional(),
     restaurantLongitude: z.coerce.number().min(-180).max(180).nullable().optional(),
     deliveryRadiusKm: z.coerce.number().positive().max(100).optional(),

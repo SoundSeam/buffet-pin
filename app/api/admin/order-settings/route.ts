@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
+import { OrderActorType } from "@prisma/client";
 import { ZodError } from "zod";
 
 import { db } from "@/lib/db";
 import { getGeocodingConfig } from "@/lib/env";
 import { orderSettingsUpdateSchema } from "@/lib/orders/validation";
-import { getAdminUser } from "@/lib/supabase/auth";
+import { getStaffUser } from "@/lib/supabase/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,7 @@ function errorResponse(status: number, code: string, message: string, details?: 
 }
 
 async function requireAdminResponse() {
-  const user = await getAdminUser();
+  const user = await getStaffUser("SETTINGS_WRITE");
   return user ? null : errorResponse(401, "UNAUTHORIZED", "Admin access required.");
 }
 
@@ -42,6 +43,20 @@ function serializeSettings(settings: Awaited<ReturnType<typeof getSettings>>) {
     minimumDeliveryOrderCents: settings.minimumDeliveryOrderCents,
     freeDeliveryThresholdCents: settings.freeDeliveryThresholdCents,
     orderAdminSmsRecipient: settings.orderAdminSmsRecipient,
+    busyModeEnabled: settings.busyModeEnabled,
+    busyModeExtraMinutes: settings.busyModeExtraMinutes,
+    maxActiveOrders: settings.maxActiveOrders,
+    acceptanceWindowMinutes: settings.acceptanceWindowMinutes,
+    missedAcceptancePauseThreshold: settings.missedAcceptancePauseThreshold,
+    missedAcceptanceCount: settings.missedAcceptanceCount,
+    intakePausedAt: settings.intakePausedAt?.toISOString() ?? null,
+    intakePauseReason: settings.intakePauseReason,
+    proofRetentionDays: settings.proofRetentionDays,
+    partialRefundsEnabled: settings.partialRefundsEnabled,
+    receiptLegalName: settings.receiptLegalName,
+    receiptAddress: settings.receiptAddress,
+    receiptPhone: settings.receiptPhone,
+    receiptTaxRegistration: settings.receiptTaxRegistration,
   };
 }
 
@@ -55,8 +70,8 @@ export async function GET() {
 }
 
 export async function PATCH(request: Request) {
-  const unauthorized = await requireAdminResponse();
-  if (unauthorized) return unauthorized;
+  const actor = await getStaffUser("SETTINGS_WRITE");
+  if (!actor) return errorResponse(401, "UNAUTHORIZED", "Settings permission required.");
 
   try {
     const payload = orderSettingsUpdateSchema.parse(await request.json());
@@ -105,6 +120,11 @@ export async function PATCH(request: Request) {
         updated.restaurantLatitude !== null &&
         updated.restaurantLongitude !== null
       ) {
+        const polygonZoneCount = await tx.deliveryZone.count({
+          where: {
+            configurationKey: { not: null },
+          },
+        });
         const existingZone = await tx.deliveryZone.findFirst({
           where: { name: DEFAULT_ZONE_NAME },
           orderBy: { createdAt: "asc" },
@@ -121,7 +141,14 @@ export async function PATCH(request: Request) {
           sortOrder: 0,
         };
 
-        if (existingZone) {
+        if (polygonZoneCount > 0) {
+          if (existingZone?.isActive) {
+            await tx.deliveryZone.update({
+              where: { id: existingZone.id },
+              data: { isActive: false },
+            });
+          }
+        } else if (existingZone) {
           await tx.deliveryZone.update({
             where: { id: existingZone.id },
             data: zoneData,
@@ -130,6 +157,22 @@ export async function PATCH(request: Request) {
           await tx.deliveryZone.create({ data: zoneData });
         }
       }
+
+      await tx.operationalAuditEvent.create({ data: {
+        actorType: OrderActorType.ADMIN,
+        actorId: actor.staff.id,
+        actorLabel: actor.staff.displayName,
+        eventType: "ORDER_SETTINGS_UPDATED",
+        entityType: "RestaurantOrderSettings",
+        entityId: "1",
+        metadata: {
+          changedFields: Object.keys(payload),
+          onlineOrderingEnabled: updated.onlineOrderingEnabled,
+          deliveryEnabled: updated.deliveryEnabled,
+          busyModeEnabled: updated.busyModeEnabled,
+          maxActiveOrders: updated.maxActiveOrders,
+        },
+      } });
 
       return updated;
     });

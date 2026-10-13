@@ -10,6 +10,7 @@ import {
   getReservationPhoneRateLimitKey,
 } from "@/lib/abuse-protection";
 import { db } from "@/lib/db";
+import { dispatchAggregateJobs } from "@/lib/async-jobs/dispatch";
 import { generateConfirmationCode } from "@/lib/reservations/codes";
 import {
   ReservationRuleError,
@@ -240,6 +241,8 @@ export async function POST(request: Request) {
           isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
         },
       );
+
+      await dispatchAggregateJobs("Reservation", reservation.id);
 
       await Promise.all([
         sendConfirmationSmsAndMarkSent(reservation),

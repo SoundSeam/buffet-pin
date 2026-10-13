@@ -1,9 +1,17 @@
 import { OrderServiceType, type Prisma } from "@prisma/client";
 
 import { db } from "@/lib/db";
-import { type DeliverySnapshot, validateDelivery } from "@/lib/orders/delivery";
 import {
-  CAD_CURRENCY_CODE,
+  CatalogMappingError,
+  validateCheckoutCatalogMappings,
+} from "@/lib/orders/catalog";
+import { getOrderCurrencyCode, isOrderingTestBypassEnabled } from "@/lib/env";
+import {
+  type DeliverySnapshot,
+  normalizeDeliveryAddress,
+  validateDelivery,
+} from "@/lib/orders/delivery";
+import {
   calculateQuebecTaxCents,
   calculatePpmAmountCents,
 } from "@/lib/orders/money";
@@ -106,7 +114,13 @@ function ensureUniqueModifierOptions(optionIds: string[], itemIndex: number) {
 }
 
 function validateItemAvailability(item: MenuItemWithPricingRelations, itemIndex: number) {
-  if (!item.isActive || !item.isAvailable || !item.category.isActive) {
+  if (
+    !item.isActive ||
+    !item.isAvailable ||
+    !item.isDeliveryChannel ||
+    !item.category.isActive ||
+    !item.category.isDeliveryChannel
+  ) {
     throw new OrderPricingError("ITEM_UNAVAILABLE", "Menu item is unavailable.", {
       itemIndex,
       menuItemId: item.id,
@@ -117,11 +131,22 @@ function validateItemAvailability(item: MenuItemWithPricingRelations, itemIndex:
 function validateServiceType(
   serviceType: OrderServiceType,
   settings: Awaited<ReturnType<typeof getOrderSettings>>,
+  options: { bypassAvailability: boolean },
 ) {
+  if (options.bypassAvailability) {
+    return;
+  }
+
   if (!settings.onlineOrderingEnabled) {
     throw new OrderPricingError(
       "ONLINE_ORDERING_DISABLED",
       "Online ordering is currently unavailable.",
+    );
+  }
+  if (settings.intakePausedAt) {
+    throw new OrderPricingError(
+      "ORDER_INTAKE_PAUSED",
+      "Online ordering is paused until the restaurant confirms it is ready.",
     );
   }
 
@@ -135,6 +160,29 @@ function validateServiceType(
       "Delivery ordering is unavailable.",
     );
   }
+}
+
+function buildTestDeliverySnapshot(
+  address: PriceCartInput["deliveryAddress"],
+): DeliverySnapshot {
+  if (!address) {
+    throw new OrderPricingError(
+      "DELIVERY_ADDRESS_REQUIRED",
+      "Delivery address is required for delivery orders.",
+    );
+  }
+
+  return {
+    address: normalizeDeliveryAddress(address),
+    latitude: 0,
+    longitude: 0,
+    distanceKm: 0,
+    zoneId: "ordering-test-bypass",
+    zoneName: "Ordering test bypass",
+    deliveryFeeCents: 0,
+    minimumOrderCents: 0,
+    freeDeliveryThresholdCents: null,
+  };
 }
 
 function buildModifierSnapshots(
@@ -240,11 +288,14 @@ function calculateTipCents(
 export async function priceCart(
   rawInput: unknown,
   client: PricingDbClient = db,
+  options: { bypassAvailability?: boolean } = {},
 ): Promise<PricedCart> {
   const input = priceCartSchema.parse(rawInput);
   const settings = await getOrderSettings(client);
+  const bypassAvailability =
+    options.bypassAvailability === true || isOrderingTestBypassEnabled();
 
-  validateServiceType(input.serviceType, settings);
+  validateServiceType(input.serviceType, settings, { bypassAvailability });
 
   const uniqueItemIds = [...new Set(input.items.map((item) => item.menuItemId))];
   const menuItems = await client.menuItem.findMany({
@@ -294,13 +345,15 @@ export async function priceCart(
 
   const delivery =
     input.serviceType === OrderServiceType.DELIVERY
-      ? await validateDelivery(
-          {
-            address: input.deliveryAddress,
-            itemsSubtotalCents,
-          },
-          client,
-        )
+      ? bypassAvailability
+        ? buildTestDeliverySnapshot(input.deliveryAddress)
+        : await validateDelivery(
+            {
+              address: input.deliveryAddress,
+              itemsSubtotalCents,
+            },
+            client,
+          )
       : null;
   const deliveryFeeCents = delivery?.deliveryFeeCents ?? 0;
   const taxes = calculateQuebecTaxCents(
@@ -317,9 +370,26 @@ export async function priceCart(
     deliveryFeeCents -
     discountCents;
 
+  if (input.serviceType === OrderServiceType.DELIVERY) {
+    try {
+      await validateCheckoutCatalogMappings(client, {
+        itemIds: pricedItems.map((item) => item.menuItemId),
+        modifierOptionIds: pricedItems.flatMap((item) =>
+          item.modifiers.map((modifier) => modifier.modifierOptionId),
+        ),
+        requireDeliveryServiceCharge: deliveryFeeCents > 0,
+      });
+    } catch (error) {
+      if (error instanceof CatalogMappingError) {
+        throw new OrderPricingError(error.code, error.message, { blockers: error.blockers });
+      }
+      throw error;
+    }
+  }
+
   return {
     serviceType: input.serviceType,
-    currency: CAD_CURRENCY_CODE,
+    currency: getOrderCurrencyCode(),
     itemsSubtotalCents,
     taxableSubtotalCents: taxes.taxableSubtotalCents,
     gstCents: taxes.gstCents,

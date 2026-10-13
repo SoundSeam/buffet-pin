@@ -1,9 +1,13 @@
 import { redirect } from "next/navigation";
-import type { Driver } from "@prisma/client";
 import type { User } from "@supabase/supabase-js";
 
-import { db } from "@/lib/db";
 import { isAllowedAdminEmail } from "@/lib/env";
+import { db } from "@/lib/db";
+import {
+  roleHasAnyCapability,
+  roleHasCapability,
+  type StaffCapability,
+} from "@/lib/staff-policy";
 
 import { createSupabaseServerClient } from "./server";
 
@@ -27,8 +31,82 @@ export async function getAdminUser(): Promise<User | null> {
   if (!isAllowedAdminEmail(user?.email)) {
     return null;
   }
+  const staff = await db.staffMember.findFirst({
+    where: {
+      isActive: true,
+      OR: [
+        { authUserId: user!.id },
+        ...(user!.email ? [{ email: user!.email.toLowerCase() }] : []),
+      ],
+      role: "MANAGER",
+    },
+  });
+  return staff ? user : null;
+}
 
-  return user;
+export async function getStaffRole() {
+  const user = await getSupabaseUser();
+
+  if (!isAllowedAdminEmail(user?.email)) return null;
+
+  const staff = await db.staffMember.findFirst({
+    where: {
+      isActive: true,
+      OR: [
+        { authUserId: user!.id },
+        ...(user!.email ? [{ email: user!.email.toLowerCase() }] : []),
+      ],
+    },
+    select: { role: true },
+  });
+
+  return staff?.role ?? null;
+}
+
+export async function getStaffUser(capability: StaffCapability) {
+  const user = await getSupabaseUser();
+  if (!isAllowedAdminEmail(user?.email)) return null;
+  const staff = await db.staffMember.findFirst({
+    where: {
+      isActive: true,
+      OR: [
+        { authUserId: user!.id },
+        ...(user!.email ? [{ email: user!.email.toLowerCase() }] : []),
+      ],
+    },
+  });
+  if (!staff || !roleHasCapability(staff.role, capability)) return null;
+  if (!staff.authUserId) {
+    await db.staffMember.update({
+      where: { id: staff.id },
+      data: { authUserId: user!.id },
+    });
+  }
+  return { user: user!, staff };
+}
+
+export async function getStaffUserWithAnyCapability(
+  capabilities: readonly StaffCapability[],
+) {
+  const user = await getSupabaseUser();
+  if (!isAllowedAdminEmail(user?.email)) return null;
+  const staff = await db.staffMember.findFirst({
+    where: {
+      isActive: true,
+      OR: [
+        { authUserId: user!.id },
+        ...(user!.email ? [{ email: user!.email.toLowerCase() }] : []),
+      ],
+    },
+  });
+  if (!staff || !roleHasAnyCapability(staff.role, capabilities)) return null;
+  if (!staff.authUserId) {
+    await db.staffMember.update({
+      where: { id: staff.id },
+      data: { authUserId: user!.id },
+    });
+  }
+  return { user: user!, staff };
 }
 
 export async function requireAdminUser(): Promise<User> {
@@ -41,51 +119,16 @@ export async function requireAdminUser(): Promise<User> {
   return user;
 }
 
-export type AuthenticatedDriver = {
-  user: User;
-  driver: Driver;
-};
-
-export async function getDriverUser(): Promise<AuthenticatedDriver | null> {
-  const user = await getSupabaseUser();
-  const email = user?.email?.trim();
-
-  if (!user || !email) {
-    return null;
-  }
-
-  const driver = await db.driver.findFirst({
-    where: {
-      isActive: true,
-      OR: [
-        { supabaseUserId: user.id },
-        { email: { equals: email, mode: "insensitive" } },
-      ],
-    },
-  });
-
-  if (!driver) {
-    return null;
-  }
-
-  if (!driver.supabaseUserId) {
-    const linkedDriver = await db.driver.update({
-      where: { id: driver.id },
-      data: { supabaseUserId: user.id },
-    });
-
-    return { user, driver: linkedDriver };
-  }
-
-  return { user, driver };
+export async function requireStaffUser(capability: StaffCapability) {
+  const actor = await getStaffUser(capability);
+  if (!actor) redirect("/admin/login");
+  return actor;
 }
 
-export async function requireDriverUser(): Promise<AuthenticatedDriver> {
-  const driverUser = await getDriverUser();
-
-  if (!driverUser) {
-    redirect("/driver");
-  }
-
-  return driverUser;
+export async function requireStaffUserWithAnyCapability(
+  capabilities: readonly StaffCapability[],
+) {
+  const actor = await getStaffUserWithAnyCapability(capabilities);
+  if (!actor) redirect("/admin/login");
+  return actor;
 }

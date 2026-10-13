@@ -3,11 +3,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
+import LanguageToggle from "@/components/layout/language-toggle";
 import OrderFlow from "@/components/order/order-flow";
 import SiteShell from "@/components/site-shell";
+import { buffetPinMedia } from "@/lib/media";
 
-const CHECKOUT_LOGO =
-  buffetPinMedia.logoHorizontalBlack;
+const CHECKOUT_LOGO = buffetPinMedia.logoHorizontalBlack;
 
 export const metadata: Metadata = {
   title: "Place Order",
@@ -16,7 +17,7 @@ export const metadata: Metadata = {
 
 export default function OrderCheckoutPage() {
   return (
-    <SiteShell header={<CheckoutHeader />} footer={false}>
+    <SiteShell header={<CheckoutHeader />} footer={false} languageToggle={false}>
       <OrderFlow initialStep="checkout" />
     </SiteShell>
   );
@@ -40,6 +41,9 @@ function CheckoutHeader() {
             className="block h-8 w-auto object-contain lg:h-10"
           />
         </Link>
+        <div className="fixed right-4 top-4 z-[70] sm:right-6 lg:right-8 lg:top-5">
+          <LanguageToggle />
+        </div>
       </div>
     </header>
   );

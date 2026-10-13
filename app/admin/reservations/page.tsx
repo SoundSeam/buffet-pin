@@ -1,13 +1,13 @@
+import { redirect } from "next/navigation";
+
 import AdminReservationsDashboard from "@/components/admin/admin-reservations-dashboard";
-import SiteShell from "@/components/site-shell";
-import { requireAdminUser } from "@/lib/supabase/auth";
+import { getAdminLandingPath } from "@/lib/admin-workspaces";
+import { getStaffRole } from "@/lib/supabase/auth";
 
 export default async function AdminReservationsPage() {
-  await requireAdminUser();
+  const staffRole = await getStaffRole();
+  if (!staffRole) redirect("/admin/login");
+  if (staffRole !== "MANAGER") redirect(getAdminLandingPath(staffRole));
 
-  return (
-    <SiteShell>
-      <AdminReservationsDashboard />
-    </SiteShell>
-  );
+  return <AdminReservationsDashboard />;
 }

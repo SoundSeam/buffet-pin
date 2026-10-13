@@ -33,7 +33,7 @@ export default function AdminLoginForm() {
       return;
     }
 
-    router.replace("/admin/reservations");
+    router.replace("/admin");
     router.refresh();
   };
 

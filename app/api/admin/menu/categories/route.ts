@@ -4,7 +4,8 @@ import { ZodError } from "zod";
 
 import { db } from "@/lib/db";
 import { menuCategoryCreateSchema } from "@/lib/orders/validation";
-import { getAdminUser } from "@/lib/supabase/auth";
+import { getStaffUser } from "@/lib/supabase/auth";
+import { recordCatalogMutation } from "@/lib/orders/catalog-audit";
 
 export const dynamic = "force-dynamic";
 
@@ -15,18 +16,17 @@ function errorResponse(status: number, code: string, message: string, details?: 
   );
 }
 
-async function requireAdminResponse() {
-  const user = await getAdminUser();
-  return user ? null : errorResponse(401, "UNAUTHORIZED", "Admin access required.");
-}
-
 export async function POST(request: Request) {
-  const unauthorized = await requireAdminResponse();
-  if (unauthorized) return unauthorized;
+  const actor = await getStaffUser("CATALOG_WRITE");
+  if (!actor) return errorResponse(401, "UNAUTHORIZED", "Admin access required.");
 
   try {
     const payload = menuCategoryCreateSchema.parse(await request.json());
-    const category = await db.menuCategory.create({ data: payload });
+    const category = await db.$transaction(async (tx) => {
+      const created = await tx.menuCategory.create({ data: payload });
+      await recordCatalogMutation(tx, actor, "CATALOG_CATEGORY_CREATED", "MenuCategory", created.id, { changedFields: Object.keys(payload) });
+      return created;
+    });
 
     return NextResponse.json({ ok: true, data: { category } }, { status: 201 });
   } catch (error) {

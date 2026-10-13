@@ -1,13 +1,18 @@
-import DriverOrdersPage from "@/components/driver/driver-orders-page";
-import { requireDriverUser } from "@/lib/supabase/auth";
+import { redirect } from "next/navigation";
+
+import { getDriverSession } from "@/lib/driver-access";
 
 export default async function DriverOrderDetailRoutePage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await requireDriverUser();
-  const { id } = await params;
+  const driverSession = await getDriverSession();
 
-  return <DriverOrdersPage orderId={id} />;
+  if (!driverSession) {
+    redirect("/driver");
+  }
+
+  void params;
+  redirect("/driver/runs");
 }

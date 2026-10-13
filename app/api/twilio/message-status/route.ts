@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
-import { NotificationStatus } from "@prisma/client";
+import { NotificationStatus, OrderActorType } from "@prisma/client";
 import twilio from "twilio";
 
 import { db } from "@/lib/db";
 import { getSmsConfig } from "@/lib/env";
-import { ensureReminderDeliveryTrackingSchema } from "@/lib/reservations/reminder-schema";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -52,8 +51,6 @@ function isAuthorized(request: Request, params: Record<string, string>): boolean
 }
 
 export async function POST(request: Request) {
-  await ensureReminderDeliveryTrackingSchema(db);
-
   const formData = await request.formData();
   const params = toTwilioParams(formData);
 
@@ -93,6 +90,7 @@ export async function POST(request: Request) {
   const firstUpdate = await db.reservation.updateMany({
     where: {
       reminderMessageSid: sid,
+      ...(status === "delivered" ? {} : { reminderStatus: { not: "delivered" } }),
       ...(POSITIVE_STATUSES.has(status) ? { reminderSentAt: null } : {}),
     },
     data,
@@ -100,15 +98,44 @@ export async function POST(request: Request) {
 
   if (firstUpdate.count === 0) {
     await db.reservation.updateMany({
-      where: { reminderMessageSid: sid },
+      where: { reminderMessageSid: sid, ...(status === "delivered" ? {} : { reminderStatus: { not: "delivered" } }) },
       data: { reminderStatus: status, ...(FAILURE_STATUSES.has(status) ? { reminderMessageSid: null } : {}) },
     });
   }
 
   const notificationStatus = notificationStatusForTwilioStatus(status);
-  await db.notification.updateMany({
-    where: { providerMessageId: sid },
-    data: {
+  const notificationId = new URL(request.url).searchParams.get("notificationId")?.trim();
+  await db.$transaction(async (tx) => {
+    const notification = await tx.notification.findFirst({ where: notificationId ? { OR: [{ id: notificationId }, { providerMessageId: sid }] } : { providerMessageId: sid } });
+    if (!notification) {
+      await tx.operationalAlert.upsert({
+        where: { alertKey: `unmatched-twilio-callback:${sid}` },
+        create: { alertKey: `unmatched-twilio-callback:${sid}`, category: "NOTIFICATION_FAILED", severity: "CRITICAL", entityType: "NotificationCallback", entityId: sid, summary: "A valid Twilio status callback did not match a durable notification intent.", details: { providerStatus: status, notificationId: notificationId ?? null } },
+        update: { status: "OPEN", severity: "CRITICAL", lastSeenAt: new Date(), resolvedAt: null, resolutionNote: null },
+      });
+      return;
+    }
+    if (notification.providerMessageId && notification.providerMessageId !== sid) {
+      await tx.operationalAlert.upsert({
+        where: { alertKey: `twilio-callback-sid-conflict:${notification.id}` },
+        create: { alertKey: `twilio-callback-sid-conflict:${notification.id}`, category: "NOTIFICATION_FAILED", severity: "CRITICAL", entityType: "Notification", entityId: notification.id, summary: "Twilio callback SID conflicted with the notification provider identity." },
+        update: { status: "OPEN", severity: "CRITICAL", lastSeenAt: new Date(), resolvedAt: null, resolutionNote: null },
+      });
+      return;
+    }
+    const changed = await tx.notification.updateMany({
+      where: {
+        id: notification.id,
+      ...(notificationStatus === NotificationStatus.DELIVERED
+        ? { status: { in: [NotificationStatus.PENDING, NotificationStatus.SUBMITTING, NotificationStatus.SENT, NotificationStatus.UNKNOWN] } }
+        : notificationStatus === NotificationStatus.SENT
+          ? { status: { in: [NotificationStatus.PENDING, NotificationStatus.SUBMITTING, NotificationStatus.UNKNOWN] } }
+          : notificationStatus === NotificationStatus.FAILED
+            ? { status: { in: [NotificationStatus.PENDING, NotificationStatus.SUBMITTING, NotificationStatus.SENT, NotificationStatus.UNKNOWN] } }
+            : { status: { in: [NotificationStatus.PENDING, NotificationStatus.SUBMITTING] } }),
+      },
+      data: {
+      providerMessageId: sid,
       status: notificationStatus,
       ...(notificationStatus === NotificationStatus.SENT ? { sentAt: new Date() } : {}),
       ...(notificationStatus === NotificationStatus.DELIVERED
@@ -123,7 +150,9 @@ export async function POST(request: Request) {
               `Twilio reported ${status}.`,
           }
         : {}),
-    },
+      },
+    });
+    if (changed.count === 1) await tx.operationalAuditEvent.create({ data: { actorType: OrderActorType.WEBHOOK, actorLabel: "Twilio", eventType: `NOTIFICATION_CALLBACK_${notificationStatus}`, entityType: "Notification", entityId: notification.id, metadata: { providerMessageId: sid, providerStatus: status, fromStatus: notification.status, toStatus: notificationStatus, errorCode: params.ErrorCode ?? null } } });
   });
 
   return NextResponse.json({ ok: true });

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
@@ -16,16 +16,14 @@ import {
 } from "lucide-react";
 
 import { useTranslation } from "@/components/providers/language-provider";
-import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { RESERVATION_SLOT_TIMES } from "@/lib/reservations/slots";
 import ModalShell from "@/components/a11y/modal-shell";
+import { AdminPage, AdminPageHeader } from "@/components/admin/admin-page-ui";
+import { useRealtimeInvalidation } from "@/lib/realtime/use-realtime-invalidation";
+import { buildReservationSearch } from "@/lib/admin-workspaces";
 
 type AdminReservationStatus =
-  | "PENDING"
-  | "CONFIRMED"
-  | "CANCELLED"
-  | "COMPLETED"
-  | "NO_SHOW";
+  "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED" | "NO_SHOW";
 
 type AdminReservation = {
   id: string;
@@ -148,7 +146,9 @@ const statusActionMeta = [
 ] as const;
 
 function isTerminalStatus(status: AdminReservationStatus) {
-  return status === "CANCELLED" || status === "COMPLETED" || status === "NO_SHOW";
+  return (
+    status === "CANCELLED" || status === "COMPLETED" || status === "NO_SHOW"
+  );
 }
 
 function formatApiError(
@@ -251,7 +251,11 @@ function getCalendarRange(view: CalendarView, anchorDate: Date) {
   };
 }
 
-function getCalendarTitle(view: CalendarView, anchorDate: Date, language: "fr" | "en") {
+function getCalendarTitle(
+  view: CalendarView,
+  anchorDate: Date,
+  language: "fr" | "en",
+) {
   if (view === "day") {
     return new Intl.DateTimeFormat(getLocale(language), {
       weekday: "long",
@@ -282,10 +286,18 @@ function getCalendarTitle(view: CalendarView, anchorDate: Date, language: "fr" |
   }).format(anchorDate);
 }
 
-function moveAnchorDate(view: CalendarView, anchorDate: Date, direction: -1 | 1) {
+function moveAnchorDate(
+  view: CalendarView,
+  anchorDate: Date,
+  direction: -1 | 1,
+) {
   if (view === "day") return addDays(anchorDate, direction);
   if (view === "week") return addDays(anchorDate, direction * 7);
-  return new Date(anchorDate.getFullYear(), anchorDate.getMonth() + direction, 1);
+  return new Date(
+    anchorDate.getFullYear(),
+    anchorDate.getMonth() + direction,
+    1,
+  );
 }
 
 function sameMonth(date: Date, anchorDate: Date) {
@@ -344,19 +356,30 @@ function reservationsAtSlot(
   time: string,
 ) {
   return reservations
-    .filter((reservation) => reservation.date === date && reservation.time === time)
+    .filter(
+      (reservation) => reservation.date === date && reservation.time === time,
+    )
     .sort((a, b) => a.guest.name.localeCompare(b.guest.name));
 }
 
-function compareReservationsAscending(a: AdminReservation, b: AdminReservation) {
+function compareReservationsAscending(
+  a: AdminReservation,
+  b: AdminReservation,
+) {
   return `${a.date}T${a.time}`.localeCompare(`${b.date}T${b.time}`);
 }
 
-function compareReservationsDescending(a: AdminReservation, b: AdminReservation) {
+function compareReservationsDescending(
+  a: AdminReservation,
+  b: AdminReservation,
+) {
   return compareReservationsAscending(b, a);
 }
 
-function compareActivitiesDescending(a: ReservationActivity, b: ReservationActivity) {
+function compareActivitiesDescending(
+  a: ReservationActivity,
+  b: ReservationActivity,
+) {
   return b.reservation.updatedAt.localeCompare(a.reservation.updatedAt);
 }
 
@@ -458,14 +481,19 @@ export default function AdminReservationsDashboard() {
   const [saving, setSaving] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
-  const [copiedReservationId, setCopiedReservationId] = useState<string | null>(null);
+  const [copiedReservationId, setCopiedReservationId] = useState<string | null>(
+    null,
+  );
   const [openActionMenuId, setOpenActionMenuId] = useState<string | null>(null);
   const [selectedReservation, setSelectedReservation] =
     useState<AdminReservation | null>(null);
-  const [editorForm, setEditorForm] = useState<ReservationEditorForm | null>(null);
+  const [editorForm, setEditorForm] = useState<ReservationEditorForm | null>(
+    null,
+  );
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [activityDialogOpen, setActivityDialogOpen] = useState(false);
   const [activityItems, setActivityItems] = useState<ReservationActivity[]>([]);
+  const realtimeRefreshRef = useRef<() => void>(() => undefined);
   const [form, setForm] = useState({
     date: today(),
     time: slotTimes[0],
@@ -708,6 +736,14 @@ export default function AdminReservationsDashboard() {
     }
   };
 
+  realtimeRefreshRef.current = () => void loadReservations({ source: "poll" });
+  const refreshFromEvent = useCallback(() => realtimeRefreshRef.current(), []);
+  useRealtimeInvalidation({
+    tokenRequest: { scope: "admin" },
+    onInvalidate: refreshFromEvent,
+    fallbackIntervalMs: POLL_INTERVAL_MS,
+  });
+
   useEffect(() => {
     void loadReservations({
       foreground: true,
@@ -717,32 +753,13 @@ export default function AdminReservationsDashboard() {
   }, [displayMode, calendarView, anchorDate, date, status]);
 
   useEffect(() => {
-    const intervalId = window.setInterval(() => {
-      if (document.visibilityState !== "visible") {
-        return;
-      }
-
-      void loadReservations({ source: "poll" });
-    }, POLL_INTERVAL_MS);
-
-    return () => {
-      window.clearInterval(intervalId);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [displayMode, calendarView, anchorDate, date, status]);
-
-  useEffect(() => {
-    const params = new URLSearchParams();
-
-    params.set("mode", displayMode);
-    params.set("status", status);
-
-    if (displayMode === "calendar") {
-      params.set("view", calendarView);
-      params.set("date", toDateInputValue(anchorDate));
-    } else if (date) {
-      params.set("listDate", date);
-    }
+    const params = buildReservationSearch({
+      displayMode,
+      status,
+      calendarView,
+      anchorDate: toDateInputValue(anchorDate),
+      listDate: date,
+    });
 
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   }, [anchorDate, calendarView, date, displayMode, pathname, router, status]);
@@ -777,7 +794,10 @@ export default function AdminReservationsDashboard() {
     setSaving(false);
   };
 
-  const updateReservation = async (id: string, body: Record<string, unknown>) => {
+  const updateReservation = async (
+    id: string,
+    body: Record<string, unknown>,
+  ) => {
     setSaving(true);
     setError("");
     suppressChangeAlertsRef.current = true;
@@ -862,13 +882,10 @@ export default function AdminReservationsDashboard() {
       return reservation.manageUrlPath;
     }
 
-    return new URL(reservation.manageUrlPath, window.location.origin).toString();
-  };
-
-  const signOut = async () => {
-    const supabase = createSupabaseBrowserClient();
-    await supabase.auth.signOut();
-    window.location.href = "/admin/login";
+    return new URL(
+      reservation.manageUrlPath,
+      window.location.origin,
+    ).toString();
   };
 
   const closeActionMenu = () => {
@@ -929,10 +946,7 @@ export default function AdminReservationsDashboard() {
     >
       <button
         type="button"
-        className={
-          options?.className ??
-          buttonClass
-        }
+        className={options?.className ?? buttonClass}
         style={options?.style ?? quietButtonStyle}
         aria-label={options?.ariaLabel ?? reservationsCopy.actions}
         aria-expanded={openActionMenuId === reservation.id}
@@ -947,82 +961,85 @@ export default function AdminReservationsDashboard() {
       </button>
       {openActionMenuId === reservation.id ? (
         <div className="absolute right-0 z-20 mt-2 grid w-56 gap-1 rounded-surface border border-[#062F24]/10 bg-white p-2 text-left shadow-sm">
-        <button
-          type="button"
-          className={actionMenuItemClass}
-          onClick={() => {
-            closeActionMenu();
-            openReservationDialog(reservation);
-          }}
-        >
-          {reservationsCopy.actionMenu.editReservation}
-        </button>
-        <button
-          type="button"
-          className={actionMenuItemClass}
-          onClick={() => {
-            closeActionMenu();
-            void copyText(reservation, getManageUrl(reservation));
-          }}
-        >
-          {reservationsCopy.actionMenu.copyManageLink}
-        </button>
-        <button
-          type="button"
-          className={actionMenuItemClass}
-          onClick={() => {
-            closeActionMenu();
-            void copyText(reservation, reservation.confirmationCode);
-          }}
-        >
-          {reservationsCopy.actionMenu.copyConfirmationCode}
-        </button>
-        <button
-          type="button"
-          className={actionMenuItemClass}
-          onClick={() => {
-            closeActionMenu();
-            void copyText(reservation, reservation.guest.phone);
-          }}
-        >
-          {reservationsCopy.actionMenu.copyGuestPhone}
-        </button>
-        <Link
-          className={actionMenuItemClass}
-          href={reservation.manageUrlPath}
-          target="_blank"
-          rel="noreferrer"
-          onClick={closeActionMenu}
-        >
-          {reservationsCopy.actionMenu.openManagePage}
-        </Link>
-        {reservation.guest.email ? (
-          <a
+          <button
+            type="button"
             className={actionMenuItemClass}
-            href={`mailto:${reservation.guest.email}`}
+            onClick={() => {
+              closeActionMenu();
+              openReservationDialog(reservation);
+            }}
+          >
+            {reservationsCopy.actionMenu.editReservation}
+          </button>
+          <button
+            type="button"
+            className={actionMenuItemClass}
+            onClick={() => {
+              closeActionMenu();
+              void copyText(reservation, getManageUrl(reservation));
+            }}
+          >
+            {reservationsCopy.actionMenu.copyManageLink}
+          </button>
+          <button
+            type="button"
+            className={actionMenuItemClass}
+            onClick={() => {
+              closeActionMenu();
+              void copyText(reservation, reservation.confirmationCode);
+            }}
+          >
+            {reservationsCopy.actionMenu.copyConfirmationCode}
+          </button>
+          <button
+            type="button"
+            className={actionMenuItemClass}
+            onClick={() => {
+              closeActionMenu();
+              void copyText(reservation, reservation.guest.phone);
+            }}
+          >
+            {reservationsCopy.actionMenu.copyGuestPhone}
+          </button>
+          <Link
+            className={actionMenuItemClass}
+            href={reservation.manageUrlPath}
+            target="_blank"
+            rel="noreferrer"
             onClick={closeActionMenu}
           >
-            {reservationsCopy.actionMenu.emailGuest}
+            {reservationsCopy.actionMenu.openManagePage}
+          </Link>
+          {reservation.guest.email ? (
+            <a
+              className={actionMenuItemClass}
+              href={`mailto:${reservation.guest.email}`}
+              onClick={closeActionMenu}
+            >
+              {reservationsCopy.actionMenu.emailGuest}
+            </a>
+          ) : null}
+          <a
+            className={actionMenuItemClass}
+            href={`tel:${reservation.guest.phone}`}
+            onClick={closeActionMenu}
+          >
+            {reservationsCopy.actionMenu.callGuest}
           </a>
-        ) : null}
-        <a
-          className={actionMenuItemClass}
-          href={`tel:${reservation.guest.phone}`}
-          onClick={closeActionMenu}
-        >
-          {reservationsCopy.actionMenu.callGuest}
-        </a>
-        {copiedReservationId === reservation.id ? (
-          <p className="px-3 py-2.5 text-sm font-semibold text-[#062F24]/60">
-            {reservationsCopy.actionMenu.copied}
-          </p>
-        ) : null}
+          {copiedReservationId === reservation.id ? (
+            <p className="px-3 py-2.5 text-sm font-semibold text-[#062F24]/60">
+              {reservationsCopy.actionMenu.copied}
+            </p>
+          ) : null}
         </div>
       ) : null}
     </div>
   );
 
-  const renderCalendarEvent = (reservation: AdminReservation, compact = false) => (
+  const renderCalendarEvent = (
+    reservation: AdminReservation,
+    compact = false,
+  ) => (
     <div
       key={reservation.id}
       role="button"
@@ -1091,7 +1108,8 @@ export default function AdminReservationsDashboard() {
       <div className="grid gap-3 lg:grid-cols-[0.9fr_1.1fr]">
         <div>
           <p className="font-semibold text-[#062F24]">
-            {formatHumanDate(reservation.date, language)} {formatDisplayTime(reservation.time, language)}
+            {formatHumanDate(reservation.date, language)}{" "}
+            {formatDisplayTime(reservation.time, language)}
           </p>
           <p className="text-sm text-[#062F24]/65">
             {reservation.partySize} {reservationsCopy.guests}
@@ -1126,12 +1144,16 @@ export default function AdminReservationsDashboard() {
           </div>
         </div>
         <div>
-          <p className="text-sm font-semibold text-[#062F24]">{reservation.guest.name}</p>
+          <p className="text-sm font-semibold text-[#062F24]">
+            {reservation.guest.name}
+          </p>
           <p className="mt-1 text-sm text-[#062F24]/65">
             {formatPhoneNumber(reservation.guest.phone)}
           </p>
           {reservation.guest.email ? (
-            <p className="mt-1 text-sm text-[#062F24]/65">{reservation.guest.email}</p>
+            <p className="mt-1 text-sm text-[#062F24]/65">
+              {reservation.guest.email}
+            </p>
           ) : null}
           {reservation.specialRequests ? (
             <div className="mt-3">
@@ -1174,7 +1196,10 @@ export default function AdminReservationsDashboard() {
         <div className="overflow-hidden rounded-surface-lg border border-[#062F24]/10 bg-white shadow-sm">
           <div className="grid grid-cols-7 border-b border-[#062F24]/10 bg-[rgba(6,47,36,0.04)]">
             {reservationsCopy.weekdayShort.map((day) => (
-              <div key={day} className="p-3 text-xs font-semibold text-[#062F24]/60">
+              <div
+                key={day}
+                className="p-3 text-xs font-semibold text-[#062F24]/60"
+              >
                 {day}
               </div>
             ))}
@@ -1189,7 +1214,9 @@ export default function AdminReservationsDashboard() {
                 <div
                   key={key}
                   className="min-h-[138px] border-b border-r border-[#062F24]/10 p-2 last:border-r-0"
-                  style={{ background: inactive ? "rgba(6,47,36,0.03)" : "#FFFFFF" }}
+                  style={{
+                    background: inactive ? "rgba(6,47,36,0.03)" : "#FFFFFF",
+                  }}
                 >
                   <div className="flex items-center justify-between">
                     <button
@@ -1209,9 +1236,11 @@ export default function AdminReservationsDashboard() {
                     ) : null}
                   </div>
                   <div className="mt-2 grid gap-1.5">
-                    {dayReservations.slice(0, 4).map((reservation) =>
-                      renderCalendarEvent(reservation, true),
-                    )}
+                    {dayReservations
+                      .slice(0, 4)
+                      .map((reservation) =>
+                        renderCalendarEvent(reservation, true),
+                      )}
                     {dayReservations.length > 4 ? (
                       <button
                         type="button"
@@ -1254,7 +1283,9 @@ export default function AdminReservationsDashboard() {
                   <p className="text-xs font-semibold text-[#062F24]/50">
                     {reservationsCopy.weekdayShort[day.getDay()]}
                   </p>
-                  <p className="mt-1 text-xl font-semibold text-[#062F24]">{day.getDate()}</p>
+                  <p className="mt-1 text-xl font-semibold text-[#062F24]">
+                    {day.getDate()}
+                  </p>
                 </button>
               ))}
             </div>
@@ -1268,10 +1299,17 @@ export default function AdminReservationsDashboard() {
                 </div>
                 {days.map((day) => {
                   const key = toDateInputValue(day);
-                  const slotReservations = reservationsAtSlot(reservations, key, time);
+                  const slotReservations = reservationsAtSlot(
+                    reservations,
+                    key,
+                    time,
+                  );
 
                   return (
-                    <div key={`${key}-${time}`} className="min-h-[96px] border-l border-[#062F24]/10 p-2">
+                    <div
+                      key={`${key}-${time}`}
+                      className="min-h-[96px] border-l border-[#062F24]/10 p-2"
+                    >
                       <div className="grid gap-2">
                         {slotReservations.map((reservation) =>
                           renderCalendarEvent(reservation),
@@ -1292,7 +1330,11 @@ export default function AdminReservationsDashboard() {
     return (
       <div className="rounded-surface-lg border border-[#062F24]/10 bg-white shadow-sm">
         {slotTimes.map((time) => {
-          const slotReservations = reservationsAtSlot(reservations, selectedDate, time);
+          const slotReservations = reservationsAtSlot(
+            reservations,
+            selectedDate,
+            time,
+          );
 
           return (
             <div
@@ -1304,12 +1346,18 @@ export default function AdminReservationsDashboard() {
                   {formatDisplayTime(time, language)}
                 </p>
                 <p className="text-xs font-semibold text-[#062F24]/50">
-                  {slotReservations.reduce((total, reservation) => total + reservation.partySize, 0)} {reservationsCopy.guests}
+                  {slotReservations.reduce(
+                    (total, reservation) => total + reservation.partySize,
+                    0,
+                  )}{" "}
+                  {reservationsCopy.guests}
                 </p>
               </div>
               <div className="grid gap-3 md:grid-cols-2">
                 {slotReservations.length ? (
-                  slotReservations.map((reservation) => renderCalendarEvent(reservation))
+                  slotReservations.map((reservation) =>
+                    renderCalendarEvent(reservation),
+                  )
                 ) : (
                   <p className="rounded-surface border border-dashed border-[#062F24]/15 p-4 text-sm font-semibold text-[#062F24]/45">
                     {reservationsCopy.noReservations}
@@ -1332,224 +1380,240 @@ export default function AdminReservationsDashboard() {
         onClose={closeReservationDialog}
         panelClassName="max-w-3xl border border-[rgba(6,47,36,0.08)] bg-white p-6 shadow-sm sm:p-8"
       >
-          <div className="flex flex-col justify-between gap-4 border-b border-[#062F24]/10 pb-5 sm:flex-row sm:items-start">
-            <div>
-              <h2 id="reservation-dialog-title" className="text-3xl font-extrabold text-[#062F24]">
-                {selectedReservation.guest.name}
-              </h2>
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                {renderStatusPill(selectedReservation)}
-                <span className="rounded-button bg-[rgba(6,47,36,0.08)] px-3 py-1 text-xs font-semibold text-[#062F24]">
-                  {selectedReservation.confirmationCode}
-                </span>
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-icon bg-transparent text-[#062F24] transition hover:bg-[rgba(6,47,36,0.05)] focus-visible:outline-none focus-visible:outline-0"
-                onClick={closeReservationDialog}
-                aria-label={reservationsCopy.dialog.close}
-              >
-                <X size={18} aria-hidden="true" />
-              </button>
+        <div className="flex flex-col justify-between gap-4 border-b border-[#062F24]/10 pb-5 sm:flex-row sm:items-start">
+          <div>
+            <h2
+              id="reservation-dialog-title"
+              className="text-3xl font-extrabold text-[#062F24]"
+            >
+              {selectedReservation.guest.name}
+            </h2>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              {renderStatusPill(selectedReservation)}
+              <span className="rounded-button bg-[rgba(6,47,36,0.08)] px-3 py-1 text-xs font-semibold text-[#062F24]">
+                {selectedReservation.confirmationCode}
+              </span>
             </div>
           </div>
-
-          <div className="mt-6 grid gap-4 md:grid-cols-2">
-            <label className="text-xs font-semibold text-[#062F24]/55">
-              {reservationsCopy.dialog.guestName}
-              <input
-                className={`${fieldClass} mt-2`}
-                name="guest-name"
-                autoComplete="name"
-                value={editorForm.name}
-                onChange={(event) =>
-                  setEditorForm({ ...editorForm, name: event.target.value })
-                }
-              />
-            </label>
-            <label className="text-xs font-semibold text-[#062F24]/55">
-              {reservationsCopy.dialog.phone}
-              <input
-                className={`${fieldClass} mt-2`}
-                name="guest-phone"
-                autoComplete="tel"
-                inputMode="tel"
-                value={editorForm.phone}
-                onChange={(event) =>
-                  setEditorForm({ ...editorForm, phone: event.target.value })
-                }
-              />
-            </label>
-          </div>
-
-          <div className="mt-4">
-            <label className="text-xs font-semibold text-[#062F24]/55 md:col-span-2">
-              {reservationsCopy.dialog.email}
-              <input
-                className={`${fieldClass} mt-2`}
-                type="email"
-                name="guest-email"
-                autoComplete="email"
-                spellCheck={false}
-                value={editorForm.email}
-                onChange={(event) =>
-                  setEditorForm({ ...editorForm, email: event.target.value })
-                }
-              />
-            </label>
-          </div>
-
-          <div className="mt-4 grid gap-4 md:grid-cols-2">
-            <label className="text-xs font-semibold text-[#062F24]/55">
-              {reservationsCopy.dialog.date}
-              <input
-                className={`${fieldClass} mt-2`}
-                type="date"
-                name="reservation-date"
-                value={editorForm.date}
-                onChange={(event) =>
-                  setEditorForm({ ...editorForm, date: event.target.value })
-                }
-              />
-            </label>
-            <label className="text-xs font-semibold text-[#062F24]/55">
-              {reservationsCopy.dialog.time}
-              <select
-                className={`${fieldClass} mt-2`}
-                name="reservation-time"
-                value={editorForm.time}
-                onChange={(event) =>
-                  setEditorForm({ ...editorForm, time: event.target.value })
-                }
-              >
-                {slotTimes.map((time) => (
-                  <option key={time} value={time}>
-                    {formatDisplayTime(time, language)}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-
-          <div className="mt-4">
-            <label className="text-xs font-semibold text-[#062F24]/55">
-              {reservationsCopy.dialog.partySize}
-              <input
-                className={`${fieldClass} mt-2 md:max-w-[220px]`}
-                type="number"
-                name="party-size"
-                inputMode="numeric"
-                min={1}
-                value={editorForm.partySize}
-                onChange={(event) =>
-                  setEditorForm({
-                    ...editorForm,
-                    partySize: Number(event.target.value),
-                  })
-                }
-              />
-            </label>
-          </div>
-
-          <div className="mt-4 grid gap-4 md:grid-cols-2">
-            <label className="text-xs font-semibold text-[#062F24]/55">
-              {reservationsCopy.dialog.specialRequests}
-              <textarea
-                className={`${fieldClass} mt-2 min-h-[120px]`}
-                name="special-requests"
-                value={editorForm.specialRequests}
-                onChange={(event) =>
-                  setEditorForm({
-                    ...editorForm,
-                    specialRequests: event.target.value,
-                  })
-                }
-              />
-            </label>
-            <label className="text-xs font-semibold text-[#062F24]/55">
-              {reservationsCopy.dialog.internalNotes}
-              <textarea
-                className={`${fieldClass} mt-2 min-h-[120px]`}
-                name="internal-notes"
-                value={editorForm.internalNotes}
-                onChange={(event) =>
-                  setEditorForm({ ...editorForm, internalNotes: event.target.value })
-                }
-              />
-            </label>
-          </div>
-
-          <div className="mt-6 rounded-surface border border-[#062F24]/10 bg-[rgba(6,47,36,0.04)] p-4">
-            <p className="text-xs font-semibold text-[#062F24]/55">
-              {reservationsCopy.dialog.statusActions}
-            </p>
-            {isTerminalStatus(selectedReservation.status) ? (
-              <p className="mt-2 text-sm font-semibold text-[#062F24]">
-                {reservationsCopy.dialog.finalState}: {statusMeta[selectedReservation.status].label}
-              </p>
-            ) : null}
-            <div className="mt-3 flex flex-wrap gap-2">
-              {statusActionMeta.map((statusAction) => {
-                const isCurrentStatus =
-                  selectedReservation.status === statusAction.status;
-                const disabled = saving || isTerminalStatus(selectedReservation.status);
-
-                return (
-                  <button
-                    key={statusAction.action}
-                    className={buttonClass}
-                    onClick={() =>
-                      applyStatusAction(selectedReservation, statusAction.action)
-                    }
-                    disabled={disabled}
-                    style={{
-                      background: isCurrentStatus
-                        ? statusMeta[selectedReservation.status].background
-                        : statusAction.background,
-                      color: isCurrentStatus
-                        ? statusMeta[selectedReservation.status].color
-                        : statusAction.color,
-                    }}
-                  >
-                    {isCurrentStatus
-                      ? statusAction.action === "complete"
-                        ? reservationsCopy.statusActions.completed
-                        : statusAction.action === "no_show"
-                          ? reservationsCopy.statusActions.noShowActive
-                          : reservationsCopy.statusActions.cancelled
-                      : statusAction.action === "complete"
-                        ? reservationsCopy.statusActions.complete
-                        : statusAction.action === "no_show"
-                          ? reservationsCopy.statusActions.noShow
-                          : reservationsCopy.statusActions.cancel}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <div className="flex flex-wrap gap-2">
             <button
               type="button"
-              className={buttonClass}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-icon bg-transparent text-[#062F24] transition hover:bg-[rgba(6,47,36,0.05)] focus-visible:outline-none focus-visible:outline-0"
               onClick={closeReservationDialog}
-              style={quietButtonStyle}
+              aria-label={reservationsCopy.dialog.close}
             >
-              {reservationsCopy.dialog.discard}
-            </button>
-            <button
-              type="button"
-              className={buttonClass}
-              onClick={saveReservationDialog}
-              disabled={saving}
-              style={primaryButtonStyle}
-            >
-              {saving ? <Loader2 size={14} className="mr-2 inline animate-spin" aria-hidden="true" /> : null}
-              {saving ? reservationsCopy.dialog.saving : reservationsCopy.dialog.saveChanges}
+              <X size={18} aria-hidden="true" />
             </button>
           </div>
+        </div>
+
+        <div className="mt-6 grid gap-4 md:grid-cols-2">
+          <label className="text-xs font-semibold text-[#062F24]/55">
+            {reservationsCopy.dialog.guestName}
+            <input
+              className={`${fieldClass} mt-2`}
+              name="guest-name"
+              autoComplete="name"
+              value={editorForm.name}
+              onChange={(event) =>
+                setEditorForm({ ...editorForm, name: event.target.value })
+              }
+            />
+          </label>
+          <label className="text-xs font-semibold text-[#062F24]/55">
+            {reservationsCopy.dialog.phone}
+            <input
+              className={`${fieldClass} mt-2`}
+              name="guest-phone"
+              autoComplete="tel"
+              inputMode="tel"
+              value={editorForm.phone}
+              onChange={(event) =>
+                setEditorForm({ ...editorForm, phone: event.target.value })
+              }
+            />
+          </label>
+        </div>
+
+        <div className="mt-4">
+          <label className="text-xs font-semibold text-[#062F24]/55 md:col-span-2">
+            {reservationsCopy.dialog.email}
+            <input
+              className={`${fieldClass} mt-2`}
+              type="email"
+              name="guest-email"
+              autoComplete="email"
+              spellCheck={false}
+              value={editorForm.email}
+              onChange={(event) =>
+                setEditorForm({ ...editorForm, email: event.target.value })
+              }
+            />
+          </label>
+        </div>
+
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
+          <label className="text-xs font-semibold text-[#062F24]/55">
+            {reservationsCopy.dialog.date}
+            <input
+              className={`${fieldClass} mt-2`}
+              type="date"
+              name="reservation-date"
+              value={editorForm.date}
+              onChange={(event) =>
+                setEditorForm({ ...editorForm, date: event.target.value })
+              }
+            />
+          </label>
+          <label className="text-xs font-semibold text-[#062F24]/55">
+            {reservationsCopy.dialog.time}
+            <select
+              className={`${fieldClass} mt-2`}
+              name="reservation-time"
+              value={editorForm.time}
+              onChange={(event) =>
+                setEditorForm({ ...editorForm, time: event.target.value })
+              }
+            >
+              {slotTimes.map((time) => (
+                <option key={time} value={time}>
+                  {formatDisplayTime(time, language)}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        <div className="mt-4">
+          <label className="text-xs font-semibold text-[#062F24]/55">
+            {reservationsCopy.dialog.partySize}
+            <input
+              className={`${fieldClass} mt-2 md:max-w-[220px]`}
+              type="number"
+              name="party-size"
+              inputMode="numeric"
+              min={1}
+              value={editorForm.partySize}
+              onChange={(event) =>
+                setEditorForm({
+                  ...editorForm,
+                  partySize: Number(event.target.value),
+                })
+              }
+            />
+          </label>
+        </div>
+
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
+          <label className="text-xs font-semibold text-[#062F24]/55">
+            {reservationsCopy.dialog.specialRequests}
+            <textarea
+              className={`${fieldClass} mt-2 min-h-[120px]`}
+              name="special-requests"
+              value={editorForm.specialRequests}
+              onChange={(event) =>
+                setEditorForm({
+                  ...editorForm,
+                  specialRequests: event.target.value,
+                })
+              }
+            />
+          </label>
+          <label className="text-xs font-semibold text-[#062F24]/55">
+            {reservationsCopy.dialog.internalNotes}
+            <textarea
+              className={`${fieldClass} mt-2 min-h-[120px]`}
+              name="internal-notes"
+              value={editorForm.internalNotes}
+              onChange={(event) =>
+                setEditorForm({
+                  ...editorForm,
+                  internalNotes: event.target.value,
+                })
+              }
+            />
+          </label>
+        </div>
+
+        <div className="mt-6 rounded-surface border border-[#062F24]/10 bg-[rgba(6,47,36,0.04)] p-4">
+          <p className="text-xs font-semibold text-[#062F24]/55">
+            {reservationsCopy.dialog.statusActions}
+          </p>
+          {isTerminalStatus(selectedReservation.status) ? (
+            <p className="mt-2 text-sm font-semibold text-[#062F24]">
+              {reservationsCopy.dialog.finalState}:{" "}
+              {statusMeta[selectedReservation.status].label}
+            </p>
+          ) : null}
+          <div className="mt-3 flex flex-wrap gap-2">
+            {statusActionMeta.map((statusAction) => {
+              const isCurrentStatus =
+                selectedReservation.status === statusAction.status;
+              const disabled =
+                saving || isTerminalStatus(selectedReservation.status);
+
+              return (
+                <button
+                  key={statusAction.action}
+                  className={buttonClass}
+                  onClick={() =>
+                    applyStatusAction(selectedReservation, statusAction.action)
+                  }
+                  disabled={disabled}
+                  style={{
+                    background: isCurrentStatus
+                      ? statusMeta[selectedReservation.status].background
+                      : statusAction.background,
+                    color: isCurrentStatus
+                      ? statusMeta[selectedReservation.status].color
+                      : statusAction.color,
+                  }}
+                >
+                  {isCurrentStatus
+                    ? statusAction.action === "complete"
+                      ? reservationsCopy.statusActions.completed
+                      : statusAction.action === "no_show"
+                        ? reservationsCopy.statusActions.noShowActive
+                        : reservationsCopy.statusActions.cancelled
+                    : statusAction.action === "complete"
+                      ? reservationsCopy.statusActions.complete
+                      : statusAction.action === "no_show"
+                        ? reservationsCopy.statusActions.noShow
+                        : reservationsCopy.statusActions.cancel}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <button
+            type="button"
+            className={buttonClass}
+            onClick={closeReservationDialog}
+            style={quietButtonStyle}
+          >
+            {reservationsCopy.dialog.discard}
+          </button>
+          <button
+            type="button"
+            className={buttonClass}
+            onClick={saveReservationDialog}
+            disabled={saving}
+            style={primaryButtonStyle}
+          >
+            {saving ? (
+              <Loader2
+                size={14}
+                className="mr-2 inline animate-spin"
+                aria-hidden="true"
+              />
+            ) : null}
+            {saving
+              ? reservationsCopy.dialog.saving
+              : reservationsCopy.dialog.saveChanges}
+          </button>
+        </div>
       </ModalShell>
     );
   };
@@ -1563,150 +1627,175 @@ export default function AdminReservationsDashboard() {
         onClose={() => setCreateDialogOpen(false)}
         panelClassName="max-w-2xl border border-[rgba(6,47,36,0.08)] bg-white p-6 shadow-sm sm:p-8"
       >
-          <div className="flex items-start justify-between gap-4 border-b border-[#062F24]/10 pb-5">
-            <div>
-              <h2 id="create-reservation-dialog-title" className="text-3xl font-extrabold text-[#062F24]">
-                {reservationsCopy.createDialog.title}
-              </h2>
-            </div>
-            <button
-              type="button"
-              className={buttonClass}
-              onClick={() => setCreateDialogOpen(false)}
-              style={quietButtonStyle}
+        <div className="flex items-start justify-between gap-4 border-b border-[#062F24]/10 pb-5">
+          <div>
+            <h2
+              id="create-reservation-dialog-title"
+              className="text-3xl font-extrabold text-[#062F24]"
             >
-              {reservationsCopy.dialog.close}
-            </button>
+              {reservationsCopy.createDialog.title}
+            </h2>
           </div>
+          <button
+            type="button"
+            className={buttonClass}
+            onClick={() => setCreateDialogOpen(false)}
+            style={quietButtonStyle}
+          >
+            {reservationsCopy.dialog.close}
+          </button>
+        </div>
 
-          <div className="mt-6 grid gap-4 md:grid-cols-3">
-            <label className="text-xs font-semibold text-[#062F24]/55">
-              {reservationsCopy.dialog.date}
-              <input
-                className={`${fieldClass} mt-2`}
-                type="date"
-                name="new-reservation-date"
-                value={form.date}
-                onChange={(event) => setForm({ ...form, date: event.target.value })}
-              />
-            </label>
-            <label className="text-xs font-semibold text-[#062F24]/55">
-              {reservationsCopy.dialog.time}
-              <select
-                className={`${fieldClass} mt-2`}
-                name="new-reservation-time"
-                value={form.time}
-                onChange={(event) => setForm({ ...form, time: event.target.value })}
-              >
-                {slotTimes.map((time) => (
-                  <option key={time} value={time}>
-                    {formatDisplayTime(time, language)}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="text-xs font-semibold text-[#062F24]/55">
-              {reservationsCopy.dialog.partySize}
-              <input
-                className={`${fieldClass} mt-2`}
-                type="number"
-                name="new-party-size"
-                inputMode="numeric"
-                min={1}
-                value={form.partySize}
-                onChange={(event) =>
-                  setForm({ ...form, partySize: Number(event.target.value) })
-                }
-              />
-            </label>
-          </div>
-
-          <div className="mt-4 grid gap-4 md:grid-cols-2">
-            <label className="text-xs font-semibold text-[#062F24]/55">
-              {reservationsCopy.dialog.guestName}
-              <input
-                className={`${fieldClass} mt-2`}
-                name="new-guest-name"
-                autoComplete="name"
-                placeholder={reservationsCopy.createDialog.guestNamePlaceholder}
-                value={form.name}
-                onChange={(event) => setForm({ ...form, name: event.target.value })}
-              />
-            </label>
-            <label className="text-xs font-semibold text-[#062F24]/55">
-              {reservationsCopy.dialog.phone}
-              <input
-                className={`${fieldClass} mt-2`}
-                name="new-guest-phone"
-                autoComplete="tel"
-                inputMode="tel"
-                placeholder={reservationsCopy.createDialog.phonePlaceholder}
-                value={form.phone}
-                onChange={(event) => setForm({ ...form, phone: event.target.value })}
-              />
-            </label>
-            <label className="text-xs font-semibold text-[#062F24]/55 md:col-span-2">
-              {reservationsCopy.dialog.email}
-              <input
-                className={`${fieldClass} mt-2`}
-                type="email"
-                name="new-guest-email"
-                autoComplete="email"
-                spellCheck={false}
-                placeholder={reservationsCopy.createDialog.emailPlaceholder}
-                value={form.email}
-                onChange={(event) => setForm({ ...form, email: event.target.value })}
-              />
-            </label>
-          </div>
-
-          <div className="mt-4 grid gap-4 md:grid-cols-2">
-            <label className="text-xs font-semibold text-[#062F24]/55">
-              {reservationsCopy.dialog.specialRequests}
-              <textarea
-                className={`${fieldClass} mt-2 min-h-[120px]`}
-                name="new-special-requests"
-                placeholder={reservationsCopy.createDialog.specialRequestsPlaceholder}
-                value={form.specialRequests}
-                onChange={(event) =>
-                  setForm({ ...form, specialRequests: event.target.value })
-                }
-              />
-            </label>
-            <label className="text-xs font-semibold text-[#062F24]/55">
-              {reservationsCopy.dialog.internalNotes}
-              <textarea
-                className={`${fieldClass} mt-2 min-h-[120px]`}
-                name="new-internal-notes"
-                placeholder={reservationsCopy.createDialog.internalNotesPlaceholder}
-                value={form.internalNotes}
-                onChange={(event) =>
-                  setForm({ ...form, internalNotes: event.target.value })
-                }
-              />
-            </label>
-          </div>
-
-          <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-            <button
-              type="button"
-              className={buttonClass}
-              onClick={() => setCreateDialogOpen(false)}
-              style={quietButtonStyle}
+        <div className="mt-6 grid gap-4 md:grid-cols-3">
+          <label className="text-xs font-semibold text-[#062F24]/55">
+            {reservationsCopy.dialog.date}
+            <input
+              className={`${fieldClass} mt-2`}
+              type="date"
+              name="new-reservation-date"
+              value={form.date}
+              onChange={(event) =>
+                setForm({ ...form, date: event.target.value })
+              }
+            />
+          </label>
+          <label className="text-xs font-semibold text-[#062F24]/55">
+            {reservationsCopy.dialog.time}
+            <select
+              className={`${fieldClass} mt-2`}
+              name="new-reservation-time"
+              value={form.time}
+              onChange={(event) =>
+                setForm({ ...form, time: event.target.value })
+              }
             >
-              {reservationsCopy.createDialog.discard}
-            </button>
-            <button
-              type="button"
-              onClick={createReservation}
-              disabled={saving}
-              className={buttonClass}
-              style={primaryButtonStyle}
-            >
-              {saving ? <Loader2 size={14} className="mr-2 inline animate-spin" aria-hidden="true" /> : null}
-              {saving ? reservationsCopy.createDialog.saving : reservationsCopy.createDialog.createReservation}
-            </button>
-          </div>
+              {slotTimes.map((time) => (
+                <option key={time} value={time}>
+                  {formatDisplayTime(time, language)}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="text-xs font-semibold text-[#062F24]/55">
+            {reservationsCopy.dialog.partySize}
+            <input
+              className={`${fieldClass} mt-2`}
+              type="number"
+              name="new-party-size"
+              inputMode="numeric"
+              min={1}
+              value={form.partySize}
+              onChange={(event) =>
+                setForm({ ...form, partySize: Number(event.target.value) })
+              }
+            />
+          </label>
+        </div>
+
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
+          <label className="text-xs font-semibold text-[#062F24]/55">
+            {reservationsCopy.dialog.guestName}
+            <input
+              className={`${fieldClass} mt-2`}
+              name="new-guest-name"
+              autoComplete="name"
+              placeholder={reservationsCopy.createDialog.guestNamePlaceholder}
+              value={form.name}
+              onChange={(event) =>
+                setForm({ ...form, name: event.target.value })
+              }
+            />
+          </label>
+          <label className="text-xs font-semibold text-[#062F24]/55">
+            {reservationsCopy.dialog.phone}
+            <input
+              className={`${fieldClass} mt-2`}
+              name="new-guest-phone"
+              autoComplete="tel"
+              inputMode="tel"
+              placeholder={reservationsCopy.createDialog.phonePlaceholder}
+              value={form.phone}
+              onChange={(event) =>
+                setForm({ ...form, phone: event.target.value })
+              }
+            />
+          </label>
+          <label className="text-xs font-semibold text-[#062F24]/55 md:col-span-2">
+            {reservationsCopy.dialog.email}
+            <input
+              className={`${fieldClass} mt-2`}
+              type="email"
+              name="new-guest-email"
+              autoComplete="email"
+              spellCheck={false}
+              placeholder={reservationsCopy.createDialog.emailPlaceholder}
+              value={form.email}
+              onChange={(event) =>
+                setForm({ ...form, email: event.target.value })
+              }
+            />
+          </label>
+        </div>
+
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
+          <label className="text-xs font-semibold text-[#062F24]/55">
+            {reservationsCopy.dialog.specialRequests}
+            <textarea
+              className={`${fieldClass} mt-2 min-h-[120px]`}
+              name="new-special-requests"
+              placeholder={
+                reservationsCopy.createDialog.specialRequestsPlaceholder
+              }
+              value={form.specialRequests}
+              onChange={(event) =>
+                setForm({ ...form, specialRequests: event.target.value })
+              }
+            />
+          </label>
+          <label className="text-xs font-semibold text-[#062F24]/55">
+            {reservationsCopy.dialog.internalNotes}
+            <textarea
+              className={`${fieldClass} mt-2 min-h-[120px]`}
+              name="new-internal-notes"
+              placeholder={
+                reservationsCopy.createDialog.internalNotesPlaceholder
+              }
+              value={form.internalNotes}
+              onChange={(event) =>
+                setForm({ ...form, internalNotes: event.target.value })
+              }
+            />
+          </label>
+        </div>
+
+        <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <button
+            type="button"
+            className={buttonClass}
+            onClick={() => setCreateDialogOpen(false)}
+            style={quietButtonStyle}
+          >
+            {reservationsCopy.createDialog.discard}
+          </button>
+          <button
+            type="button"
+            onClick={createReservation}
+            disabled={saving}
+            className={buttonClass}
+            style={primaryButtonStyle}
+          >
+            {saving ? (
+              <Loader2
+                size={14}
+                className="mr-2 inline animate-spin"
+                aria-hidden="true"
+              />
+            ) : null}
+            {saving
+              ? reservationsCopy.createDialog.saving
+              : reservationsCopy.createDialog.createReservation}
+          </button>
+        </div>
       </ModalShell>
     );
   };
@@ -1751,7 +1840,9 @@ export default function AdminReservationsDashboard() {
             <button
               key={`${activity.kind}-${activity.reservation.id}-${activity.reservation.updatedAt}`}
               type="button"
-              onClick={() => openReservationFromActivity(activity.reservation.id)}
+              onClick={() =>
+                openReservationFromActivity(activity.reservation.id)
+              }
               className="grid gap-3 rounded-surface border border-[#062F24]/10 bg-[rgba(6,47,36,0.03)] p-4 text-left transition hover:bg-[rgba(6,47,36,0.06)]"
             >
               <div className="flex flex-wrap items-center gap-2">
@@ -1792,212 +1883,218 @@ export default function AdminReservationsDashboard() {
     .sort(compareReservationsDescending);
 
   return (
-    <section className="pb-20 pt-36 lg:pt-40" style={{ background: "#FFFFFF" }}>
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
-          <div>
-            <h1 className="text-3xl font-extrabold leading-none text-[#062F24]">
-              {reservationsCopy.title}
-            </h1>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={() => {
-                setForm((current) => ({
-                  ...current,
-                  date: toDateInputValue(anchorDate),
-                }));
-                setCreateDialogOpen(true);
-              }}
-              className={buttonClass}
-              style={primaryButtonStyle}
-            >
-              {reservationsCopy.createReservation}
-            </button>
-            <Link href="/admin/settings" className={buttonClass} style={quietButtonStyle}>
-              {reservationsCopy.settings}
-            </Link>
-            <Link href="/admin/drinks" className={buttonClass} style={quietButtonStyle}>
-              Drinks
-            </Link>
-            <button type="button" onClick={signOut} className={buttonClass} style={quietButtonStyle}>
-              {reservationsCopy.signOut}
-            </button>
-          </div>
-        </div>
-
-        {error ? (
-          <p
-            className="mt-6 rounded-surface border border-red-900/20 bg-red-900/10 p-4 text-sm text-red-800"
-            role="alert"
-            aria-live="polite"
+    <AdminPage>
+      <AdminPageHeader
+        title={reservationsCopy.title}
+        actions={
+          <button
+            type="button"
+            onClick={() => {
+              setForm((current) => ({
+                ...current,
+                date: toDateInputValue(anchorDate),
+              }));
+              setCreateDialogOpen(true);
+            }}
+            className={buttonClass}
+            style={primaryButtonStyle}
           >
-            {error}
-          </p>
-        ) : null}
+            {reservationsCopy.createReservation}
+          </button>
+        }
+      />
 
-        <div className="mt-8">
-          <div>
-            <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-center">
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => setDisplayMode("calendar")}
-                  className={buttonClass}
-                  style={{
-                    ...(displayMode === "calendar" ? primaryButtonStyle : quietButtonStyle),
-                  }}
-                >
-                  <CalendarDays size={14} className="mr-2 inline" />
-                  {reservationsCopy.calendar}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDisplayMode("list")}
-                  className={buttonClass}
-                  style={{
-                    ...(displayMode === "list" ? primaryButtonStyle : quietButtonStyle),
-                  }}
-                >
-                  <ListChecks size={14} className="mr-2 inline" />
-                  {reservationsCopy.list}
-                </button>
-              </div>
+      {error ? (
+        <p
+          className="mt-6 rounded-surface border border-red-900/20 bg-red-900/10 p-4 text-sm text-red-800"
+          role="alert"
+          aria-live="polite"
+        >
+          {error}
+        </p>
+      ) : null}
 
-              <select
-                className={`${fieldClass} lg:max-w-[220px]`}
-                value={status}
-                aria-label={reservationsCopy.filterByStatus}
-                onChange={(event) => {
-                  const nextStatus = event.target.value;
-                  setStatus(
-                    isAdminReservationStatus(nextStatus) ? nextStatus : "ALL",
-                  );
+      <div className="mt-8">
+        <div>
+          <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-center">
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setDisplayMode("calendar")}
+                className={buttonClass}
+                style={{
+                  ...(displayMode === "calendar"
+                    ? primaryButtonStyle
+                    : quietButtonStyle),
                 }}
               >
-                <option value="ALL">{reservationsCopy.allStatuses}</option>
-                <option value="PENDING">{reservationsCopy.statusLabels.PENDING}</option>
-                <option value="CONFIRMED">{reservationsCopy.statusLabels.CONFIRMED}</option>
-                <option value="CANCELLED">{reservationsCopy.statusLabels.CANCELLED}</option>
-                <option value="COMPLETED">{reservationsCopy.statusLabels.COMPLETED}</option>
-                <option value="NO_SHOW">{reservationsCopy.statusLabels.NO_SHOW}</option>
-              </select>
+                <CalendarDays size={14} className="mr-2 inline" />
+                {reservationsCopy.calendar}
+              </button>
+              <button
+                type="button"
+                onClick={() => setDisplayMode("list")}
+                className={buttonClass}
+                style={{
+                  ...(displayMode === "list"
+                    ? primaryButtonStyle
+                    : quietButtonStyle),
+                }}
+              >
+                <ListChecks size={14} className="mr-2 inline" />
+                {reservationsCopy.list}
+              </button>
             </div>
 
-            {displayMode === "calendar" ? (
-              <div className="mt-4 rounded-surface border border-[#062F24]/10 bg-[rgba(6,47,36,0.04)] p-3 shadow-sm">
-                <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      className={buttonClass}
-                      onClick={() => setAnchorDate(parseDateInput(today()))}
-                      style={primaryButtonStyle}
-                    >
-                      {reservationsCopy.currentPeriod[calendarView]}
-                    </button>
+            <select
+              className={`${fieldClass} lg:max-w-[220px]`}
+              value={status}
+              aria-label={reservationsCopy.filterByStatus}
+              onChange={(event) => {
+                const nextStatus = event.target.value;
+                setStatus(
+                  isAdminReservationStatus(nextStatus) ? nextStatus : "ALL",
+                );
+              }}
+            >
+              <option value="ALL">{reservationsCopy.allStatuses}</option>
+              <option value="PENDING">
+                {reservationsCopy.statusLabels.PENDING}
+              </option>
+              <option value="CONFIRMED">
+                {reservationsCopy.statusLabels.CONFIRMED}
+              </option>
+              <option value="CANCELLED">
+                {reservationsCopy.statusLabels.CANCELLED}
+              </option>
+              <option value="COMPLETED">
+                {reservationsCopy.statusLabels.COMPLETED}
+              </option>
+              <option value="NO_SHOW">
+                {reservationsCopy.statusLabels.NO_SHOW}
+              </option>
+            </select>
+          </div>
+
+          {displayMode === "calendar" ? (
+            <div className="mt-4 rounded-surface border border-[#062F24]/10 bg-[rgba(6,47,36,0.04)] p-3 shadow-sm">
+              <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    className={buttonClass}
+                    onClick={() => setAnchorDate(parseDateInput(today()))}
+                    style={primaryButtonStyle}
+                  >
+                    {reservationsCopy.currentPeriod[calendarView]}
+                  </button>
+                </div>
+
+                <div className="flex min-w-0 flex-1 items-center justify-start gap-6 xl:justify-center">
+                  <button
+                    type="button"
+                    aria-label={`${reservationsCopy.previous} ${reservationsCopy.viewOptions[calendarView].toLowerCase()}`}
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-icon bg-transparent text-[#062F24] transition hover:bg-[rgba(6,47,36,0.05)]"
+                    onClick={() =>
+                      setAnchorDate(
+                        moveAnchorDate(calendarView, anchorDate, -1),
+                      )
+                    }
+                  >
+                    <ChevronLeft size={18} />
+                  </button>
+
+                  <div className="min-w-0 text-left xl:text-center">
+                    <p className="truncate text-3xl font-extrabold leading-tight text-[#062F24]">
+                      {getCalendarTitle(calendarView, anchorDate, language)}
+                    </p>
                   </div>
 
-                  <div className="flex min-w-0 flex-1 items-center justify-start gap-6 xl:justify-center">
+                  <button
+                    type="button"
+                    aria-label={`${reservationsCopy.next} ${reservationsCopy.viewOptions[calendarView].toLowerCase()}`}
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-icon bg-transparent text-[#062F24] transition hover:bg-[rgba(6,47,36,0.05)]"
+                    onClick={() =>
+                      setAnchorDate(moveAnchorDate(calendarView, anchorDate, 1))
+                    }
+                  >
+                    <ChevronRight size={18} />
+                  </button>
+                </div>
+
+                <div className="inline-flex w-full rounded-button-group border border-[#062F24]/10 bg-white p-1 sm:w-auto">
+                  {(["day", "week", "month"] as const).map((view) => (
                     <button
+                      key={view}
                       type="button"
-                      aria-label={`${reservationsCopy.previous} ${reservationsCopy.viewOptions[calendarView].toLowerCase()}`}
-                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-icon bg-transparent text-[#062F24] transition hover:bg-[rgba(6,47,36,0.05)]"
-                      onClick={() =>
-                        setAnchorDate(
-                          moveAnchorDate(calendarView, anchorDate, -1),
-                        )
-                      }
+                      className="flex-1 rounded-button px-4 py-2 text-xs font-semibold transition sm:flex-none"
+                      onClick={() => setCalendarView(view)}
+                      style={{
+                        ...(calendarView === view
+                          ? primaryButtonStyle
+                          : {
+                              background: "transparent",
+                              color: "#062F24",
+                              border: "1px solid transparent",
+                            }),
+                      }}
                     >
-                      <ChevronLeft size={18} />
+                      {reservationsCopy.viewOptions[view]}
                     </button>
-
-                    <div className="min-w-0 text-left xl:text-center">
-                      <p className="truncate text-3xl font-extrabold leading-tight text-[#062F24]">
-                        {getCalendarTitle(calendarView, anchorDate, language)}
-                      </p>
-                    </div>
-
-                    <button
-                      type="button"
-                      aria-label={`${reservationsCopy.next} ${reservationsCopy.viewOptions[calendarView].toLowerCase()}`}
-                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-icon bg-transparent text-[#062F24] transition hover:bg-[rgba(6,47,36,0.05)]"
-                      onClick={() =>
-                        setAnchorDate(
-                          moveAnchorDate(calendarView, anchorDate, 1),
-                        )
-                      }
-                    >
-                      <ChevronRight size={18} />
-                    </button>
-                  </div>
-
-                  <div className="inline-flex w-full rounded-button-group border border-[#062F24]/10 bg-white p-1 sm:w-auto">
-                    {(["day", "week", "month"] as const).map((view) => (
-                      <button
-                        key={view}
-                        type="button"
-                        className="flex-1 rounded-button px-4 py-2 text-xs font-semibold transition sm:flex-none"
-                        onClick={() => setCalendarView(view)}
-                        style={{
-                          ...(calendarView === view
-                            ? primaryButtonStyle
-                            : { background: "transparent", color: "#062F24", border: "1px solid transparent" }),
-                        }}
-                      >
-                        {reservationsCopy.viewOptions[view]}
-                      </button>
-                    ))}
-                  </div>
+                  ))}
                 </div>
               </div>
-            ) : (
-              <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-                <input
-                  className={fieldClass}
-                  type="date"
-                  aria-label={reservationsCopy.filterListByDate}
-                  value={date}
-                  onChange={(event) => setDate(event.target.value)}
-                />
-                <button type="button" onClick={() => setDate("")} className={buttonClass} style={quietButtonStyle}>
-                  {reservationsCopy.allDates}
-                </button>
-              </div>
-            )}
+            </div>
+          ) : (
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <input
+                className={fieldClass}
+                type="date"
+                aria-label={reservationsCopy.filterListByDate}
+                value={date}
+                onChange={(event) => setDate(event.target.value)}
+              />
+              <button
+                type="button"
+                onClick={() => setDate("")}
+                className={buttonClass}
+                style={quietButtonStyle}
+              >
+                {reservationsCopy.allDates}
+              </button>
+            </div>
+          )}
 
-            {loading ? (
-              <div className="flex items-center gap-3 rounded-surface border border-[#062F24]/10 bg-white p-6 text-[#062F24] shadow-sm">
-                <Loader2 size={16} className="animate-spin" />
-                {reservationsCopy.loading}
-              </div>
-            ) : null}
+          {loading ? (
+            <div className="flex items-center gap-3 rounded-surface border border-[#062F24]/10 bg-white p-6 text-[#062F24] shadow-sm">
+              <Loader2 size={16} className="animate-spin" />
+              {reservationsCopy.loading}
+            </div>
+          ) : null}
 
-            {!loading && displayMode === "calendar" ? (
-              <div className="mt-4">{renderCalendar()}</div>
-            ) : null}
+          {!loading && displayMode === "calendar" ? (
+            <div className="mt-4">{renderCalendar()}</div>
+          ) : null}
 
-            {!loading && displayMode === "list" ? (
-              <div className="mt-6 grid gap-5">
-                {renderListSection(
-                  reservationsCopy.today,
-                  reservationsCopy.emptyToday,
-                  todayReservations,
-                )}
-                {renderListSection(
-                  reservationsCopy.upcoming,
-                  reservationsCopy.emptyUpcoming,
-                  upcomingReservations,
-                )}
-                {renderListSection(
-                  reservationsCopy.past,
-                  reservationsCopy.emptyPast,
-                  pastReservations,
-                )}
-              </div>
-            ) : null}
-          </div>
+          {!loading && displayMode === "list" ? (
+            <div className="mt-6 grid gap-5">
+              {renderListSection(
+                reservationsCopy.today,
+                reservationsCopy.emptyToday,
+                todayReservations,
+              )}
+              {renderListSection(
+                reservationsCopy.upcoming,
+                reservationsCopy.emptyUpcoming,
+                upcomingReservations,
+              )}
+              {renderListSection(
+                reservationsCopy.past,
+                reservationsCopy.emptyPast,
+                pastReservations,
+              )}
+            </div>
+          ) : null}
         </div>
       </div>
       {renderReservationDialog()}
@@ -2014,7 +2111,9 @@ export default function AdminReservationsDashboard() {
           type="button"
           onClick={() => void loadReservations({ source: "manual" })}
           disabled={refreshing || loading}
-          aria-label={refreshing ? reservationsCopy.refreshing : reservationsCopy.refresh}
+          aria-label={
+            refreshing ? reservationsCopy.refreshing : reservationsCopy.refresh
+          }
           className="inline-flex min-h-0 items-center rounded-button-group border border-white/20 bg-[#062F24] p-1 transition-all"
         >
           <span className="inline-flex min-h-0 items-center gap-2 rounded-icon px-3 py-2 text-xs font-semibold leading-none text-white">
@@ -2029,6 +2128,6 @@ export default function AdminReservationsDashboard() {
           </span>
         </button>
       </div>
-    </section>
+    </AdminPage>
   );
 }

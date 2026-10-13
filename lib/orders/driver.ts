@@ -9,6 +9,7 @@ import {
 } from "@prisma/client";
 
 import { db } from "@/lib/db";
+import { dispatchAggregateJobs } from "@/lib/async-jobs/dispatch";
 import { notifyOrderFulfillmentStatus } from "@/lib/orders/notifications";
 import {
   canTransitionDriverAssignmentStatus,
@@ -98,7 +99,8 @@ export function serializeDriverOrder(order: DriverOrderRow) {
 
   return {
     id: order.id,
-    publicCode: order.publicCode,
+    publicCode: order.orderNumber,
+    orderNumber: order.orderNumber,
     serviceType: order.serviceType,
     fulfillmentStatus: order.fulfillmentStatus,
     assignmentStatus: assignment?.status ?? null,
@@ -313,6 +315,7 @@ export async function updateDriverOrderStatus({
   });
 
   if (result.changed) {
+    await dispatchAggregateJobs("Order", orderId);
     await notifyOrderFulfillmentStatus(orderId, result.fulfillmentStatus, {
       actorId,
       actorLabel,

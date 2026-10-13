@@ -64,10 +64,16 @@ function splitCustomerName(name: string): { firstName: string; lastName?: string
   return { firstName, lastName };
 }
 
-function buildRedirectUrl(path: string, order: CloverCheckoutOrder, payment: Payment) {
+function buildRedirectUrl(
+  path: string,
+  payment: Payment,
+  params: Record<string, string> = {},
+) {
   const url = new URL(path, getAppUrl());
-  url.searchParams.set("order", order.publicCode);
   url.searchParams.set("payment", payment.id);
+  for (const [key, value] of Object.entries(params)) {
+    url.searchParams.set(key, value);
+  }
 
   return url.toString();
 }
@@ -121,7 +127,7 @@ export function buildCloverCheckoutPayload(
     const itemNote = buildItemNote(item);
     const referenceNote =
       index === 0
-        ? [`Buffet Pin order ${order.publicCode}; payment ${payment.id}`, itemNote]
+        ? [`Buffet Pin order ${order.orderNumber}; payment ${payment.id}`, itemNote]
             .filter(Boolean)
             .join(" | ")
         : itemNote;
@@ -149,8 +155,13 @@ export function buildCloverCheckoutPayload(
       phoneNumber: order.customerPhone,
     },
     redirectUrls: {
-      success: buildRedirectUrl("/order/payment/success", order, payment),
-      failure: buildRedirectUrl("/order/payment/failure", order, payment),
+      success: buildRedirectUrl(`/order/${encodeURIComponent(order.trackingToken)}`, payment, {
+        source: "clover_success",
+      }),
+      failure: buildRedirectUrl("/order/payment/failure", payment, {
+        order: order.orderNumber,
+        tracking: order.trackingToken,
+      }),
     },
     shoppingCart: {
       lineItems,

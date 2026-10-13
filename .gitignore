@@ -9,3 +9,8 @@ node_modules
 
 playwright-report
 test-results
+
+coverage
+cdk.out
+# Generated assets and private release/database snapshots stay local.
+/output/

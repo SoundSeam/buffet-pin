@@ -4,7 +4,8 @@ import { ZodError } from "zod";
 
 import { db } from "@/lib/db";
 import { itemModifierGroupUpdateSchema } from "@/lib/orders/validation";
-import { getAdminUser } from "@/lib/supabase/auth";
+import { getStaffUser } from "@/lib/supabase/auth";
+import { recordCatalogMutation } from "@/lib/orders/catalog-audit";
 
 export const dynamic = "force-dynamic";
 
@@ -13,11 +14,6 @@ function errorResponse(status: number, code: string, message: string, details?: 
     { ok: false, error: { code, message, ...(details ? { details } : {}) } },
     { status },
   );
-}
-
-async function requireAdminResponse() {
-  const user = await getAdminUser();
-  return user ? null : errorResponse(401, "UNAUTHORIZED", "Admin access required.");
 }
 
 function isNotFound(error: unknown) {
@@ -31,16 +27,20 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const unauthorized = await requireAdminResponse();
-  if (unauthorized) return unauthorized;
+  const actor = await getStaffUser("CATALOG_WRITE");
+  if (!actor) return errorResponse(401, "UNAUTHORIZED", "Admin access required.");
 
   const { id } = await params;
 
   try {
     const payload = itemModifierGroupUpdateSchema.parse(await request.json());
-    const assignment = await db.menuItemModifierGroup.update({
-      where: { id },
-      data: payload,
+    const assignment = await db.$transaction(async (tx) => {
+      const updated = await tx.menuItemModifierGroup.update({
+        where: { id },
+        data: payload,
+      });
+      await recordCatalogMutation(tx, actor, "CATALOG_MODIFIER_ASSIGNMENT_UPDATED", "MenuItemModifierGroup", updated.id, { changedFields: Object.keys(payload) });
+      return updated;
     });
 
     return NextResponse.json({ ok: true, data: { assignment } });
@@ -73,13 +73,16 @@ export async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const unauthorized = await requireAdminResponse();
-  if (unauthorized) return unauthorized;
+  const actor = await getStaffUser("CATALOG_WRITE");
+  if (!actor) return errorResponse(401, "UNAUTHORIZED", "Admin access required.");
 
   const { id } = await params;
 
   try {
-    await db.menuItemModifierGroup.delete({ where: { id } });
+    await db.$transaction(async (tx) => {
+      const deleted = await tx.menuItemModifierGroup.delete({ where: { id } });
+      await recordCatalogMutation(tx, actor, "CATALOG_MODIFIER_GROUP_UNASSIGNED", "MenuItemModifierGroup", deleted.id, { menuItemId: deleted.menuItemId, modifierGroupId: deleted.modifierGroupId });
+    });
 
     return NextResponse.json({ ok: true });
   } catch (error) {

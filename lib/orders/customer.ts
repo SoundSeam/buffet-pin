@@ -8,7 +8,7 @@ import {
 } from "@prisma/client";
 
 export const publicOrderSelect = {
-  publicCode: true,
+  orderNumber: true,
   serviceType: true,
   paymentStatus: true,
   refundStatus: true,
@@ -19,6 +19,7 @@ export const publicOrderSelect = {
   estimatedReadyEndAt: true,
   estimatedDeliveryStartAt: true,
   estimatedDeliveryEndAt: true,
+  acceptanceDeadlineAt: true,
   itemsSubtotalCents: true,
   taxCents: true,
   tipCents: true,
@@ -75,11 +76,11 @@ const statusTimelineLabels = {
   [OrderFulfillmentStatus.DRAFT]: "Order received",
   [OrderFulfillmentStatus.AWAITING_PAYMENT]: "Order received",
   [OrderFulfillmentStatus.AWAITING_ACCEPTANCE]: "Waiting confirmation",
-  [OrderFulfillmentStatus.ACCEPTED]: "Accepted",
+  [OrderFulfillmentStatus.ACCEPTED]: "Preparing",
   [OrderFulfillmentStatus.PREPARING]: "Preparing",
-  [OrderFulfillmentStatus.READY_FOR_PICKUP]: "Ready for delivery",
-  [OrderFulfillmentStatus.DRIVER_ASSIGNED]: "Driver assigned",
-  [OrderFulfillmentStatus.PICKED_UP]: "Picked up",
+  [OrderFulfillmentStatus.READY_FOR_PICKUP]: "Preparing",
+  [OrderFulfillmentStatus.DRIVER_ASSIGNED]: "Preparing",
+  [OrderFulfillmentStatus.PICKED_UP]: "Preparing",
   [OrderFulfillmentStatus.ON_THE_WAY]: "On the way",
   [OrderFulfillmentStatus.ARRIVING_SOON]: "Arriving soon",
   [OrderFulfillmentStatus.DELIVERED]: "Delivered",
@@ -124,12 +125,10 @@ function publicEventDescription({
   fulfillmentStatus,
   eventType,
   paymentStatus,
-  serviceType,
 }: {
   fulfillmentStatus: OrderFulfillmentStatus | null;
   eventType: string;
   paymentStatus: OrderPaymentStatus | null;
-  serviceType: PublicOrderRow["serviceType"];
 }) {
   if (eventType === "ORDER_REFUND_REQUESTED") {
     return "A refund has been requested for this order.";
@@ -158,15 +157,15 @@ function publicEventDescription({
     case OrderFulfillmentStatus.AWAITING_ACCEPTANCE:
       return "Payment is confirmed. The restaurant is reviewing the order.";
     case OrderFulfillmentStatus.ACCEPTED:
-      return "The restaurant accepted the order.";
+      return "The kitchen is preparing your order.";
     case OrderFulfillmentStatus.PREPARING:
       return "The kitchen is preparing your order.";
     case OrderFulfillmentStatus.READY_FOR_PICKUP:
-      return "Your order is ready for the delivery handoff.";
+      return "Your order is prepared and waiting for the delivery handoff.";
     case OrderFulfillmentStatus.DRIVER_ASSIGNED:
-      return "A driver has been assigned.";
+      return "Your order is prepared and waiting for the physical driver handoff.";
     case OrderFulfillmentStatus.PICKED_UP:
-      return "The driver picked up your order.";
+      return "Your order is being handed to its driver.";
     case OrderFulfillmentStatus.ON_THE_WAY:
       return "Your order is out for delivery.";
     case OrderFulfillmentStatus.ARRIVING_SOON:
@@ -215,7 +214,6 @@ export function serializePublicOrder(order: PublicOrderRow) {
           fulfillmentStatus,
           eventType: event.eventType,
           paymentStatus,
-          serviceType: order.serviceType,
         }),
         paymentStatus,
         fulfillmentStatus,
@@ -226,13 +224,13 @@ export function serializePublicOrder(order: PublicOrderRow) {
       const previous = events[index - 1];
       return (
         !previous ||
-        previous.title !== event.title ||
-        previous.fulfillmentStatus !== event.fulfillmentStatus
+        previous.title !== event.title
       );
     });
 
   return {
-    publicCode: order.publicCode,
+    publicCode: order.orderNumber,
+    orderNumber: order.orderNumber,
     serviceType: order.serviceType,
     paymentStatus: order.paymentStatus,
     refundStatus: order.refundStatus,
@@ -247,6 +245,7 @@ export function serializePublicOrder(order: PublicOrderRow) {
       startAt: toIso(order.estimatedDeliveryStartAt),
       endAt: toIso(order.estimatedDeliveryEndAt),
     },
+    acceptanceDeadlineAt: toIso(order.acceptanceDeadlineAt),
     totals: {
       itemsSubtotalCents: order.itemsSubtotalCents,
       taxCents: order.taxCents,
