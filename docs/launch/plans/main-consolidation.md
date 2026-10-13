@@ -2,7 +2,7 @@
 
 ## Milestone
 - Scope: repository consolidation, no delivery launch or deployment.
-- Status: CODE_COMPLETE; final push/production identity verification pending.
+- Status: VERIFIED for repository synchronization and unchanged live deployment only; future release/security gates remain open.
 - Branch: main.
 - Owner: Codex, authorized by user to consolidate and push while preserving current live behavior.
 
@@ -58,13 +58,13 @@ No secrets or private release/database snapshots are committed. Full local pre-c
 Legacy reservation/drinks database suites retain their explicit local-only fixture harnesses and were not rerun here. Their unit tests are included in npm test; shared migration/database and browser integration suites pass. Old live drinks fixture tests initially fail because they assert 15 drinks while the existing live catalog now has 17; no live data was changed to satisfy that stale assumption. A read-only smoke matching the current catalog passes at 390/768/1440px with all 17 images loaded, translation, no overflow, and original 6–12 reservation choices. Logs/screenshots are in /tmp/buffet-pin-consolidation-*.log and /tmp/buffet-pin-live-*.
 
 ## Manual verification
-Read-only HTTP checks PASS for /, /drinks, /reservation, /order, /admin/login, and /api/reservations/status. Reservation availability remains true. Read-only browser smoke PASS at 390/768/1440px: all 17 current drink images decode, the catalog count is stable across translation, pages fit viewport, and public reservation choices remain 6–12. Production mutation test was skipped. Initial Vercel API identity is READY dpl_FnmZX1EeGPgeiGZcDRxeaLnnQK9e at c874e11; final post-push identity check pending. No hardware/provider/rehearsal gate is completed by this task.
+Read-only HTTP checks PASS for /, /drinks, /reservation, /order, /admin/login, and /api/reservations/status. Reservation availability remains true. Read-only browser smoke PASS at 390/768/1440px: all 17 current drink images decode, the catalog count is stable across translation, pages fit viewport, and public reservation choices remain 6–12. Production mutation test was skipped. Initial Vercel API identity is READY dpl_FnmZX1EeGPgeiGZcDRxeaLnnQK9e at c874e11; post-push identity check PASS: same READY deployment, same public aliases, same project ignored-build guard. No new deployment appeared in the project latest-deployment readback. No hardware/provider/rehearsal gate is completed by this task.
 
 ## Acceptance criteria
 - [x] Local source preserved and conflicts resolved.
 - [x] Automated checks pass or precise limitations recorded.
-- [ ] Local main and origin/main match; working tree clean.
-- [ ] Production deployment unchanged; inactive features remain inactive.
+- [x] Local main and origin/main match; working tree clean after successful non-force push.
+- [x] Production deployment unchanged; inactive features remain inactive.
 - [x] Status/decisions updated; remaining launch gates remain open.
 
 ## Rollback and deployment considerations
@@ -76,4 +76,4 @@ Git history retains snapshot and all merged branch tips. No force push or branch
 - All local branch tips integrated; no local branch remains unmerged into main. Code, type/lint/test/database/browser/build verification complete; security advisories and stale external fixtures explicitly recorded.
 
 ## Final handoff
-Source integration is complete. Remaining: final fast-forward push and read-back verification. This task does not change delivery launch milestone acceptance or close external gates; dependency advisories must be addressed before a future approved release.
+Source integration and push are complete. Initial consolidated commit bf857df was pushed successfully with no force; local main/origin/main matched and status was clean. Post-push Vercel inspect confirms the exact pre-existing READY deployment and aliases. All local branch tips are ancestors of main; older worktrees/branches remain available and were not deleted. This final evidence-only commit is also pushed under the same publication guards. This task does not change delivery launch milestone acceptance or close external gates; dependency advisories must be addressed before a future approved release.
