@@ -2,7 +2,7 @@
 
 ## Milestone
 - Scope: repository consolidation, no delivery launch or deployment.
-- Status: IN_PROGRESS.
+- Status: CODE_COMPLETE; final push/production identity verification pending.
 - Branch: main.
 - Owner: Codex, authorized by user to consolidate and push while preserving current live behavior.
 
@@ -42,17 +42,30 @@ No secrets or private release/database snapshots are committed. Full local pre-c
 6. Verify clean synchronized main and unchanged production deployment.
 
 ## Automated verification
-Pending: lint, typecheck, unit/contract/integration tests, browser tests, isolated DB migrations/tests, Prisma validation, safe production build, dependency audit. Legacy reservation DB/browser suites retain their separate local-only harness; they never use production credentials.
+| Check | Result |
+| --- | --- |
+| npm ci, Node 22.23.2 | PASS; clean local dependency installation. |
+| npm run lint | PASS; zero errors, 26 pre-existing warnings. |
+| npm run typecheck | PASS after resolving duplicate media import and restoring settings useRouter import. |
+| npm test | PASS; 276 unit/contract/integration tests across 29 files. |
+| npm run test:db | PASS; 34 migrations on disposable PostgreSQL, historical migration compatibility fixture, 49 tests across 11 files. No production DB used. |
+| npm run test:browser | PASS; 23 Chromium workflows, including three new public reservation/theme regressions. Browser binary installed locally; initial missing-binary run superseded. |
+| npm run prisma:validate / prisma:generate | PASS. |
+| npm run build:safe | PASS; 60 pages generated with fail-closed non-production values; no migration command. |
+| npm audit --omit=dev | FAIL, pre-existing dependency advisories: 1 moderate, 6 high, 2 critical. Prisma/MapLibre fixes propose incompatible version changes; no unrelated upgrades attempted. This is a future release/security gate, not a change to the pinned live deployment. |
+| git diff --check | PASS after preserving snapshot then cleaning inherited whitespace. |
+
+Legacy reservation/drinks database suites retain their explicit local-only fixture harnesses and were not rerun here. Their unit tests are included in npm test; shared migration/database and browser integration suites pass. Old live drinks fixture tests initially fail because they assert 15 drinks while the existing live catalog now has 17; no live data was changed to satisfy that stale assumption. A read-only smoke matching the current catalog passes at 390/768/1440px with all 17 images loaded, translation, no overflow, and original 6–12 reservation choices. Logs/screenshots are in /tmp/buffet-pin-consolidation-*.log and /tmp/buffet-pin-live-*.
 
 ## Manual verification
-Pending: read-only live HTTP smoke, deployment/alias identity before/after, absence of new production build. No hardware/provider/rehearsal gates are completed by this task.
+Read-only HTTP checks PASS for /, /drinks, /reservation, /order, /admin/login, and /api/reservations/status. Reservation availability remains true. Read-only browser smoke PASS at 390/768/1440px: all 17 current drink images decode, the catalog count is stable across translation, pages fit viewport, and public reservation choices remain 6–12. Production mutation test was skipped. Initial Vercel API identity is READY dpl_FnmZX1EeGPgeiGZcDRxeaLnnQK9e at c874e11; final post-push identity check pending. No hardware/provider/rehearsal gate is completed by this task.
 
 ## Acceptance criteria
-- [ ] Local source preserved and conflicts resolved.
-- [ ] Automated checks pass or precise limitations recorded.
+- [x] Local source preserved and conflicts resolved.
+- [x] Automated checks pass or precise limitations recorded.
 - [ ] Local main and origin/main match; working tree clean.
 - [ ] Production deployment unchanged; inactive features remain inactive.
-- [ ] Status/decisions updated; remaining launch gates remain open.
+- [x] Status/decisions updated; remaining launch gates remain open.
 
 ## Rollback and deployment considerations
 Git history retains snapshot and all merged branch tips. No force push or branch deletion. Reenable automatic Git deployments only after a separately approved release: remove/set the repository deployment flag and clear the project Ignored Build Step via Vercel. A manual CLI production deploy bypasses these guards and requires explicit release approval. Existing live crons/settings continue with the pinned deployment; no environment variable or data change.
@@ -60,7 +73,7 @@ Git history retains snapshot and all merged branch tips. No force push or branch
 ## Progress log
 - Initial audit: original checkout dirty; seven other worktrees clean; production matches origin/main.
 - Local backup and source snapshot completed; project ignored build step confirmed as exit 0.
-- Integration and verification in progress.
+- All local branch tips integrated; no local branch remains unmerged into main. Code, type/lint/test/database/browser/build verification complete; security advisories and stale external fixtures explicitly recorded.
 
 ## Final handoff
-Pending final verification and push. This task does not change delivery launch milestone acceptance or close external gates.
+Source integration is complete. Remaining: final fast-forward push and read-back verification. This task does not change delivery launch milestone acceptance or close external gates; dependency advisories must be addressed before a future approved release.

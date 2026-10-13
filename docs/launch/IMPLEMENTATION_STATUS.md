@@ -462,7 +462,7 @@ Verification: exact historical-source comparisons, 34 unit/route tests, 12 Postg
 
 ## Main consolidation — 2026-10-13
 
-IN_PROGRESS: consolidating local source and branch evidence onto main/origin/main under user authorization. Production remains pinned to dpl_FnmZX1EeGPgeiGZcDRxeaLnnQK9e at c874e11; Vercel Ignored Build Step exit 0 is read-back confirmed, and automatic Git deployments are disabled in the consolidated vercel.json. No production release, migration, setting change, order, payment, refund, or provider action. Plan: plans/main-consolidation.md. Existing external/manual delivery gates remain open.
+CODE_COMPLETE: local source and all branch evidence consolidated onto main under user authorization; final push verification pending. Production remains pinned to dpl_FnmZX1EeGPgeiGZcDRxeaLnnQK9e at c874e11; Vercel Ignored Build Step exit 0 is read-back confirmed, and automatic Git deployments are disabled in the consolidated vercel.json. No production release, migration, setting change, order, payment, refund, or provider action. Plan: plans/main-consolidation.md. Existing external/manual delivery gates remain open.
 
 
 ### Preserved evidence from codex/drinks-image-page
@@ -502,3 +502,5 @@ VERIFIED in isolated `/Users/daniel/buffet-pin-reservations-july` on live `018c4
 
 
 The toggle UI fix is deployed from main commit `c69a427` (Vercel `dpl_BPhPw6DJPQEGvvbBaxzZPcPEUutq`, READY). Live reservation availability remains unchanged. Deployment evidence is retained in the execution plan; final evidence documentation is committed locally without triggering another production build.
+
+Consolidation checks: 276 non-database tests, 49 disposable PostgreSQL tests, all 34 migrations, 23 Chromium workflows, TypeScript, non-interactive lint (zero errors/26 existing warnings), Prisma generation/validation, and safe build (60 pages) pass. New public browser regressions preserve enabled reservation choices and the drinks dark theme. Read-only current-live browser smoke passes at 390/768/1440px with 17 drinks and unchanged 6–12 reservation choices. Old 15-drink external fixture assertions are stale. Existing dependency audit remains a future release gate (1 moderate/6 high/2 critical); legacy standalone public database suites were preserved but not rerun. No delivery launch gate is closed by this consolidation.

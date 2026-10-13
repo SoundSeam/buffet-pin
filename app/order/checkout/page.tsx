@@ -1,4 +1,3 @@
-import { buffetPinMedia } from "@/lib/media";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
