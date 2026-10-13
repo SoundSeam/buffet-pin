@@ -1,0 +1,1342 @@
+{
+  "version": 1,
+  "releaseKey": "official-delivery-menu-2026-10-13",
+  "status": "DRAFT_REVIEW_ONLY",
+  "source": "Two restaurant-officialized menu photographs supplied by user",
+  "currency": "CAD",
+  "pricesIncludeTax": false,
+  "fixedCombos": true,
+  "additionalPersonOption": false,
+  "substitutionOption": false,
+  "categories": [
+    {
+      "key": "soup",
+      "nameFr": "Soupes",
+      "nameEn": "Soups",
+      "sortOrder": 10
+    },
+    {
+      "key": "appetizers",
+      "nameFr": "Hors-d’œuvre",
+      "nameEn": "Appetizers",
+      "sortOrder": 20
+    },
+    {
+      "key": "dumplings",
+      "nameFr": "Dumplings",
+      "nameEn": "Dumplings",
+      "sortOrder": 30
+    },
+    {
+      "key": "vegetarian",
+      "nameFr": "Végétarien",
+      "nameEn": "Vegetarian",
+      "sortOrder": 40
+    },
+    {
+      "key": "chop-suey",
+      "nameFr": "Chop suey",
+      "nameEn": "Chop suey",
+      "sortOrder": 50
+    },
+    {
+      "key": "pork",
+      "nameFr": "Porc",
+      "nameEn": "Pork",
+      "sortOrder": 60
+    },
+    {
+      "key": "macaroni",
+      "nameFr": "Macaroni",
+      "nameEn": "Macaroni",
+      "sortOrder": 70
+    },
+    {
+      "key": "rice",
+      "nameFr": "Riz frit",
+      "nameEn": "Fried rice",
+      "sortOrder": 80
+    },
+    {
+      "key": "chicken",
+      "nameFr": "Poulet",
+      "nameEn": "Chicken",
+      "sortOrder": 90
+    },
+    {
+      "key": "beef",
+      "nameFr": "Bœuf",
+      "nameEn": "Beef",
+      "sortOrder": 100
+    },
+    {
+      "key": "noodles",
+      "nameFr": "Nouilles",
+      "nameEn": "Noodles",
+      "sortOrder": 110
+    },
+    {
+      "key": "seafood",
+      "nameFr": "Fruits de mer",
+      "nameEn": "Seafood",
+      "sortOrder": 120
+    },
+    {
+      "key": "combos",
+      "nameFr": "Combos",
+      "nameEn": "Combos",
+      "sortOrder": 130
+    }
+  ],
+  "items": [
+    {
+      "key": "item-1",
+      "printedNumber": 1,
+      "categoryKey": "soup",
+      "nameFr": "Won ton",
+      "nameEn": "Won ton soup",
+      "priceCents": 400,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-2",
+      "printedNumber": 2,
+      "categoryKey": "soup",
+      "nameFr": "Won ton (large)",
+      "nameEn": "Won ton soup (large)",
+      "priceCents": 750,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-3",
+      "printedNumber": 3,
+      "categoryKey": "soup",
+      "nameFr": "Soupe aux légumes chinois",
+      "nameEn": "Chinese vegetable soup",
+      "priceCents": 400,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-4",
+      "printedNumber": 4,
+      "categoryKey": "soup",
+      "nameFr": "Soupe aigre et piquante",
+      "nameEn": "Hot and sour soup",
+      "priceCents": 400,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-5",
+      "printedNumber": 5,
+      "categoryKey": "soup",
+      "nameFr": "Wor won ton",
+      "nameEn": "Wor won ton soup",
+      "priceCents": 1145,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-6",
+      "printedNumber": 6,
+      "categoryKey": "appetizers",
+      "nameFr": "Nouilles frites",
+      "nameEn": "Fried noodles",
+      "priceCents": 200,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-7",
+      "printedNumber": 7,
+      "categoryKey": "appetizers",
+      "nameFr": "Rouleaux aux œufs (2)",
+      "nameEn": "Egg rolls (2)",
+      "priceCents": 450,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-8",
+      "printedNumber": 8,
+      "categoryKey": "appetizers",
+      "nameFr": "Rouleaux impériaux (2 grands)",
+      "nameEn": "Vegetarian rolls (2 large)",
+      "priceCents": 450,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-9",
+      "printedNumber": 9,
+      "categoryKey": "appetizers",
+      "nameFr": "Rouleaux impériaux (4 minis)",
+      "nameEn": "Vegetarian rolls (4 mini)",
+      "priceCents": 450,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-10",
+      "printedNumber": 10,
+      "categoryKey": "appetizers",
+      "nameFr": "Won ton frit",
+      "nameEn": "Fried won ton",
+      "priceCents": 495,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-11",
+      "printedNumber": 11,
+      "categoryKey": "dumplings",
+      "nameFr": "Dumplings poêlés au poulet (8)",
+      "nameEn": "Pan-fried chicken dumplings (8)",
+      "priceCents": 900,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-12",
+      "printedNumber": 12,
+      "categoryKey": "dumplings",
+      "nameFr": "Dumplings au poulet, sauce arachides (8)",
+      "nameEn": "Chicken dumplings with peanut sauce (8)",
+      "priceCents": 900,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-13",
+      "printedNumber": 13,
+      "categoryKey": "dumplings",
+      "nameFr": "Dumplings à la vapeur (8)",
+      "nameEn": "Steamed dumplings (8)",
+      "priceCents": 900,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-14",
+      "printedNumber": 14,
+      "categoryKey": "vegetarian",
+      "nameFr": "Chop suey aux légumes",
+      "nameEn": "Vegetable chop suey",
+      "priceCents": 1200,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-15",
+      "printedNumber": 15,
+      "categoryKey": "vegetarian",
+      "nameFr": "Brocoli sauté",
+      "nameEn": "Stir-fried broccoli",
+      "priceCents": 1200,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-16",
+      "printedNumber": 16,
+      "categoryKey": "vegetarian",
+      "nameFr": "Légumes mélangés",
+      "nameEn": "Mixed vegetables",
+      "priceCents": 1200,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-17",
+      "printedNumber": 17,
+      "categoryKey": "vegetarian",
+      "nameFr": "General Tofu",
+      "nameEn": "General Tofu",
+      "priceCents": 1200,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-18",
+      "printedNumber": 18,
+      "categoryKey": "vegetarian",
+      "nameFr": "Champignons aux fèves noires",
+      "nameEn": "Mushrooms with black beans",
+      "priceCents": 1200,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-19",
+      "printedNumber": 19,
+      "categoryKey": "chop-suey",
+      "nameFr": "Chop suey au poulet",
+      "nameEn": "Chicken chop suey",
+      "priceCents": 1200,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-20",
+      "printedNumber": 20,
+      "categoryKey": "chop-suey",
+      "nameFr": "Chop suey au bœuf",
+      "nameEn": "Beef chop suey",
+      "priceCents": 1200,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-21",
+      "printedNumber": 21,
+      "categoryKey": "chop-suey",
+      "nameFr": "Chop suey au porc",
+      "nameEn": "Pork chop suey",
+      "priceCents": 1200,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-22",
+      "printedNumber": 22,
+      "categoryKey": "chop-suey",
+      "nameFr": "Chop suey aux crevettes",
+      "nameEn": "Shrimp chop suey",
+      "priceCents": 1200,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-23",
+      "printedNumber": 23,
+      "categoryKey": "pork",
+      "nameFr": "Saucisses sucrées à l’ail",
+      "nameEn": "Garlic sweet sausages",
+      "priceCents": 1300,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-24",
+      "printedNumber": 24,
+      "categoryKey": "pork",
+      "nameFr": "Côtes levées à l’ail, sauce brune",
+      "nameEn": "Garlic ribs, brown sauce",
+      "priceCents": 1300,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-25",
+      "printedNumber": 25,
+      "categoryKey": "pork",
+      "nameFr": "Côtes levées sucrées à l’ail",
+      "nameEn": "Garlic sweet ribs",
+      "priceCents": 1300,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-26",
+      "printedNumber": 26,
+      "categoryKey": "macaroni",
+      "nameFr": "Macaroni au poulet",
+      "nameEn": "Chicken macaroni",
+      "priceCents": 1300,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-27",
+      "printedNumber": 27,
+      "categoryKey": "macaroni",
+      "nameFr": "Macaroni au bœuf",
+      "nameEn": "Beef macaroni",
+      "priceCents": 1300,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-28",
+      "printedNumber": 28,
+      "categoryKey": "macaroni",
+      "nameFr": "Macaroni au porc",
+      "nameEn": "Pork macaroni",
+      "priceCents": 1300,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-29",
+      "printedNumber": 29,
+      "categoryKey": "macaroni",
+      "nameFr": "Macaroni aux crevettes",
+      "nameEn": "Shrimp macaroni",
+      "priceCents": 1300,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-30",
+      "printedNumber": 30,
+      "categoryKey": "rice",
+      "nameFr": "Riz à la vapeur",
+      "nameEn": "Steamed rice",
+      "priceCents": 200,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-31",
+      "printedNumber": 31,
+      "categoryKey": "rice",
+      "nameFr": "Riz frit végétarien",
+      "nameEn": "Vegetarian fried rice",
+      "priceCents": 1300,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-32",
+      "printedNumber": 32,
+      "categoryKey": "rice",
+      "nameFr": "Riz frit au poulet",
+      "nameEn": "Chicken fried rice",
+      "priceCents": 1300,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-33",
+      "printedNumber": 33,
+      "categoryKey": "rice",
+      "nameFr": "Riz frit au bœuf",
+      "nameEn": "Beef fried rice",
+      "priceCents": 1300,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-34",
+      "printedNumber": 34,
+      "categoryKey": "rice",
+      "nameFr": "Riz frit au porc",
+      "nameEn": "Pork fried rice",
+      "priceCents": 1300,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-35",
+      "printedNumber": 35,
+      "categoryKey": "chicken",
+      "nameFr": "Poulet Général Tao",
+      "nameEn": "General Tao chicken",
+      "priceCents": 1400,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-37",
+      "printedNumber": 37,
+      "categoryKey": "chicken",
+      "nameFr": "Poulet aux ananas",
+      "nameEn": "Pineapple chicken",
+      "priceCents": 1400,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-38",
+      "printedNumber": 38,
+      "categoryKey": "chicken",
+      "nameFr": "Poulet aux amandes ding",
+      "nameEn": "Almond Ding chicken",
+      "priceCents": 1400,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-39",
+      "printedNumber": 39,
+      "categoryKey": "chicken",
+      "nameFr": "Soo Guy au poulet",
+      "nameEn": "Soo Guy chicken",
+      "priceCents": 1400,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-40",
+      "printedNumber": 40,
+      "categoryKey": "chicken",
+      "nameFr": "Cari de poulet",
+      "nameEn": "Curry chicken",
+      "priceCents": 1400,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-41",
+      "printedNumber": 41,
+      "categoryKey": "beef",
+      "nameFr": "Bœuf avec légumes",
+      "nameEn": "Beef with mixed vegetables",
+      "priceCents": 1500,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-42",
+      "printedNumber": 42,
+      "categoryKey": "beef",
+      "nameFr": "Bœuf avec brocoli",
+      "nameEn": "Beef with broccoli",
+      "priceCents": 1500,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-43",
+      "printedNumber": 43,
+      "categoryKey": "beef",
+      "nameFr": "Bœuf au poivre noir",
+      "nameEn": "Black pepper beef",
+      "priceCents": 1500,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-44",
+      "printedNumber": 44,
+      "categoryKey": "beef",
+      "nameFr": "Bœuf à l’orange",
+      "nameEn": "Orange beef",
+      "priceCents": 1500,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-45",
+      "printedNumber": 45,
+      "categoryKey": "beef",
+      "nameFr": "Bœuf au sésame",
+      "nameEn": "Sesame beef",
+      "priceCents": 1500,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-46",
+      "printedNumber": 46,
+      "categoryKey": "noodles",
+      "nameFr": "Nouilles sauce soya",
+      "nameEn": "Soya noodles",
+      "priceCents": 1500,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-47",
+      "printedNumber": 47,
+      "categoryKey": "noodles",
+      "nameFr": "Nouilles Singapour",
+      "nameEn": "Singapore noodles",
+      "priceCents": 1500,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-48",
+      "printedNumber": 48,
+      "categoryKey": "noodles",
+      "nameFr": "Nouilles au poulet",
+      "nameEn": "Chicken noodles",
+      "priceCents": 1500,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-49",
+      "printedNumber": 49,
+      "categoryKey": "noodles",
+      "nameFr": "Nouilles au bœuf",
+      "nameEn": "Beef noodles",
+      "priceCents": 1500,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-50",
+      "printedNumber": 50,
+      "categoryKey": "noodles",
+      "nameFr": "Nouilles au porc",
+      "nameEn": "Pork noodles",
+      "priceCents": 1500,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-53",
+      "printedNumber": 53,
+      "categoryKey": "noodles",
+      "nameFr": "Nouilles cantonaises : poulet, porc BBQ et crevettes",
+      "nameEn": "Cantonese noodles: chicken, BBQ pork and shrimp",
+      "priceCents": 1500,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-54",
+      "printedNumber": 54,
+      "categoryKey": "noodles",
+      "nameFr": "Nouilles style thaï",
+      "nameEn": "Thai-style noodles",
+      "priceCents": 1500,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-55",
+      "printedNumber": 55,
+      "categoryKey": "seafood",
+      "nameFr": "Crevettes tempura (12)",
+      "nameEn": "Tempura shrimp (12)",
+      "priceCents": 1500,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-56",
+      "printedNumber": 56,
+      "categoryKey": "seafood",
+      "nameFr": "Crevettes avec légumes",
+      "nameEn": "Shrimp with mixed vegetables",
+      "priceCents": 1500,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-57",
+      "printedNumber": 57,
+      "categoryKey": "seafood",
+      "nameFr": "Crevettes au poivre",
+      "nameEn": "Pepper shrimp",
+      "priceCents": 1500,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-58",
+      "printedNumber": 58,
+      "categoryKey": "seafood",
+      "nameFr": "Crevettes sautées au sel et poivre",
+      "nameEn": "Salt and pepper shrimp",
+      "priceCents": 1500,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "item-59",
+      "printedNumber": 59,
+      "categoryKey": "seafood",
+      "nameFr": "Crevettes szechuanaises",
+      "nameEn": "Szechuan shrimp",
+      "priceCents": 1500,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "descriptionFr": null,
+      "descriptionEn": null,
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "combo-1",
+      "printedNumber": null,
+      "categoryKey": "combos",
+      "nameFr": "Combo 1",
+      "nameEn": "Combo 1",
+      "priceCents": 1900,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "serves": 1,
+      "components": [
+        {
+          "nameFr": "Soupe won ton",
+          "nameEn": "Won ton soup",
+          "quantity": 1
+        },
+        {
+          "nameFr": "Rouleaux aux œufs",
+          "nameEn": "Egg rolls",
+          "quantity": 2
+        },
+        {
+          "nameFr": "Côtes levées sucrées à l’ail",
+          "nameEn": "Garlic sweet ribs",
+          "quantity": null
+        },
+        {
+          "nameFr": "Chop suey au poulet",
+          "nameEn": "Chicken chop suey",
+          "quantity": null
+        },
+        {
+          "nameFr": "Riz frit au poulet",
+          "nameEn": "Chicken fried rice",
+          "quantity": null
+        }
+      ],
+      "descriptionFr": "Pour 1 personne(s). 1 × Soupe won ton; 2 × Rouleaux aux œufs; Côtes levées sucrées à l’ail; Chop suey au poulet; Riz frit au poulet.",
+      "descriptionEn": "Serves 1. 1 × Won ton soup; 2 × Egg rolls; Garlic sweet ribs; Chicken chop suey; Chicken fried rice.",
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "combo-2",
+      "printedNumber": null,
+      "categoryKey": "combos",
+      "nameFr": "Combo 2",
+      "nameEn": "Combo 2",
+      "priceCents": 2100,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "serves": 1,
+      "components": [
+        {
+          "nameFr": "Soupe won ton",
+          "nameEn": "Won ton soup",
+          "quantity": 1
+        },
+        {
+          "nameFr": "Rouleaux aux œufs",
+          "nameEn": "Egg rolls",
+          "quantity": 2
+        },
+        {
+          "nameFr": "Côtes levées sucrées à l’ail",
+          "nameEn": "Garlic sweet ribs",
+          "quantity": null
+        },
+        {
+          "nameFr": "Légumes au poulet",
+          "nameEn": "Mixed vegetables with chicken",
+          "quantity": null
+        },
+        {
+          "nameFr": "Poulet aux ananas",
+          "nameEn": "Pineapple chicken",
+          "quantity": null
+        },
+        {
+          "nameFr": "Riz frit au poulet",
+          "nameEn": "Chicken fried rice",
+          "quantity": null
+        }
+      ],
+      "descriptionFr": "Pour 1 personne(s). 1 × Soupe won ton; 2 × Rouleaux aux œufs; Côtes levées sucrées à l’ail; Légumes au poulet; Poulet aux ananas; Riz frit au poulet.",
+      "descriptionEn": "Serves 1. 1 × Won ton soup; 2 × Egg rolls; Garlic sweet ribs; Mixed vegetables with chicken; Pineapple chicken; Chicken fried rice.",
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "combo-3",
+      "printedNumber": null,
+      "categoryKey": "combos",
+      "nameFr": "Combo 3",
+      "nameEn": "Combo 3",
+      "priceCents": 4000,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "serves": 2,
+      "components": [
+        {
+          "nameFr": "Soupe won ton",
+          "nameEn": "Won ton soup",
+          "quantity": 2
+        },
+        {
+          "nameFr": "Rouleaux aux œufs",
+          "nameEn": "Egg rolls",
+          "quantity": 4
+        },
+        {
+          "nameFr": "Côtes levées sucrées à l’ail",
+          "nameEn": "Garlic sweet ribs",
+          "quantity": null
+        },
+        {
+          "nameFr": "Soo Guy au poulet",
+          "nameEn": "Soo Guy chicken",
+          "quantity": null
+        },
+        {
+          "nameFr": "Poulet aux amandes ding",
+          "nameEn": "Almond Ding chicken",
+          "quantity": null
+        },
+        {
+          "nameFr": "Riz frit au poulet",
+          "nameEn": "Chicken fried rice",
+          "quantity": null
+        }
+      ],
+      "descriptionFr": "Pour 2 personne(s). 2 × Soupe won ton; 4 × Rouleaux aux œufs; Côtes levées sucrées à l’ail; Soo Guy au poulet; Poulet aux amandes ding; Riz frit au poulet.",
+      "descriptionEn": "Serves 2. 2 × Won ton soup; 4 × Egg rolls; Garlic sweet ribs; Soo Guy chicken; Almond Ding chicken; Chicken fried rice.",
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "combo-4",
+      "printedNumber": null,
+      "categoryKey": "combos",
+      "nameFr": "Combo 4",
+      "nameEn": "Combo 4",
+      "priceCents": 4200,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "serves": 2,
+      "components": [
+        {
+          "nameFr": "Soupe won ton",
+          "nameEn": "Won ton soup",
+          "quantity": 2
+        },
+        {
+          "nameFr": "Rouleaux aux œufs",
+          "nameEn": "Egg rolls",
+          "quantity": 4
+        },
+        {
+          "nameFr": "Côtes levées sucrées à l’ail",
+          "nameEn": "Garlic sweet ribs",
+          "quantity": null
+        },
+        {
+          "nameFr": "Soo Guy au poulet",
+          "nameEn": "Soo Guy chicken",
+          "quantity": null
+        },
+        {
+          "nameFr": "Bœuf avec brocoli",
+          "nameEn": "Beef with broccoli",
+          "quantity": null
+        },
+        {
+          "nameFr": "Macaroni au poulet",
+          "nameEn": "Chicken macaroni",
+          "quantity": null
+        },
+        {
+          "nameFr": "Riz frit au poulet",
+          "nameEn": "Chicken fried rice",
+          "quantity": null
+        }
+      ],
+      "descriptionFr": "Pour 2 personne(s). 2 × Soupe won ton; 4 × Rouleaux aux œufs; Côtes levées sucrées à l’ail; Soo Guy au poulet; Bœuf avec brocoli; Macaroni au poulet; Riz frit au poulet.",
+      "descriptionEn": "Serves 2. 2 × Won ton soup; 4 × Egg rolls; Garlic sweet ribs; Soo Guy chicken; Beef with broccoli; Chicken macaroni; Chicken fried rice.",
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "combo-5",
+      "printedNumber": null,
+      "categoryKey": "combos",
+      "nameFr": "Combo 5",
+      "nameEn": "Combo 5",
+      "priceCents": 4200,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "serves": 2,
+      "components": [
+        {
+          "nameFr": "Soupe won ton",
+          "nameEn": "Won ton soup",
+          "quantity": 2
+        },
+        {
+          "nameFr": "Rouleaux aux œufs",
+          "nameEn": "Egg rolls",
+          "quantity": 4
+        },
+        {
+          "nameFr": "Côtes levées sucrées à l’ail",
+          "nameEn": "Garlic sweet ribs",
+          "quantity": null
+        },
+        {
+          "nameFr": "Poulet aux ananas",
+          "nameEn": "Pineapple chicken",
+          "quantity": null
+        },
+        {
+          "nameFr": "Chop suey au poulet",
+          "nameEn": "Chicken chop suey",
+          "quantity": null
+        },
+        {
+          "nameFr": "Riz frit au poulet",
+          "nameEn": "Chicken fried rice",
+          "quantity": null
+        },
+        {
+          "nameFr": "Chow mein sauce soya",
+          "nameEn": "Soya chow mein",
+          "quantity": null
+        }
+      ],
+      "descriptionFr": "Pour 2 personne(s). 2 × Soupe won ton; 4 × Rouleaux aux œufs; Côtes levées sucrées à l’ail; Poulet aux ananas; Chop suey au poulet; Riz frit au poulet; Chow mein sauce soya.",
+      "descriptionEn": "Serves 2. 2 × Won ton soup; 4 × Egg rolls; Garlic sweet ribs; Pineapple chicken; Chicken chop suey; Chicken fried rice; Soya chow mein.",
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "combo-6",
+      "printedNumber": null,
+      "categoryKey": "combos",
+      "nameFr": "Combo 6",
+      "nameEn": "Combo 6",
+      "priceCents": 4400,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "serves": 2,
+      "components": [
+        {
+          "nameFr": "Soupe won ton",
+          "nameEn": "Won ton soup",
+          "quantity": 2
+        },
+        {
+          "nameFr": "Rouleaux aux œufs",
+          "nameEn": "Egg rolls",
+          "quantity": 4
+        },
+        {
+          "nameFr": "Saucisses sucrées à l’ail",
+          "nameEn": "Garlic sweet sausages",
+          "quantity": null
+        },
+        {
+          "nameFr": "Crevettes tempura",
+          "nameEn": "Tempura shrimp",
+          "quantity": null
+        },
+        {
+          "nameFr": "Ailes de poulet frites",
+          "nameEn": "Fried chicken wings",
+          "quantity": null
+        },
+        {
+          "nameFr": "Chow mein style cantonais",
+          "nameEn": "Cantonese chow mein",
+          "quantity": null
+        },
+        {
+          "nameFr": "Riz frit au poulet",
+          "nameEn": "Chicken fried rice",
+          "quantity": null
+        }
+      ],
+      "descriptionFr": "Pour 2 personne(s). 2 × Soupe won ton; 4 × Rouleaux aux œufs; Saucisses sucrées à l’ail; Crevettes tempura; Ailes de poulet frites; Chow mein style cantonais; Riz frit au poulet.",
+      "descriptionEn": "Serves 2. 2 × Won ton soup; 4 × Egg rolls; Garlic sweet sausages; Tempura shrimp; Fried chicken wings; Cantonese chow mein; Chicken fried rice.",
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "combo-7",
+      "printedNumber": null,
+      "categoryKey": "combos",
+      "nameFr": "Combo 7",
+      "nameEn": "Combo 7",
+      "priceCents": 4600,
+      "availableForDelivery": true,
+      "reviewStatus": "NEEDS_CONFIRMATION",
+      "serves": 2,
+      "components": [
+        {
+          "nameFr": "Soupe won ton",
+          "nameEn": "Won ton soup",
+          "quantity": 2
+        },
+        {
+          "nameFr": "Rouleaux aux œufs",
+          "nameEn": "Egg rolls",
+          "quantity": 4
+        },
+        {
+          "nameFr": "Poulet Général Tao",
+          "nameEn": "General Tao chicken",
+          "quantity": null
+        },
+        {
+          "nameFr": "Bœuf à l’orange",
+          "nameEn": "Orange beef",
+          "quantity": null
+        },
+        {
+          "nameFr": "Crevettes szechuanaises",
+          "nameEn": "Szechuan shrimp",
+          "quantity": null
+        },
+        {
+          "nameFr": "Légumes mélangés",
+          "nameEn": "Mixed vegetables",
+          "quantity": null
+        },
+        {
+          "nameFr": "Riz frit au poulet",
+          "nameEn": "Chicken fried rice",
+          "quantity": null
+        }
+      ],
+      "descriptionFr": "Pour 2 personne(s). 2 × Soupe won ton; 4 × Rouleaux aux œufs; Poulet Général Tao; Bœuf à l’orange; Crevettes szechuanaises; Légumes mélangés; Riz frit au poulet.",
+      "descriptionEn": "Serves 2. 2 × Won ton soup; 4 × Egg rolls; General Tao chicken; Orange beef; Szechuan shrimp; Mixed vegetables; Chicken fried rice.",
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "combo-8",
+      "printedNumber": null,
+      "categoryKey": "combos",
+      "nameFr": "Combo 8",
+      "nameEn": "Combo 8",
+      "priceCents": 4400,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "serves": 2,
+      "components": [
+        {
+          "nameFr": "Soupe won ton",
+          "nameEn": "Won ton soup",
+          "quantity": 2
+        },
+        {
+          "nameFr": "Rouleaux aux œufs",
+          "nameEn": "Egg rolls",
+          "quantity": 4
+        },
+        {
+          "nameFr": "Poulet Général Tao",
+          "nameEn": "General Tao chicken",
+          "quantity": null
+        },
+        {
+          "nameFr": "Bœuf au sésame",
+          "nameEn": "Sesame beef",
+          "quantity": null
+        },
+        {
+          "nameFr": "Riz frit spécial",
+          "nameEn": "Special fried rice",
+          "quantity": null
+        },
+        {
+          "nameFr": "Crevettes avec légumes",
+          "nameEn": "Shrimp with mixed vegetables",
+          "quantity": null
+        }
+      ],
+      "descriptionFr": "Pour 2 personne(s). 2 × Soupe won ton; 4 × Rouleaux aux œufs; Poulet Général Tao; Bœuf au sésame; Riz frit spécial; Crevettes avec légumes.",
+      "descriptionEn": "Serves 2. 2 × Won ton soup; 4 × Egg rolls; General Tao chicken; Sesame beef; Special fried rice; Shrimp with mixed vegetables.",
+      "modifierGroups": [],
+      "imageUrl": null
+    },
+    {
+      "key": "combo-family",
+      "printedNumber": null,
+      "categoryKey": "combos",
+      "nameFr": "Combo familial",
+      "nameEn": "Family combo",
+      "priceCents": 9500,
+      "availableForDelivery": true,
+      "reviewStatus": "TRANSCRIBED",
+      "serves": 3,
+      "components": [
+        {
+          "nameFr": "Soupe won ton",
+          "nameEn": "Won ton soup",
+          "quantity": 3
+        },
+        {
+          "nameFr": "Rouleaux aux œufs",
+          "nameEn": "Egg rolls",
+          "quantity": 6
+        },
+        {
+          "nameFr": "Côtes levées sucrées à l’ail",
+          "nameEn": "Garlic sweet ribs",
+          "quantity": null
+        },
+        {
+          "nameFr": "Soo Guy au poulet",
+          "nameEn": "Soo Guy chicken",
+          "quantity": null
+        },
+        {
+          "nameFr": "Poulet Général Tao",
+          "nameEn": "General Tao chicken",
+          "quantity": null
+        },
+        {
+          "nameFr": "Bœuf avec brocoli",
+          "nameEn": "Beef with broccoli",
+          "quantity": null
+        },
+        {
+          "nameFr": "Ailes de poulet frites",
+          "nameEn": "Fried chicken wings",
+          "quantity": null
+        },
+        {
+          "nameFr": "Crevettes avec légumes",
+          "nameEn": "Shrimp with mixed vegetables",
+          "quantity": null
+        },
+        {
+          "nameFr": "Riz frit au poulet",
+          "nameEn": "Chicken fried rice",
+          "quantity": null
+        }
+      ],
+      "descriptionFr": "Pour 3 personne(s). 3 × Soupe won ton; 6 × Rouleaux aux œufs; Côtes levées sucrées à l’ail; Soo Guy au poulet; Poulet Général Tao; Bœuf avec brocoli; Ailes de poulet frites; Crevettes avec légumes; Riz frit au poulet.",
+      "descriptionEn": "Serves 3. 3 × Won ton soup; 6 × Egg rolls; Garlic sweet ribs; Soo Guy chicken; General Tao chicken; Beef with broccoli; Fried chicken wings; Shrimp with mixed vegetables; Chicken fried rice.",
+      "modifierGroups": [],
+      "imageUrl": null
+    }
+  ],
+  "pendingConfirmations": [
+    "combo-7 contents"
+  ],
+  "unknownDetails": [
+    "Unprinted standalone portion sizes and fried won ton count",
+    "Combo dish portion sizes beyond soup and egg roll quantities"
+  ],
+  "excluded": [
+    "Dine-in buffet pricing",
+    "Additional-person $19 option",
+    "Combo substitution charge/options"
+  ]
+}
