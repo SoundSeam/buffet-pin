@@ -495,3 +495,10 @@ Verification: exact historical-source comparisons, 34 unit/route tests, 12 Postg
 ### Preserved evidence from codex/restore-july-reservations
 
 VERIFIED in isolated `/Users/daniel/buffet-pin-reservations-july` on live `018c4b1`. Two locale-string corrections only, using July `45edfa2` wording with 15 guests replaced by 12. Existing 6–12 policy and all other behavior preserved. Full French/English form copy comparison against July passes with only guest-limit references substituted. All 39 reservation tests, focused lint and safe build/type validation pass. Deployed on main as `82bbb31` / READY Vercel `dpl_9pgmHz4QbbZTyLWDFeK8RePMduZU`. Live desktop/mobile bilingual copy, original 6–12 options/default six, enabled switch, API boundaries and existing drinks/CDN images pass. No pending migrations or booking/settings mutation. Plan: `plans/restore-july-reservations.md`.
+
+
+### Preserved evidence from codex/reservation-toggle-ui
+
+
+
+The toggle UI fix is deployed from main commit `c69a427` (Vercel `dpl_BPhPw6DJPQEGvvbBaxzZPcPEUutq`, READY). Live reservation availability remains unchanged. Deployment evidence is retained in the execution plan; final evidence documentation is committed locally without triggering another production build.
