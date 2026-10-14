@@ -2,6 +2,12 @@
 
 Statuses: `CONFIRMED`, `RECOMMENDED`, `ASSUMED`, `OPEN`, `DEFERRED`, `REJECTED`. Dates reflect when the decision or status was recorded in this launch program.
 
+## Public display-only food menu planning — 2026-10-14
+
+CONFIRMED: the user requests a plan for a public menu intended only for viewing, with clean item organization and styling already present in the app. No implementation, delivery/pickup purchase flow or production publication is requested.
+
+RECOMMENDED / REVERSIBLE: restore `/menu` using existing green/cream/gold menu presentation and category navigation; initially project the approved 65 offerings in 13 categories from `content/official-delivery-menu.json` without calling the ordering endpoint or requiring a database migration. Localize display fields with the existing French/English switch, retain exact pretax CAD prices and fixed combo contents, and use text-first cards where images are absent. This proposed source does not automatically reflect database admin edits and does not establish dine-in or buffet admission pricing. Owner review of public price context remains a publication gate. See [public-display-menu plan](plans/public-display-menu.md).
+
 ## Confirmed decisions
 
 | ID    | Date       | Decision                                                                                                               | Reasoning                                                                                                                                                      | Consequences                                                                                                                                      | Milestones |
@@ -158,3 +164,15 @@ User explicitly requests and authorizes publishing the functional July restorati
 ## Main consolidation decision — 2026-10-13
 
 CONFIRMED: the user requests all local work on main/origin/main while preserving exactly the current live behavior and leaving inactive features inactive. Source consolidation is authorized; production release is not part of this task. Keep the current live deployment pinned, disable automatic Git deployments in vercel.json, and set the Vercel project Ignored Build Step to exit 0. Preserve the deployed database-backed reservation switch and public drinks/reservation updates. Generated assets and private database/release snapshots remain local, ignored, and backed up rather than published to the public repository.
+
+## Public menu execution and scoped deployment — 2026-10-14
+
+CONFIRMED: the user requests executing and deploying only the public display-menu plan. Use the approved file-backed catalog and existing site styling; preserve database/admin/reservation/ordering behavior and production ordering state. Deploy from the exact current live source plus the menu patch rather than publishing newer consolidated local features. The deployment build must not run pending migrations. No further approval is required for this scoped release.
+
+## Public menu style correction — 2026-10-14
+
+CONFIRMED: user rejects the initial public-menu styling and requires the existing delivery order page as the exact visual source, with no invented styling, and explicitly requests deployment when done. Reuse its banner, white surfaces, compact heading/search, grid, image fallback and item typography directly. Keep the public menu browse-only and preserve every unrelated live behavior. This supersedes the initial green/cream/gold public-menu design choice.
+
+## Text-only public menu sequence — 2026-10-14
+
+CONFIRMED: user requests sensible restaurant ordering and no images because no dish photos exist. Remove both food banner and placeholder squares; preserve shared branding. REVERSIBLE: present appetizers/dumplings/soups, then protein/vegetarian mains, rice/noodles, and combos. Preserve printed dish numbers, item order within categories, approved amounts and fixed combo contents. Apply ordering only in the public display projection, leaving source/database/ordering untouched. Retain existing delivery-page search, typography and summary-row styles. Scoped deployment continues under existing authorization.

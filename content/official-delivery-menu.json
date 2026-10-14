@@ -1,7 +1,7 @@
 {
   "version": 1,
   "releaseKey": "official-delivery-menu-2026-10-13",
-  "status": "DRAFT_REVIEW_ONLY",
+  "status": "APPROVED_FOR_IMPLEMENTATION",
   "source": "Two restaurant-officialized menu photographs supplied by user",
   "currency": "CAD",
   "pricesIncludeTax": false,
@@ -910,7 +910,7 @@
           "quantity": null
         }
       ],
-      "descriptionFr": "Pour 1 personne(s). 1 × Soupe won ton; 2 × Rouleaux aux œufs; Côtes levées sucrées à l’ail; Chop suey au poulet; Riz frit au poulet.",
+      "descriptionFr": "Pour 1 personne. 1 × Soupe won ton; 2 × Rouleaux aux œufs; Côtes levées sucrées à l’ail; Chop suey au poulet; Riz frit au poulet.",
       "descriptionEn": "Serves 1. 1 × Won ton soup; 2 × Egg rolls; Garlic sweet ribs; Chicken chop suey; Chicken fried rice.",
       "modifierGroups": [],
       "imageUrl": null
@@ -957,7 +957,7 @@
           "quantity": null
         }
       ],
-      "descriptionFr": "Pour 1 personne(s). 1 × Soupe won ton; 2 × Rouleaux aux œufs; Côtes levées sucrées à l’ail; Légumes au poulet; Poulet aux ananas; Riz frit au poulet.",
+      "descriptionFr": "Pour 1 personne. 1 × Soupe won ton; 2 × Rouleaux aux œufs; Côtes levées sucrées à l’ail; Légumes au poulet; Poulet aux ananas; Riz frit au poulet.",
       "descriptionEn": "Serves 1. 1 × Won ton soup; 2 × Egg rolls; Garlic sweet ribs; Mixed vegetables with chicken; Pineapple chicken; Chicken fried rice.",
       "modifierGroups": [],
       "imageUrl": null
@@ -1004,7 +1004,7 @@
           "quantity": null
         }
       ],
-      "descriptionFr": "Pour 2 personne(s). 2 × Soupe won ton; 4 × Rouleaux aux œufs; Côtes levées sucrées à l’ail; Soo Guy au poulet; Poulet aux amandes ding; Riz frit au poulet.",
+      "descriptionFr": "Pour 2 personnes. 2 × Soupe won ton; 4 × Rouleaux aux œufs; Côtes levées sucrées à l’ail; Soo Guy au poulet; Poulet aux amandes ding; Riz frit au poulet.",
       "descriptionEn": "Serves 2. 2 × Won ton soup; 4 × Egg rolls; Garlic sweet ribs; Soo Guy chicken; Almond Ding chicken; Chicken fried rice.",
       "modifierGroups": [],
       "imageUrl": null
@@ -1056,7 +1056,7 @@
           "quantity": null
         }
       ],
-      "descriptionFr": "Pour 2 personne(s). 2 × Soupe won ton; 4 × Rouleaux aux œufs; Côtes levées sucrées à l’ail; Soo Guy au poulet; Bœuf avec brocoli; Macaroni au poulet; Riz frit au poulet.",
+      "descriptionFr": "Pour 2 personnes. 2 × Soupe won ton; 4 × Rouleaux aux œufs; Côtes levées sucrées à l’ail; Soo Guy au poulet; Bœuf avec brocoli; Macaroni au poulet; Riz frit au poulet.",
       "descriptionEn": "Serves 2. 2 × Won ton soup; 4 × Egg rolls; Garlic sweet ribs; Soo Guy chicken; Beef with broccoli; Chicken macaroni; Chicken fried rice.",
       "modifierGroups": [],
       "imageUrl": null
@@ -1108,7 +1108,7 @@
           "quantity": null
         }
       ],
-      "descriptionFr": "Pour 2 personne(s). 2 × Soupe won ton; 4 × Rouleaux aux œufs; Côtes levées sucrées à l’ail; Poulet aux ananas; Chop suey au poulet; Riz frit au poulet; Chow mein sauce soya.",
+      "descriptionFr": "Pour 2 personnes. 2 × Soupe won ton; 4 × Rouleaux aux œufs; Côtes levées sucrées à l’ail; Poulet aux ananas; Chop suey au poulet; Riz frit au poulet; Chow mein sauce soya.",
       "descriptionEn": "Serves 2. 2 × Won ton soup; 4 × Egg rolls; Garlic sweet ribs; Pineapple chicken; Chicken chop suey; Chicken fried rice; Soya chow mein.",
       "modifierGroups": [],
       "imageUrl": null
@@ -1160,7 +1160,7 @@
           "quantity": null
         }
       ],
-      "descriptionFr": "Pour 2 personne(s). 2 × Soupe won ton; 4 × Rouleaux aux œufs; Saucisses sucrées à l’ail; Crevettes tempura; Ailes de poulet frites; Chow mein style cantonais; Riz frit au poulet.",
+      "descriptionFr": "Pour 2 personnes. 2 × Soupe won ton; 4 × Rouleaux aux œufs; Saucisses sucrées à l’ail; Crevettes tempura; Ailes de poulet frites; Chow mein style cantonais; Riz frit au poulet.",
       "descriptionEn": "Serves 2. 2 × Won ton soup; 4 × Egg rolls; Garlic sweet sausages; Tempura shrimp; Fried chicken wings; Cantonese chow mein; Chicken fried rice.",
       "modifierGroups": [],
       "imageUrl": null
@@ -1173,7 +1173,7 @@
       "nameEn": "Combo 7",
       "priceCents": 4600,
       "availableForDelivery": true,
-      "reviewStatus": "NEEDS_CONFIRMATION",
+      "reviewStatus": "USER_CONFIRMED",
       "serves": 2,
       "components": [
         {
@@ -1212,7 +1212,7 @@
           "quantity": null
         }
       ],
-      "descriptionFr": "Pour 2 personne(s). 2 × Soupe won ton; 4 × Rouleaux aux œufs; Poulet Général Tao; Bœuf à l’orange; Crevettes szechuanaises; Légumes mélangés; Riz frit au poulet.",
+      "descriptionFr": "Pour 2 personnes. 2 × Soupe won ton; 4 × Rouleaux aux œufs; Poulet Général Tao; Bœuf à l’orange; Crevettes szechuanaises; Légumes mélangés; Riz frit au poulet.",
       "descriptionEn": "Serves 2. 2 × Won ton soup; 4 × Egg rolls; General Tao chicken; Orange beef; Szechuan shrimp; Mixed vegetables; Chicken fried rice.",
       "modifierGroups": [],
       "imageUrl": null
@@ -1259,7 +1259,7 @@
           "quantity": null
         }
       ],
-      "descriptionFr": "Pour 2 personne(s). 2 × Soupe won ton; 4 × Rouleaux aux œufs; Poulet Général Tao; Bœuf au sésame; Riz frit spécial; Crevettes avec légumes.",
+      "descriptionFr": "Pour 2 personnes. 2 × Soupe won ton; 4 × Rouleaux aux œufs; Poulet Général Tao; Bœuf au sésame; Riz frit spécial; Crevettes avec légumes.",
       "descriptionEn": "Serves 2. 2 × Won ton soup; 4 × Egg rolls; General Tao chicken; Sesame beef; Special fried rice; Shrimp with mixed vegetables.",
       "modifierGroups": [],
       "imageUrl": null
@@ -1321,15 +1321,13 @@
           "quantity": null
         }
       ],
-      "descriptionFr": "Pour 3 personne(s). 3 × Soupe won ton; 6 × Rouleaux aux œufs; Côtes levées sucrées à l’ail; Soo Guy au poulet; Poulet Général Tao; Bœuf avec brocoli; Ailes de poulet frites; Crevettes avec légumes; Riz frit au poulet.",
+      "descriptionFr": "Pour 3 personnes. 3 × Soupe won ton; 6 × Rouleaux aux œufs; Côtes levées sucrées à l’ail; Soo Guy au poulet; Poulet Général Tao; Bœuf avec brocoli; Ailes de poulet frites; Crevettes avec légumes; Riz frit au poulet.",
       "descriptionEn": "Serves 3. 3 × Won ton soup; 6 × Egg rolls; Garlic sweet ribs; Soo Guy chicken; General Tao chicken; Beef with broccoli; Fried chicken wings; Shrimp with mixed vegetables; Chicken fried rice.",
       "modifierGroups": [],
       "imageUrl": null
     }
   ],
-  "pendingConfirmations": [
-    "combo-7 contents"
-  ],
+  "pendingConfirmations": [],
   "unknownDetails": [
     "Unprinted standalone portion sizes and fried won ton count",
     "Combo dish portion sizes beyond soup and egg roll quantities"

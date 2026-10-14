@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-14",
+  "deployment": "dpl_FqE68pfavQC22D6MKZAMHnbmGxTB",
+  "baseDeployment": "dpl_91SWuMdypzJrNwWaRamHFMBv5xtw",
+  "rollback": "dpl_91SWuMdypzJrNwWaRamHFMBv5xtw",
+  "changed": {
+    "components/menu/public-menu.tsx": {
+      "priorSha1": "9ee690e5f6bec0a2209e773ed172aa6054efbb45",
+      "sha1": "ee890c1bfab9463e30a8d6c6028728fea6558a6c",
+      "sha256": "3e59175c8b7f1f09afea43d65fc6862348b3830d70a91c8b56e510fb3b3f61b9"
+    }
+  },
+  "uploadedSourceFilesVerified": 223,
+  "status": "VERIFIED",
+  "url": "https://www.buffetpin.com/menu",
+  "verification": {
+    "liveBrowser": "PASS at 390px and 1440px in French/English",
+    "liveOrderStyleParity": "PASS",
+    "publicPagePreservation": "PASS",
+    "migrationExecuted": false
+  }
+}

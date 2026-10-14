@@ -1,0 +1,96 @@
+{
+  "reference": {
+    "heading": {
+      "color": "rgb(0, 0, 0)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "fontSize": "36px",
+      "fontWeight": "600",
+      "lineHeight": "40px",
+      "borderRadius": "0px",
+      "height": "40px"
+    },
+    "banner": {
+      "color": "rgb(243, 228, 206)",
+      "backgroundColor": "rgb(6, 47, 36)",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "borderRadius": "12px",
+      "height": "260px"
+    },
+    "image": {
+      "color": "rgb(6, 47, 36)",
+      "backgroundColor": "rgb(229, 229, 229)",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "borderRadius": "12px",
+      "height": "261.328px"
+    },
+    "name": {
+      "color": "rgb(6, 47, 36)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "fontSize": "16px",
+      "fontWeight": "500",
+      "lineHeight": "22px",
+      "borderRadius": "0px",
+      "height": "22px"
+    },
+    "price": {
+      "color": "rgb(6, 47, 36)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "14px",
+      "borderRadius": "0px",
+      "height": "14px"
+    }
+  },
+  "actual": {
+    "heading": {
+      "color": "rgb(0, 0, 0)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "fontSize": "36px",
+      "fontWeight": "600",
+      "lineHeight": "40px",
+      "borderRadius": "0px",
+      "height": "40px"
+    },
+    "banner": {
+      "color": "rgb(243, 228, 206)",
+      "backgroundColor": "rgb(6, 47, 36)",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "borderRadius": "12px",
+      "height": "260px"
+    },
+    "image": {
+      "color": "rgb(6, 47, 36)",
+      "backgroundColor": "rgb(229, 229, 229)",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "borderRadius": "12px",
+      "height": "261.328px"
+    },
+    "name": {
+      "color": "rgb(6, 47, 36)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "fontSize": "16px",
+      "fontWeight": "500",
+      "lineHeight": "22px",
+      "borderRadius": "0px",
+      "height": "22px"
+    },
+    "price": {
+      "color": "rgb(6, 47, 36)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "lineHeight": "14px",
+      "borderRadius": "0px",
+      "height": "14px"
+    }
+  }
+}

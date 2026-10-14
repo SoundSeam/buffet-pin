@@ -1,0 +1,19 @@
+{
+  "base": "c874e11765053c75d4278aaf3fbed90e00f655d7",
+  "rollback": "dpl_FnmZX1EeGPgeiGZcDRxeaLnnQK9e",
+  "changed": {
+    "app/menu/page.tsx": "387640b832d574842043b459ad2a79855afa9babe2b257185d0e4c813466eae7",
+    "app/robots.ts": "860779d2b13f1431cf1849450007de0f1b4848e573507c0c1d3acddded03e08f",
+    "app/sitemap.ts": "7c60b9a77fff01d7bfa6272fa561a9a050620606b5b06e981dd8a97344c75aa0",
+    "lib/i18n.ts": "b1baf42e4013bf7cfb80c3bba9d3bbcb4ec76abf8a3777f1e7584a6733ffb6e2",
+    "vercel.json": "75c76828c47ac8fa1380eb0f77c2a2a06fce1a06e61d66487d58c2572a48873f",
+    "content/official-delivery-menu.json": "66e15e97a2bf91430bae75b53c6127c8c2894edff52ac40067732bf273f51e69",
+    "lib/menu/display-menu.ts": "d1ffac65b8fbfa81d1c75d357b4d520a93b07ac0ba9287f9c6f1805b5a255117",
+    "components/menu/public-menu.tsx": "9062cc672fccd99bda552b1a72c438229b9967504848e6bf0e93fee0f3d03253"
+  },
+  "deployment": "dpl_91SWuMdypzJrNwWaRamHFMBv5xtw",
+  "url": "https://www.buffetpin.com/menu",
+  "status": "VERIFIED",
+  "uploadedSourceFilesVerified": 223,
+  "date": "2026-10-14"
+}

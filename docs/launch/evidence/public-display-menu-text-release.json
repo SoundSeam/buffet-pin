@@ -1,0 +1,29 @@
+{
+  "date": "2026-10-14",
+  "baseDeployment": "dpl_FqE68pfavQC22D6MKZAMHnbmGxTB",
+  "rollback": "dpl_FqE68pfavQC22D6MKZAMHnbmGxTB",
+  "changed": {
+    "components/menu/public-menu.tsx": {
+      "priorSha1": "ee890c1bfab9463e30a8d6c6028728fea6558a6c",
+      "sha1": "8467df5eaeac4586a727edec47bc186feb45bf9d",
+      "sha256": "236eb01fb5c2c1fc89ed01c5becf6045a6f34f962d548d2a3f2652e4cb4ee659"
+    },
+    "lib/menu/display-menu.ts": {
+      "priorSha1": "8e3ff84eec9f42f099fb4b360360b5da56f74aa0",
+      "sha1": "279d2409e14c7158553510e4f2a5a5b33ed91dca",
+      "sha256": "6d209c2c30df8631887bf7688287b1fe72dd19a7815f3e38b67e95109d441f52"
+    }
+  },
+  "status": "VERIFIED",
+  "url": "https://www.buffetpin.com/menu",
+  "deployment": "dpl_AbkNKHNQsHNRWLHWYoenjoGHSEMW",
+  "uploadedSourceFilesVerified": 223,
+  "verification": {
+    "automatedTests": 285,
+    "browser": "PASS at 390px/1440px, FR/EN, local and production",
+    "noFoodImagesOrPlaceholders": true,
+    "restaurantCategorySequence": "PASS",
+    "publicPagePreservation": "PASS",
+    "migrationExecuted": false
+  }
+}
