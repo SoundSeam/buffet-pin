@@ -446,8 +446,20 @@ async function seedDatabase() {
 async function stop(exitCode = 0) {
   if (stopping) return;
   stopping = true;
-  if (app && !app.killed) app.kill("SIGTERM");
-  if (authServer) await new Promise((resolve) => authServer.close(resolve));
+  if (app?.pid && !app.killed) {
+    try {
+      if (process.platform === "win32") app.kill("SIGTERM");
+      else process.kill(-app.pid, "SIGTERM");
+    } catch (error) {
+      if (error.code !== "ESRCH") console.error("Unable to stop isolated app process group.");
+    }
+  }
+  // npx previously left Next children/auth keep-alive sockets alive, blocking
+  // teardown and leaking a database that later tests could accidentally reuse.
+  if (authServer) {
+    authServer.closeAllConnections();
+    await new Promise((resolve) => authServer.close(resolve));
+  }
   spawnSync("docker", ["rm", "-f", containerName], { stdio: "ignore" });
   process.exit(exitCode);
 }
@@ -494,7 +506,8 @@ try {
   await seedDatabase();
   await startAuthServer();
 
-  app = spawn("npx", ["next", "dev", "-p", String(appPort)], {
+  app = spawn(process.execPath, ["node_modules/next/dist/bin/next", "dev", "-p", String(appPort)], {
+    detached: process.platform !== "win32",
     env: {
       ...process.env,
       NODE_ENV: "development",
