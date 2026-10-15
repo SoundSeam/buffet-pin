@@ -1,7 +1,7 @@
 {
   "date": "2026-10-14",
   "scope": "Repository dependency remediation; no production/provider mutation or security deployment.",
-  "baselineMenuCommit": "54284a63b45765144613b50be0771ff5b58eeca4",
+  "baselineMenuCommit": "64568a493b40843aa01c012ebfeaa6dc3bf58a2e",
   "runtime": "Node 22.23.2",
   "installer": "npm 11.8.0 (npm 10 peer resolver crashed; no --force or peer bypass)",
   "currentBeforeAudit": {
@@ -936,15 +936,18 @@
     "legacyReservationDatabase": "12 tests pass in owned loopback-only fixture",
     "legacyDrinksDatabase": "4 tests pass in owned loopback-only fixture",
     "linux": "27 dependency-boundary tests pass on node:22.23.2-bookworm-slim, no production credentials",
-    "visual": "0 selected computed-style differences on home/reservation/drinks/order/login at390/1440; menu screenshot pixel difference under0.01%; frozen committed menu baseline",
+    "visual": "0 selected computed-style differences on home/reservation/drinks/order/login at390/1440; 0 differences on final 65-image menu at390/1440; text-menu screenshot pixel difference under0.01%",
     "infrastructure": "Offline no-lookups synth passes with old CLI; same52 logical resources, unchanged IAM/network/retention policies; only CDK metadata and bundled Lambda asset hashes differ",
-    "aggregate": "IN_PROGRESS"
+    "aggregate": "PASS: CI=1 npm run verify on final image-menu baseline; both strict audits, typecheck, lint, 316 unit/contract/integration tests, 30 browser tests, 59 disposable database tests, Prisma validation and safe production build",
+    "browser": "30 tests pass, including final 65-image bilingual menu, responsive appearance, map worker rendering and unavailable-WebGL fallback",
+    "lint": "0 errors; 28 existing/menu warnings"
   },
-  "installNote": "npm ci/prune retained six locked optional WASM artifacts labelled extraneous on native macOS. These were preserved outside the isolated native install; portable lock metadata remains. Final npm ls has no problems; native tests rerun pass. Root install remains untouched for active image workers.",
+  "installNote": "npm ci/prune retained six locked optional WASM artifacts labelled extraneous on native macOS. These were preserved outside the isolated native install; portable lock metadata remains. Final npm ls has no problems; native tests rerun pass. Root install was kept untouched until the image task finished; local installation is coordinated after source integration.",
   "remainingLimits": [
     "No real/provider/production smoke is claimed.",
     "Tailwind4 browser floor Safari16.4/Chrome111/Firefox128; MapLibre6 requires WebGL2 with visible fallback.",
     "ESLint9 deprecation is optional maintenance, not a current advisory.",
     "Next lint source adaptation and scoped Prisma override require future review/removal when upstream supports clean paths."
-  ]
+  ],
+  "status": "CODE_COMPLETE"
 }

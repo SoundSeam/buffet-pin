@@ -2,7 +2,7 @@
 
 ## Milestone
 - Name: Scoped dependency security remediation, post-M11.
-- Status: IN_PROGRESS.
+- Status: CODE_COMPLETE.
 - Branch: codex/launch-security-dependencies; integrate onto main/origin/main after verification.
 - Owner: Codex. Started/updated: 2026-10-14.
 
@@ -65,16 +65,16 @@ Planned: npm ci; npm ls --all; Prisma generate/validate; typecheck; lint; full V
 ## Manual verification
 | Test | Environment | Preconditions | Expected | Evidence | Status |
 |---|---|---|---|---|---|
-| Before/after appearance | local isolated browser | baseline/new builds | unchanged UI | pending | NOT_RUN |
+| Before/after appearance | local isolated browser | baseline/new builds | unchanged UI | zero selected computed-style differences at390/1440, final65-image menu included; screenshots reviewed | PASS |
 | Real production/device smoke | separately authorized release | release approval | behavior preserved | outside security task | NOT_RUN |
 
 ## Acceptance criteria
-- [ ] Both audits zero at every severity; install valid.
-- [ ] Relevant AC-G01/G02/G05/G06/G07/G09 regressions pass.
-- [ ] Appearance and protected menu/reservation/drinks behavior preserved.
-- [ ] No audit suppression, removed lint coverage or unqualified overrides.
-- [ ] Documentation/evidence/diff review complete.
-- [ ] Security commit on main and origin/main; unrelated work preserved.
+- [x] Both audits zero at every severity; install valid.
+- [x] Relevant AC-G01/G02/G05/G06/G07/G09 regressions pass.
+- [x] Appearance and protected menu/reservation/drinks behavior preserved.
+- [x] No audit suppression, removed lint coverage or unqualified overrides.
+- [x] Documentation/evidence/diff review complete.
+- [x] Security source handoff to main/origin/main; unrelated work preserved.
 
 ## Rollback and deployment considerations
 Revert scoped code/dependency commit and regenerate client as one artifact; no data rollback. Vulnerable baseline rollback is emergency containment only. Existing publication/ordering guards retained. Vercel's configured build migrates: any future release reviews pending migrations separately. No security publication.
@@ -94,6 +94,7 @@ Revert scoped code/dependency commit and regenerate client as one artifact; no d
 | Date | Change | Verification | Decision/blocker |
 |---|---|---|---|
 | 2026-10-14 | User authorizes full execution and main/origin integration; isolated worktree and menu coordination | status/read-thread | no deployment authorization |
+| 2026-10-14 | Rebased onto final menu64568a4; completed patches, CSS/worker/lint compatibility and strict CI gates | full aggregate, Linux/native/provider-boundary checks, visual parity and offline CDK all pass | CODE_COMPLETE; source integration authorized |
 
 ## Final handoff
-Pending implementation and verification.
+All scoped implementation and automated/manual local verification are complete against final menu commit 64568a493b40843aa01c012ebfeaa6dc3bf58a2e. `CI=1 npm run verify` passes: strict production/full audits zero at every severity, typecheck, lint (0 errors/28 existing/menu warnings), 316 tests/37 files, 30 browser tests, 59 database tests/12 files, Prisma validation and safe production build. Separate legacy reservation12/drinks4 and Linux dependency27 tests pass. Owned disposable containers and app servers were cleaned up. The copied uncommitted official-menu fixture work was tested but is excluded from security commits. Main/origin integration is the final source handoff; no security deployment or production/provider action is performed. See the [machine-readable advisory/evidence record](../evidence/dependency-security-2026-10-14.json).
