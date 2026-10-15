@@ -7,6 +7,7 @@
 - Branch: `main` working checkout; isolated deployment snapshot at `/tmp/buffet-pin-display-menu-release` starts from the exact live source `c874e11765053c75d4278aaf3fbed90e00f655d7`.
 - Owner: Codex; restaurant owner reviews menu presentation.
 - Started / last updated: 2026-10-14.
+- Latest follow-up: [food images and combos first](public-menu-images.md) supersedes the earlier text-only preference; generated imagery is now deployed.
 
 ## Text-only restaurant sequence — 2026-10-14
 
@@ -152,7 +153,7 @@ No data rollback or feature activation is required. Revert only this scoped page
 - No database/schema/API/credential/provider changes, migration apply, ordering activation, Git push or unrelated source publication.
 - All applicable local checks and live menu/preservation checks pass. No remaining scoped manual/external gate; delivery launch gates are unchanged.
 - Current public page: https://www.buffetpin.com/menu.
-- Current production release: `dpl_AbkNKHNQsHNRWLHWYoenjoGHSEMW`; prior public-menu release `dpl_FqE68pfavQC22D6MKZAMHnbmGxTB` is the rollback target.
+- Current production release: `dpl_8wf56ALyL3C29bGgtesT7gW2Y53H`; prior text-only release `dpl_AbkNKHNQsHNRWLHWYoenjoGHSEMW` is the rollback target.
 - Catalog remains file-backed as authorized; database admin edits do not automatically update the public menu.
 
 ## Implementation evidence — 2026-10-14

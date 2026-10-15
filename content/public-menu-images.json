@@ -1,0 +1,463 @@
+{
+  "version": 1,
+  "generatedAt": "2026-10-14",
+  "mode": "built-in image_gen",
+  "style": "Transparent isolated studio food cutouts matching drinks-menu imagery",
+  "images": {
+    "combo-1": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/combo-1-810aefc75b19.webp",
+      "sha256": "810aefc75b197c2f767176e2b95f50d8df7901b66191d225f27e208e389d8fde",
+      "bytes": 351440,
+      "width": 1254,
+      "height": 1254
+    },
+    "combo-2": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/combo-2-09b5133a7271.webp",
+      "sha256": "09b5133a7271dd2e597eb61fcc98cb60fc01b83818dd358a8dbda30cc19ece41",
+      "bytes": 330836,
+      "width": 1254,
+      "height": 1254
+    },
+    "combo-3": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/combo-3-0ff9e58efaf2.webp",
+      "sha256": "0ff9e58efaf25e45a91dc6167659299eed61bf32e02e09142b41e820f94ff05d",
+      "bytes": 316050,
+      "width": 1254,
+      "height": 1254
+    },
+    "combo-4": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/combo-4-4622059a0345.webp",
+      "sha256": "4622059a0345cc9dde203478c2954c92ab3430e43c5a878204442a9e7187f47c",
+      "bytes": 315440,
+      "width": 1254,
+      "height": 1254
+    },
+    "combo-5": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/combo-5-5733f74c1e8e.webp",
+      "sha256": "5733f74c1e8e377fae983cce9235e9dff95531db2940307db8a8b941c6ff2f33",
+      "bytes": 470968,
+      "width": 1254,
+      "height": 1254
+    },
+    "combo-6": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/combo-6-9e1ec7353c2f.webp",
+      "sha256": "9e1ec7353c2f07dbbd30f76ddb0a139bae1f7d37338c6e9089ee3981f4b7c8ec",
+      "bytes": 340680,
+      "width": 1254,
+      "height": 1254
+    },
+    "combo-7": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/combo-7-96423fe43b5a.webp",
+      "sha256": "96423fe43b5a9e776ac7f9dda18ee2c1348d1faba3734bc9ed68003b15a09601",
+      "bytes": 434020,
+      "width": 1254,
+      "height": 1254
+    },
+    "combo-8": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/combo-8-1b5615c0c88b.webp",
+      "sha256": "1b5615c0c88b8789a84302a6dbfa15f863ba671ef3759c8958d2c4138b5352ef",
+      "bytes": 470528,
+      "width": 1254,
+      "height": 1254
+    },
+    "combo-family": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/combo-family-f2778b9a09e5.webp",
+      "sha256": "f2778b9a09e558e5396611ee6518fa8c8cb30478fef8c278d4391733297231c8",
+      "bytes": 430934,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-1": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-1-6d1f4fd37684.webp",
+      "sha256": "6d1f4fd37684b2a99ef50b85d326859f37537165a3888303fa44131c09b40a6c",
+      "bytes": 154554,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-2": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-2-de4baf2067bd.webp",
+      "sha256": "de4baf2067bdbc47574a78918dbb35506f43132da36a40ad157cc02d9a3c6fdd",
+      "bytes": 160586,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-3": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-3-f82914a50ff1.webp",
+      "sha256": "f82914a50ff1308b72ee587919117684d9bba327eb82ad68b0e8f000cc1b7cf0",
+      "bytes": 181072,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-4": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-4-d3b2392ae9db.webp",
+      "sha256": "d3b2392ae9dbc8de4d8a7f08a49b65ec418c6c8ee0be9dec8f78d040c9fb73e7",
+      "bytes": 224794,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-5": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-5-18fe56000119.webp",
+      "sha256": "18fe5600011913797830b0616e25191ff95335fbc12de795a06544ca57c96e8b",
+      "bytes": 228168,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-6": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-6-0683b68cab86.webp",
+      "sha256": "0683b68cab86b3f6b4190bc3c96d668ff2c8c11b0ae62bf887a1b79fcfcb901d",
+      "bytes": 215230,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-7": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-7-17c36a28d751.webp",
+      "sha256": "17c36a28d751bf6f44101bf91cc726b74cb0f871f981b536816f27750c6829f8",
+      "bytes": 219798,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-8": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-8-1f0e91bcdc9b.webp",
+      "sha256": "1f0e91bcdc9bebe20c71cd1a253103bff5e77cbdd77dbb24635e6591cc98f0b5",
+      "bytes": 221222,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-9": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-9-4f3f5095241b.webp",
+      "sha256": "4f3f5095241bf603136092a5c9a615bd72db64ea21495205a52998499abf2a78",
+      "bytes": 179388,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-10": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-10-279ba11bc190.webp",
+      "sha256": "279ba11bc190aad59304a00f8e4dbe0c0426850336ca2d9b34a262114c6cd859",
+      "bytes": 255372,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-11": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-11-e4473c735e5c.webp",
+      "sha256": "e4473c735e5cb132b9d4ea1af6bcb200093a4fe259efe528a0bafd56574ab662",
+      "bytes": 266136,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-12": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-12-92e50b3519a5.webp",
+      "sha256": "92e50b3519a57a052327499550e63fa6f9a2e2e7a834b3389fb8770cd430c618",
+      "bytes": 271920,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-13": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-13-8cb8b492fb38.webp",
+      "sha256": "8cb8b492fb38befab9faf43f6166294cc3d8fae21c408ecf2ee06b968bcd6722",
+      "bytes": 122686,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-14": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-14-dac042dbdfe0.webp",
+      "sha256": "dac042dbdfe05c6dcd4caa7b4c745fcb228ccf17c3755512a78eca0d9b9513b5",
+      "bytes": 250910,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-15": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-15-9b7bbd220115.webp",
+      "sha256": "9b7bbd220115ee86e7b92470658e47df96a4344b46f1c9437b9975d210ed9b9b",
+      "bytes": 289428,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-16": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-16-f5089113a3bc.webp",
+      "sha256": "f5089113a3bc50925a7e76d794a8b57967d969cdcc3077c0408fa616c33dc762",
+      "bytes": 276002,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-17": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-17-f29e0c11299f.webp",
+      "sha256": "f29e0c11299fdeae1aaf4dcc45fdbd9ca8032a2c5e40b3f710be3e7ea82e32b2",
+      "bytes": 270522,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-18": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-18-80cbf84d4d79.webp",
+      "sha256": "80cbf84d4d79d92e88f63ed51edaa3631fc84ce57894b74d9f5e64cef136f12a",
+      "bytes": 320384,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-19": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-19-d647d12bdbdc.webp",
+      "sha256": "d647d12bdbdc214cf636e86daedc8bbc487dca7cd6c1e3ba258a89f6db6bc3b1",
+      "bytes": 252420,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-20": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-20-8fec04327ee0.webp",
+      "sha256": "8fec04327ee011d152cea87ba5fa57fe8b15fc907d5c22706dc0b89745717b03",
+      "bytes": 271204,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-21": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-21-184ef5a9bd38.webp",
+      "sha256": "184ef5a9bd381d44b410309686976477b8bf0e65a65445d0dd73539a5bed5d67",
+      "bytes": 239180,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-22": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-22-27ec7abb1e4b.webp",
+      "sha256": "27ec7abb1e4b70aa34d6053d0e705c613c7c8eb92ec73c256041ef741a95f6a8",
+      "bytes": 247380,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-23": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-23-ecaaeea088a8.webp",
+      "sha256": "ecaaeea088a83dfa991b7c63862f9011a8b21bf5e8f19ccf0c8123f27acaee73",
+      "bytes": 327110,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-24": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-24-41662ccc7a1e.webp",
+      "sha256": "41662ccc7a1ed2d676aaf21935aaa3cada4bc7b5a0167f408594894120aeaa14",
+      "bytes": 326948,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-25": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-25-c229a97c5df9.webp",
+      "sha256": "c229a97c5df9170ebad87ca873ef4ffff14b9b4acc2f609066f9eba634c84d1a",
+      "bytes": 309058,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-26": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-26-60d6f9838419.webp",
+      "sha256": "60d6f98384192934cbd7d956fa5815cb95a17bd2e5628971f99196ca58710db9",
+      "bytes": 328480,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-27": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-27-7c0f22f93d9e.webp",
+      "sha256": "7c0f22f93d9eabba950facf325b1090d412eed09ccbe0d8db5320bde83de5a05",
+      "bytes": 336824,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-28": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-28-1fcc8058fa47.webp",
+      "sha256": "1fcc8058fa478ea49914d120d9fc0d1af248e4f2313caa4dcf402caa0fa1b486",
+      "bytes": 315606,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-29": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-29-5422a57640db.webp",
+      "sha256": "5422a57640db251dfed0181af0f247b346e254856f70e7b36dbc73b0b1d84b29",
+      "bytes": 321346,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-30": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-30-5d9ba05d63e9.webp",
+      "sha256": "5d9ba05d63e901727cc5f145e8ac793890744711eedbefbe624207dfc7c46359",
+      "bytes": 112520,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-31": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-31-1aec73a3c064.webp",
+      "sha256": "1aec73a3c064ba7069711fa3526e3c2032e032f4c5e34f62e70e2cd345513ef8",
+      "bytes": 243982,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-32": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-32-71cb50cb4da6.webp",
+      "sha256": "71cb50cb4da64dbd3782378430ddb9b0d547bdcbf379f63bfaa20ddeac50f089",
+      "bytes": 253722,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-33": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-33-5d02a0a4dec1.webp",
+      "sha256": "5d02a0a4dec1a17bc79bc97f4bc5c151638e4c1db0eda7ad5b82d93434040733",
+      "bytes": 303786,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-34": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-34-160a2e784c69.webp",
+      "sha256": "160a2e784c69f55e6066ff7cda0de382af8e00b7e1df35c15521269eeb401954",
+      "bytes": 281344,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-35": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-35-82aafcd325fc.webp",
+      "sha256": "82aafcd325fc2ce49ee43c243bc67a0282c8487a2695e68ddf0438baa50ab2a6",
+      "bytes": 310618,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-37": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-37-17c0300f7e18.webp",
+      "sha256": "17c0300f7e18bcb744662fb870ac0e04f4bfec0e7ba6c676e1284f3e4fca6a92",
+      "bytes": 301516,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-38": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-38-1aa5749af67c.webp",
+      "sha256": "1aa5749af67c3961488a76982bfe8a8a98cbceb379d954369077880b2f4434fb",
+      "bytes": 216434,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-39": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-39-5b923bb0836b.webp",
+      "sha256": "5b923bb0836b4ec175d4be079159d5e4c0ebc5dae756012d21e4f27e6edf2fe2",
+      "bytes": 243424,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-40": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-40-6d46f1f331de.webp",
+      "sha256": "6d46f1f331de5155bfba31e9de4be7ca4315ebed1b6d266431e7006658901aff",
+      "bytes": 228096,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-41": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-41-119d92d45c0b.webp",
+      "sha256": "119d92d45c0bae2c5e2037f3aaccf97d5f56b5e38363d02ee5579116568f7498",
+      "bytes": 274794,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-42": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-42-fb0084fb4c6e.webp",
+      "sha256": "fb0084fb4c6e73fe85e6e63e378497112eba0ae67d462c44bef3bb1e5f586cc4",
+      "bytes": 349672,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-43": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-43-88663a1af4ae.webp",
+      "sha256": "88663a1af4ae22a422e4f96d34b23373a09153f8f5402ca771b177a1da317e85",
+      "bytes": 345426,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-44": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-44-6ea60b5e25bd.webp",
+      "sha256": "6ea60b5e25bdd00898b28aedd1c084a8b1edfdb60fc372d32dea6faf8ea22fd1",
+      "bytes": 291630,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-45": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-45-5762ea3909bd.webp",
+      "sha256": "5762ea3909bdf6d0420c742d534b42d15428f08ce506811e5fc5739bd7e4ea56",
+      "bytes": 269252,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-46": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-46-9890211b5a91.webp",
+      "sha256": "9890211b5a91fafcbfb0c2d0b7d043b3e7b5cf48ee8ded1a76eb84ca6bcff19e",
+      "bytes": 244414,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-47": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-47-4c1276d1a3db.webp",
+      "sha256": "4c1276d1a3dbec977db2520adf1fec399d210fade55b783a9260b574c06a2f6b",
+      "bytes": 257722,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-48": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-48-dd1888b09065.webp",
+      "sha256": "dd1888b090659e2288330dd50427e2d22229c0b0c8f6196483cb7e2a63ccbdec",
+      "bytes": 259458,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-49": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-49-e5b7ff17ce37.webp",
+      "sha256": "e5b7ff17ce378ce835290b66672ba912980b5d3351a30e5f7d9d500212e12abf",
+      "bytes": 268532,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-50": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-50-d771c3eb7c8f.webp",
+      "sha256": "d771c3eb7c8f8b4fa404646d74b983249eaa962e5352aa1cc9256c621c4f81e0",
+      "bytes": 263004,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-53": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-53-c605a6c4f64d.webp",
+      "sha256": "c605a6c4f64d1ea24d74ca4fc6d5abab6999f64b67dbd4495f63bb190312f171",
+      "bytes": 281206,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-54": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-54-1e397880ad20.webp",
+      "sha256": "1e397880ad20828eb08b57a768fab4b9470c9c18e3d070cbe5e6b811cc9b0afb",
+      "bytes": 296794,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-55": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-55-08a905288978.webp",
+      "sha256": "08a9052889787c6112530ea39cafa24f583f97a3a201d2f372ab840dd39a3417",
+      "bytes": 333692,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-56": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-56-ab0c9554f7e2.webp",
+      "sha256": "ab0c9554f7e2e725fa36cf3c833bdee3fb8e0fa9bfe2185e2c4a8044d9c3884e",
+      "bytes": 312608,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-57": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-57-1daabc34c299.webp",
+      "sha256": "1daabc34c299e638ca9ade5e22919c967279185e7d1c50f90d4fd96b036b855c",
+      "bytes": 306726,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-58": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-58-859287c9ed06.webp",
+      "sha256": "859287c9ed06fcda3afb3675bfca06bf1e9b24bb67bad6d320943934f51d132f",
+      "bytes": 339878,
+      "width": 1254,
+      "height": 1254
+    },
+    "item-59": {
+      "src": "https://d2d93bgcpgtdom.cloudfront.net/food/2026-10-14/item-59-30b80ebff2fb.webp",
+      "sha256": "30b80ebff2fba5fbec86ac58f97c1b9df1e46a4cb3b941bca8854f4cf3e4d697",
+      "bytes": 294974,
+      "width": 1254,
+      "height": 1254
+    }
+  }
+}

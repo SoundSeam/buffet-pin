@@ -1,0 +1,45 @@
+{
+  "date": "2026-10-14",
+  "status": "VERIFIED",
+  "baseDeployment": "dpl_AbkNKHNQsHNRWLHWYoenjoGHSEMW",
+  "rollback": "dpl_AbkNKHNQsHNRWLHWYoenjoGHSEMW",
+  "url": "https://www.buffetpin.com/menu",
+  "changedSource": {
+    "components/menu/public-menu.tsx": "d0a34e6c6604de432be99deb22d5295f6c760967b6b00529f381c9ba26e696fe",
+    "lib/menu/display-menu.ts": "ac76d5b2558ffffc0cbc37a541bf40e41023a5dee00bb3b84de59464085121d4",
+    "content/public-menu-images.json": "bd1e1f62595b5bc681d1cbe121b60dcb4c34776e45e4711e561cac1e5c05fac5"
+  },
+  "assets": {
+    "mode": "built-in image_gen",
+    "count": 65,
+    "reviewed": 65,
+    "dimensions": [
+      1254,
+      1254
+    ],
+    "optimizedBytes": 18329848,
+    "transparentAlpha": true,
+    "exactPngToWebpAlphaParity": true,
+    "cdnSha256Verified": 65,
+    "manifest": "content/public-menu-images.json"
+  },
+  "delegation": {
+    "userRequested": true,
+    "agents": 3,
+    "agentAssets": 56,
+    "rootCombos": 9
+  },
+  "deployment": "dpl_8wf56ALyL3C29bGgtesT7gW2Y53H",
+  "uploadedSourceFilesVerified": 224,
+  "verification": {
+    "unitContractIntegrationTests": 285,
+    "typecheck": "PASS",
+    "lint": "PASS; zero errors",
+    "safeBuild": "PASS",
+    "browserLocalAndLive": "PASS at390px/1440px, FR/EN, all65 images decoded",
+    "publicPagePreservation": "PASS",
+    "automaticGitBuildGuard": "exit 0",
+    "migrationExecuted": false,
+    "securityReleaseIncluded": false
+  }
+}

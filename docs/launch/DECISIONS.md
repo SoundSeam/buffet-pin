@@ -176,3 +176,7 @@ CONFIRMED: user rejects the initial public-menu styling and requires the existin
 ## Text-only public menu sequence — 2026-10-14
 
 CONFIRMED: user requests sensible restaurant ordering and no images because no dish photos exist. Remove both food banner and placeholder squares; preserve shared branding. REVERSIBLE: present appetizers/dumplings/soups, then protein/vegetarian mains, rice/noodles, and combos. Preserve printed dish numbers, item order within categories, approved amounts and fixed combo contents. Apply ordering only in the public display projection, leaving source/database/ordering untouched. Retain existing delivery-page search, typography and summary-row styles. Scoped deployment continues under existing authorization.
+
+## Food imagery and combos-first display — 2026-10-14
+
+CONFIRMED: user requests generated images for all 65 food items matching the drinks-menu photography and combos first. This explicitly supersedes the previous no-food-images preference. Generate independent transparent studio cutouts, same lighting/composition family, with exact known counts and fixed combo contents; unknown portions are illustrative. Reuse existing image layout and maintain public display-only behavior. Built-in imagegen is the default; no external CLI/model fallback. Scoped deployment authorization persists. Approved catalog/prices/database/drinks/ordering remain unchanged.

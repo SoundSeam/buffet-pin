@@ -6,7 +6,7 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "@/components/providers/language-provider";
 import type { DisplayCategory } from "@/lib/menu/display-menu";
 
-// Reuse OrderFlow typography, search and summary-row styles for a text-only menu.
+// Reuse OrderFlow typography, search and product grid with drinks-style cutouts.
 // Articles replace purchase buttons; no cart is mounted.
 export default function PublicMenu({ categories }: { categories: DisplayCategory[] }) {
   const { language } = useTranslation();
@@ -61,13 +61,18 @@ export default function PublicMenu({ categories }: { categories: DisplayCategory
             {visibleCategories.length === 0 && <div className="rounded-surface border border-[rgba(6,47,36,0.1)] bg-white p-8 text-[#062F24] shadow-sm">
               {searchQuery ? (fr ? "Aucun plat ne correspond à votre recherche." : "No dishes match your search.") : (fr ? "Notre menu sera bientôt disponible." : "Our menu will be available soon.")}
             </div>}
-            {visibleCategories.map(category => <section key={category.id} id={category.id} aria-labelledby={`${category.id}-title`} className="scroll-mt-24">
+            {visibleCategories.map((category, categoryIndex) => <section key={category.id} id={category.id} aria-labelledby={`${category.id}-title`} className="scroll-mt-24">
               <h2 id={`${category.id}-title`} className="text-lg font-extrabold text-[#062F24]">{category.name[language]}</h2>
-              <div className="mt-5 space-y-4">
-                {category.items.map(item => <article key={item.id} data-menu-item={item.id} className="border-t border-neutral-200 pt-4 text-[#062F24]">
-                  <div className="flex items-start justify-between gap-4">
+              <div className="mt-5 grid gap-x-5 gap-y-9 sm:grid-cols-2 xl:grid-cols-3">
+                {category.items.map((item, itemIndex) => <article key={item.id} data-menu-item={item.id} className="group block min-h-0 text-left text-[#062F24]">
+                  <div className="relative block aspect-square overflow-hidden rounded-surface">
+                    <img data-menu-food-image src={item.image.src} width={item.image.width} height={item.image.height}
+                      alt={item.name[language]} loading={categoryIndex === 0 && itemIndex < 3 ? "eager" : "lazy"}
+                      decoding="async" className="h-full w-full object-contain" />
+                  </div>
+                  <div className="mt-3">
                     <h3 className="text-base font-medium leading-snug">{item.number !== null ? `${item.number}. ` : ""}{item.name[language]}</h3>
-                    <p data-menu-price className="shrink-0 text-sm font-normal leading-5 text-[#062F24]/64">{money.format(item.priceCents / 100)}</p>
+                    <p data-menu-price className="mt-1 block text-sm font-normal leading-none text-[#062F24]/64">{money.format(item.priceCents / 100)}</p>
                   </div>
                   {item.components.length > 0 ? <div className="mt-4 max-w-2xl text-sm font-normal leading-5 text-neutral-500">
                     {item.serves !== null && <p>{fr ? `Pour ${item.serves} personne${item.serves > 1 ? "s" : ""}` : `Serves ${item.serves}`}</p>}
@@ -84,6 +89,9 @@ export default function PublicMenu({ categories }: { categories: DisplayCategory
             </nav>
           </aside>
         </div>
+        <p className="mt-4 max-w-2xl text-sm font-normal leading-5 text-neutral-500">
+          {fr ? "Images générées à titre illustratif. La présentation et les portions peuvent varier." : "Generated images are illustrative. Presentation and portions may vary."}
+        </p>
       </div>
     </section>
   );

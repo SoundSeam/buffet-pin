@@ -2,6 +2,7 @@ import { test, expect } from "@playwright/test";
 import source from "../../content/official-delivery-menu.json";
 
 test("public food menu is bilingual, complete, accessible and display-only", async ({ page }) => {
+  test.setTimeout(120_000);
   const mutations: string[] = [];
   const ordering: string[] = [];
   page.on("request", request => {
@@ -15,20 +16,31 @@ test("public food menu is bilingual, complete, accessible and display-only", asy
     await expect(page.locator("h1")).toHaveText("Buffet Pin");
     await expect(page.locator("[data-menu-item]")).toHaveCount(65);
     await expect(page.locator('main section[id^="food-"]')).toHaveCount(13);
-    await expect(page.locator("[data-menu-banner], [data-menu-image], main img")).toHaveCount(0);
+    await expect(page.locator("[data-menu-banner], [data-menu-image]")).toHaveCount(0);
+    await expect(page.locator("[data-menu-food-image]")).toHaveCount(65);
+    await expect(page.getByText("Images générées à titre illustratif. La présentation et les portions peuvent varier.", { exact: true })).toBeVisible();
+    const foodImages = page.locator("[data-menu-food-image]");
+    for (let index = 0; index < 65; index++) {
+      const image = foodImages.nth(index);
+      await image.scrollIntoViewIfNeeded();
+      await expect(image).toHaveJSProperty("complete", true);
+      expect(await image.evaluate(element => (element as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
+      await expect(image).toHaveCSS("object-fit", "contain");
+    }
     expect(await page.locator("[data-public-menu] *:not(select)").evaluateAll(elements => elements.every(element => getComputedStyle(element).backgroundImage === "none"))).toBe(true);
     const categoryIds = await page.locator('main section[id^="food-"]').evaluateAll(elements => elements.map(element => element.id));
     expect(categoryIds).toEqual([
-      "food-appetizers", "food-dumplings", "food-soup", "food-chicken", "food-beef", "food-pork",
-      "food-seafood", "food-vegetarian", "food-chop-suey", "food-rice", "food-noodles", "food-macaroni", "food-combos",
+      "food-combos", "food-appetizers", "food-dumplings", "food-soup", "food-chicken", "food-beef", "food-pork",
+      "food-seafood", "food-vegetarian", "food-chop-suey", "food-rice", "food-noodles", "food-macaroni",
     ]);
     for (const item of source.items) {
       const article = page.locator(`[data-menu-item="${item.key}"]`);
       await expect(article.locator("h3")).toContainText(item.nameFr);
+      await expect(article.locator("img")).toHaveAttribute("alt", item.nameFr);
       await expect(article.locator("[data-menu-price]")).toHaveText(new Intl.NumberFormat("fr-CA", { style: "currency", currency: "CAD" }).format(item.priceCents / 100));
     }
     await expect(page.locator('main a[href^="/order"]')).toHaveCount(0);
-    await expect(page.locator("main article button, main article input, main article select, main img")).toHaveCount(0);
+    await expect(page.locator("main article button, main article input, main article select")).toHaveCount(0);
     if (width < 1024) {
       await page.getByRole("combobox", { name: "Catégorie du menu", exact: true }).selectOption("food-combos");
     } else {
@@ -47,6 +59,7 @@ test("public food menu is bilingual, complete, accessible and display-only", asy
     for (const item of source.items) {
       const article = page.locator(`[data-menu-item="${item.key}"]`);
       await expect(article.locator("h3")).toContainText(item.nameEn);
+      await expect(article.locator("img")).toHaveAttribute("alt", item.nameEn);
       await expect(article.locator("[data-menu-price]")).toHaveText(new Intl.NumberFormat("en-CA", { style: "currency", currency: "CAD" }).format(item.priceCents / 100));
     }
     await expect(page.locator('[data-menu-item="combo-7"]')).toContainText("Szechuan shrimp");

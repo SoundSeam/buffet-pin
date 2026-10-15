@@ -1,13 +1,14 @@
 import { describe, expect, it } from "vitest";
 import source from "../../content/official-delivery-menu.json";
+import imageManifest from "../../content/public-menu-images.json";
 import { buildDisplayMenu } from "../../lib/menu/display-menu";
 
 describe("public display menu", () => {
-  it("presents starters and soups before mains, sides and set meals", () => {
+  it("features set meals first, followed by starters, mains and sides", () => {
     expect(buildDisplayMenu().map(category => category.id)).toEqual([
-      "food-appetizers", "food-dumplings", "food-soup", "food-chicken",
+      "food-combos", "food-appetizers", "food-dumplings", "food-soup", "food-chicken",
       "food-beef", "food-pork", "food-seafood", "food-vegetarian", "food-chop-suey",
-      "food-rice", "food-noodles", "food-macaroni", "food-combos",
+      "food-rice", "food-noodles", "food-macaroni",
     ]);
   });
   it("projects all approved content without publishing import or order configuration", () => {
@@ -15,6 +16,9 @@ describe("public display menu", () => {
     expect(categories).toHaveLength(13);
     const items = categories.flatMap(category => category.items);
     expect(items).toHaveLength(65);
+    expect(Object.keys(imageManifest.images).sort()).toEqual(source.items.map(item => item.key).sort());
+    expect(new Set(Object.values(imageManifest.images).map(image => image.sha256)).size).toBe(65);
+    expect(new Set(items.map(item => item.image.src)).size).toBe(65);
     for (const category of categories) {
       const original = source.categories.find(row => `food-${row.key}` === category.id)!;
       expect(category.name).toEqual({ fr: original.nameFr, en: original.nameEn });
@@ -25,6 +29,10 @@ describe("public display menu", () => {
       expect(item.name).toEqual({ fr: original.nameFr, en: original.nameEn });
       expect(item.priceCents).toBe(original.priceCents);
       expect(item.number).toBe(original.printedNumber);
+      expect(item.image.src).toContain(`/food/2026-10-14/${item.id}-`);
+      expect(item.image.src).toMatch(/-[a-f0-9]{12}\.webp$/);
+      expect(item.image.width).toBeGreaterThan(0);
+      expect(item.image.height).toBe(item.image.width);
       expect(item.description).toEqual({ fr: original.descriptionFr ?? "", en: original.descriptionEn ?? "" });
       expect(item.components).toEqual(("components" in original ? original.components ?? [] : []).map(component => ({ name: { fr: component.nameFr, en: component.nameEn }, quantity: component.quantity })));
       expect(item).not.toHaveProperty("availableForDelivery");

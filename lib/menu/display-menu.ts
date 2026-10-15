@@ -1,4 +1,8 @@
 import source from "@/content/official-delivery-menu.json";
+import imageManifest from "@/content/public-menu-images.json";
+
+type MenuImage = { src: string; width: number; height: number };
+const foodImages: Record<string, MenuImage> = imageManifest.images;
 
 type Localized = { fr: string; en: string };
 export type DisplayItem = {
@@ -8,16 +12,17 @@ export type DisplayItem = {
   description: Localized;
   priceCents: number;
   serves: number | null;
+  image: MenuImage;
   components: { name: Localized; quantity: number | null }[];
 };
 export type DisplayCategory = { id: string; name: Localized; items: DisplayItem[] };
 
-// Public presentation only: starters/soups, mains, rice/noodles, then set meals.
+// Public presentation only: featured set meals first, then starters, mains and sides.
 // Keep the approved catalog and printed dish numbers unchanged.
 const restaurantCategoryOrder = [
-  "appetizers", "dumplings", "soup",
+  "combos", "appetizers", "dumplings", "soup",
   "chicken", "beef", "pork", "seafood", "vegetarian", "chop-suey",
-  "rice", "noodles", "macaroni", "combos",
+  "rice", "noodles", "macaroni",
 ];
 
 export function buildDisplayMenu(menu = source): DisplayCategory[] {
@@ -40,6 +45,13 @@ export function buildDisplayMenu(menu = source): DisplayCategory[] {
     name: { fr: category.nameFr, en: category.nameEn },
     items: menu.items.filter(item => item.categoryKey === category.key).map(item => ({
       id: item.key,
+      image: (() => {
+        const image = foodImages[item.key];
+        if (!image || !image.src.startsWith("https://d2d93bgcpgtdom.cloudfront.net/food/") || image.width <= 0 || image.height <= 0) {
+          throw new Error(`Missing or invalid public menu image: ${item.key}`);
+        }
+        return { src: image.src, width: image.width, height: image.height };
+      })(),
       number: item.printedNumber,
       name: { fr: item.nameFr, en: item.nameEn },
       description: { fr: item.descriptionFr ?? "", en: item.descriptionEn ?? "" },
