@@ -1,0 +1,950 @@
+{
+  "date": "2026-10-14",
+  "scope": "Repository dependency remediation; no production/provider mutation or security deployment.",
+  "baselineMenuCommit": "54284a63b45765144613b50be0771ff5b58eeca4",
+  "runtime": "Node 22.23.2",
+  "installer": "npm 11.8.0 (npm 10 peer resolver crashed; no --force or peer bypass)",
+  "currentBeforeAudit": {
+    "info": 0,
+    "low": 0,
+    "moderate": 5,
+    "high": 16,
+    "critical": 2,
+    "total": 23
+  },
+  "historicalOctober13FullAudit": {
+    "moderate": 5,
+    "high": 19,
+    "critical": 2,
+    "total": 26
+  },
+  "historicalOctober13ProductionAudit": {
+    "moderate": 1,
+    "high": 6,
+    "critical": 2,
+    "total": 9
+  },
+  "afterFullAudit": {
+    "auditReportVersion": 2,
+    "vulnerabilities": {},
+    "metadata": {
+      "vulnerabilities": {
+        "info": 0,
+        "low": 0,
+        "moderate": 0,
+        "high": 0,
+        "critical": 0,
+        "total": 0
+      },
+      "dependencies": {
+        "prod": 218,
+        "dev": 440,
+        "optional": 131,
+        "peer": 0,
+        "peerOptional": 0,
+        "total": 693
+      }
+    }
+  },
+  "afterProductionAudit": {
+    "auditReportVersion": 2,
+    "vulnerabilities": {},
+    "metadata": {
+      "vulnerabilities": {
+        "info": 0,
+        "low": 0,
+        "moderate": 0,
+        "high": 0,
+        "critical": 0,
+        "total": 0
+      },
+      "dependencies": {
+        "prod": 218,
+        "dev": 440,
+        "optional": 131,
+        "peer": 0,
+        "peerOptional": 0,
+        "total": 693
+      }
+    }
+  },
+  "advisories": [
+    {
+      "identifier": "GHSA-82fw-gwwq-j7x9",
+      "package": "@vitest/mocker",
+      "severity": "moderate",
+      "title": "Vitest: Path Traversal / Arbitrary File Read via @vitest/mocker Redirect Mock",
+      "authoritativeUrl": "https://github.com/advisories/GHSA-82fw-gwwq-j7x9",
+      "vulnerableRange": ">=2.1.0 <4.1.11",
+      "oldNodes": [
+        {
+          "path": "node_modules/@vitest/mocker",
+          "version": "4.1.10"
+        }
+      ],
+      "resolution": "4.1.11 through Vitest.",
+      "remainingLockedNodes": [
+        {
+          "path": "node_modules/@vitest/mocker",
+          "version": "4.1.11"
+        }
+      ]
+    },
+    {
+      "identifier": "GHSA-vh66-26gq-q6x8",
+      "package": "axios",
+      "severity": "moderate",
+      "title": "Axios: Prototype pollution gadget in fetch adapter can alter outbound requests",
+      "authoritativeUrl": "https://github.com/advisories/GHSA-vh66-26gq-q6x8",
+      "vulnerableRange": ">=1.7.0 <1.20.0",
+      "oldNodes": [
+        {
+          "path": "node_modules/axios",
+          "version": "1.18.1"
+        }
+      ],
+      "resolution": "Twilio-compatible 1.20.0 locked; SDK request/error/timeout/signature fixtures pass.",
+      "remainingLockedNodes": [
+        {
+          "path": "node_modules/axios",
+          "version": "1.20.0"
+        }
+      ]
+    },
+    {
+      "identifier": "GHSA-9fr6-4gfg-395g",
+      "package": "axios",
+      "severity": "moderate",
+      "title": "Axios: Prototype-Pollution Gadget in the Default Instance Allows Inherited Object.prototype.method to Override HTTP Method",
+      "authoritativeUrl": "https://github.com/advisories/GHSA-9fr6-4gfg-395g",
+      "vulnerableRange": ">=1.0.0 <1.20.0",
+      "oldNodes": [
+        {
+          "path": "node_modules/axios",
+          "version": "1.18.1"
+        }
+      ],
+      "resolution": "Twilio-compatible 1.20.0 locked; SDK request/error/timeout/signature fixtures pass.",
+      "remainingLockedNodes": [
+        {
+          "path": "node_modules/axios",
+          "version": "1.20.0"
+        }
+      ]
+    },
+    {
+      "identifier": "GHSA-c29m-xwm3-cm6r",
+      "package": "axios",
+      "severity": "high",
+      "title": "Axios: ReDoS in fromDataURI data: URL parser freezes the Node event loop (DoS)",
+      "authoritativeUrl": "https://github.com/advisories/GHSA-c29m-xwm3-cm6r",
+      "vulnerableRange": ">=1.16.1 <1.20.0",
+      "oldNodes": [
+        {
+          "path": "node_modules/axios",
+          "version": "1.18.1"
+        }
+      ],
+      "resolution": "Twilio-compatible 1.20.0 locked; SDK request/error/timeout/signature fixtures pass.",
+      "remainingLockedNodes": [
+        {
+          "path": "node_modules/axios",
+          "version": "1.20.0"
+        }
+      ]
+    },
+    {
+      "identifier": "GHSA-mghh-pgcx-3jjj",
+      "package": "axios",
+      "severity": "high",
+      "title": "Axios: ReDoS (O(N\u00b2)) in shouldBypassProxy host normalization, reachable via untrusted redirect Location",
+      "authoritativeUrl": "https://github.com/advisories/GHSA-mghh-pgcx-3jjj",
+      "vulnerableRange": ">=1.15.0 <1.20.0",
+      "oldNodes": [
+        {
+          "path": "node_modules/axios",
+          "version": "1.18.1"
+        }
+      ],
+      "resolution": "Twilio-compatible 1.20.0 locked; SDK request/error/timeout/signature fixtures pass.",
+      "remainingLockedNodes": [
+        {
+          "path": "node_modules/axios",
+          "version": "1.20.0"
+        }
+      ]
+    },
+    {
+      "identifier": "GHSA-x97p-jq2g-jp4f",
+      "package": "axios",
+      "severity": "high",
+      "title": "Axios: Prototype Pollution Gadget in axios toFormData Options",
+      "authoritativeUrl": "https://github.com/advisories/GHSA-x97p-jq2g-jp4f",
+      "vulnerableRange": ">=1.15.1 <1.20.0",
+      "oldNodes": [
+        {
+          "path": "node_modules/axios",
+          "version": "1.18.1"
+        }
+      ],
+      "resolution": "Twilio-compatible 1.20.0 locked; SDK request/error/timeout/signature fixtures pass.",
+      "remainingLockedNodes": [
+        {
+          "path": "node_modules/axios",
+          "version": "1.20.0"
+        }
+      ]
+    },
+    {
+      "identifier": "GHSA-3pq3-5fj3-cg6v",
+      "package": "axios",
+      "severity": "high",
+      "title": "Axios: HTTP/2 adapter bypasses configured DNS lookup and proxy controls",
+      "authoritativeUrl": "https://github.com/advisories/GHSA-3pq3-5fj3-cg6v",
+      "vulnerableRange": ">=1.13.0 <1.20.0",
+      "oldNodes": [
+        {
+          "path": "node_modules/axios",
+          "version": "1.18.1"
+        }
+      ],
+      "resolution": "Twilio-compatible 1.20.0 locked; SDK request/error/timeout/signature fixtures pass.",
+      "remainingLockedNodes": [
+        {
+          "path": "node_modules/axios",
+          "version": "1.20.0"
+        }
+      ]
+    },
+    {
+      "identifier": "GHSA-542g-h47m-68v8",
+      "package": "axios",
+      "severity": "high",
+      "title": "Axios: Denial of Service via Unhandled 'error' Event in HTTP/2 ClientHttp2Session Initialization",
+      "authoritativeUrl": "https://github.com/advisories/GHSA-542g-h47m-68v8",
+      "vulnerableRange": ">=1.13.0 <1.20.0",
+      "oldNodes": [
+        {
+          "path": "node_modules/axios",
+          "version": "1.18.1"
+        }
+      ],
+      "resolution": "Twilio-compatible 1.20.0 locked; SDK request/error/timeout/signature fixtures pass.",
+      "remainingLockedNodes": [
+        {
+          "path": "node_modules/axios",
+          "version": "1.20.0"
+        }
+      ]
+    },
+    {
+      "identifier": "GHSA-j8rh-479h-cp32",
+      "package": "axios",
+      "severity": "moderate",
+      "title": "Axios: Header Injection via Inherited headers After Minimal Interceptor",
+      "authoritativeUrl": "https://github.com/advisories/GHSA-j8rh-479h-cp32",
+      "vulnerableRange": ">=1.0.0 <1.20.0",
+      "oldNodes": [
+        {
+          "path": "node_modules/axios",
+          "version": "1.18.1"
+        }
+      ],
+      "resolution": "Twilio-compatible 1.20.0 locked; SDK request/error/timeout/signature fixtures pass.",
+      "remainingLockedNodes": [
+        {
+          "path": "node_modules/axios",
+          "version": "1.20.0"
+        }
+      ]
+    },
+    {
+      "identifier": "GHSA-4hqw-qxg8-jxx2",
+      "package": "axios",
+      "severity": "moderate",
+      "title": "Axios: Fetch Adapter Header Injection via Inherited FormData getHeaders",
+      "authoritativeUrl": "https://github.com/advisories/GHSA-4hqw-qxg8-jxx2",
+      "vulnerableRange": ">=1.12.0 <1.20.0",
+      "oldNodes": [
+        {
+          "path": "node_modules/axios",
+          "version": "1.18.1"
+        }
+      ],
+      "resolution": "Twilio-compatible 1.20.0 locked; SDK request/error/timeout/signature fixtures pass.",
+      "remainingLockedNodes": [
+        {
+          "path": "node_modules/axios",
+          "version": "1.20.0"
+        }
+      ]
+    },
+    {
+      "identifier": "GHSA-m8m8-qj5v-23w3",
+      "package": "axios",
+      "severity": "high",
+      "title": "Axios: Node HTTP adapter prototype-pollution gadget allows request socket hijack via inherited createConnection",
+      "authoritativeUrl": "https://github.com/advisories/GHSA-m8m8-qj5v-23w3",
+      "vulnerableRange": ">=1.15.2 <1.20.0",
+      "oldNodes": [
+        {
+          "path": "node_modules/axios",
+          "version": "1.18.1"
+        }
+      ],
+      "resolution": "Twilio-compatible 1.20.0 locked; SDK request/error/timeout/signature fixtures pass.",
+      "remainingLockedNodes": [
+        {
+          "path": "node_modules/axios",
+          "version": "1.20.0"
+        }
+      ]
+    },
+    {
+      "identifier": "GHSA-44g4-m2mj-wpvx",
+      "package": "axios",
+      "severity": "moderate",
+      "title": "Axios: CIDR-form NO_PROXY entries are ignored, causing proxy exclusion bypass for internal IP ranges",
+      "authoritativeUrl": "https://github.com/advisories/GHSA-44g4-m2mj-wpvx",
+      "vulnerableRange": ">=1.15.0 <1.20.0",
+      "oldNodes": [
+        {
+          "path": "node_modules/axios",
+          "version": "1.18.1"
+        }
+      ],
+      "resolution": "Twilio-compatible 1.20.0 locked; SDK request/error/timeout/signature fixtures pass.",
+      "remainingLockedNodes": [
+        {
+          "path": "node_modules/axios",
+          "version": "1.20.0"
+        }
+      ]
+    },
+    {
+      "identifier": "GHSA-r4gj-5m52-g5wh",
+      "package": "axios",
+      "severity": "high",
+      "title": "Axios: maxRedirects: 0 is not enforced by the fetch adapter, allowing redirect-based SSRF",
+      "authoritativeUrl": "https://github.com/advisories/GHSA-r4gj-5m52-g5wh",
+      "vulnerableRange": ">=1.17.0 <1.20.0",
+      "oldNodes": [
+        {
+          "path": "node_modules/axios",
+          "version": "1.18.1"
+        }
+      ],
+      "resolution": "Twilio-compatible 1.20.0 locked; SDK request/error/timeout/signature fixtures pass.",
+      "remainingLockedNodes": [
+        {
+          "path": "node_modules/axios",
+          "version": "1.20.0"
+        }
+      ]
+    },
+    {
+      "identifier": "GHSA-w5vr-8v7q-w6rv",
+      "package": "baseline-browser-mapping",
+      "severity": "moderate",
+      "title": "baseline-browser-mapping process termination on invalid input causes denial of service",
+      "authoritativeUrl": "https://github.com/advisories/GHSA-w5vr-8v7q-w6rv",
+      "vulnerableRange": ">=2.0.0 <2.11.0",
+      "oldNodes": [
+        {
+          "path": "node_modules/baseline-browser-mapping",
+          "version": "2.10.24"
+        }
+      ],
+      "resolution": "Autoprefixer removed; remaining compatible paths resolve patched versions.",
+      "remainingLockedNodes": []
+    },
+    {
+      "identifier": "GHSA-rgw5-rvv9-x895",
+      "package": "brace-expansion",
+      "severity": "high",
+      "title": "brace-expansion: DoS via unbounded intermediate arrays, bypassing the CVE-2026-14257 mitigation",
+      "authoritativeUrl": "https://github.com/advisories/GHSA-rgw5-rvv9-x895",
+      "vulnerableRange": ">=4.0.0 <5.0.9",
+      "oldNodes": [
+        {
+          "path": "node_modules/aws-cdk-lib/node_modules/brace-expansion",
+          "version": "5.0.8"
+        },
+        {
+          "path": "node_modules/brace-expansion",
+          "version": "5.0.8"
+        }
+      ],
+      "resolution": "Compatible 1.1.21/5.0.12 copies; removed global cross-major override; CDK 2.273.0 fixes bundled copy.",
+      "remainingLockedNodes": [
+        {
+          "path": "node_modules/@eslint/config-array/node_modules/brace-expansion",
+          "version": "1.1.21"
+        },
+        {
+          "path": "node_modules/@eslint/eslintrc/node_modules/brace-expansion",
+          "version": "1.1.21"
+        },
+        {
+          "path": "node_modules/aws-cdk-lib/node_modules/brace-expansion",
+          "version": "5.0.12"
+        },
+        {
+          "path": "node_modules/brace-expansion",
+          "version": "5.0.12"
+        },
+        {
+          "path": "node_modules/eslint-plugin-import/node_modules/brace-expansion",
+          "version": "1.1.21"
+        },
+        {
+          "path": "node_modules/eslint-plugin-jsx-a11y/node_modules/brace-expansion",
+          "version": "1.1.21"
+        },
+        {
+          "path": "node_modules/eslint-plugin-react/node_modules/brace-expansion",
+          "version": "1.1.21"
+        },
+        {
+          "path": "node_modules/eslint/node_modules/brace-expansion",
+          "version": "1.1.21"
+        }
+      ]
+    },
+    {
+      "identifier": "GHSA-q2hr-2g5m-vwhr",
+      "package": "brace-expansion",
+      "severity": "moderate",
+      "title": "brace-expansion: Quadratic-time expansion of the `{a},b}` rewrite causes CPU denial of service",
+      "authoritativeUrl": "https://github.com/advisories/GHSA-q2hr-2g5m-vwhr",
+      "vulnerableRange": ">=4.0.0 <5.0.12",
+      "oldNodes": [
+        {
+          "path": "node_modules/aws-cdk-lib/node_modules/brace-expansion",
+          "version": "5.0.8"
+        },
+        {
+          "path": "node_modules/brace-expansion",
+          "version": "5.0.8"
+        }
+      ],
+      "resolution": "Compatible 1.1.21/5.0.12 copies; removed global cross-major override; CDK 2.273.0 fixes bundled copy.",
+      "remainingLockedNodes": [
+        {
+          "path": "node_modules/@eslint/config-array/node_modules/brace-expansion",
+          "version": "1.1.21"
+        },
+        {
+          "path": "node_modules/@eslint/eslintrc/node_modules/brace-expansion",
+          "version": "1.1.21"
+        },
+        {
+          "path": "node_modules/aws-cdk-lib/node_modules/brace-expansion",
+          "version": "5.0.12"
+        },
+        {
+          "path": "node_modules/brace-expansion",
+          "version": "5.0.12"
+        },
+        {
+          "path": "node_modules/eslint-plugin-import/node_modules/brace-expansion",
+          "version": "1.1.21"
+        },
+        {
+          "path": "node_modules/eslint-plugin-jsx-a11y/node_modules/brace-expansion",
+          "version": "1.1.21"
+        },
+        {
+          "path": "node_modules/eslint-plugin-react/node_modules/brace-expansion",
+          "version": "1.1.21"
+        },
+        {
+          "path": "node_modules/eslint/node_modules/brace-expansion",
+          "version": "1.1.21"
+        }
+      ]
+    },
+    {
+      "identifier": "GHSA-qhr7-859c-m2p7",
+      "package": "brace-expansion",
+      "severity": "high",
+      "title": "brace-expansion: DoS via uncontrolled recursion on nested brace groups causing stack exhaustion",
+      "authoritativeUrl": "https://github.com/advisories/GHSA-qhr7-859c-m2p7",
+      "vulnerableRange": ">=4.0.0 <5.0.11",
+      "oldNodes": [
+        {
+          "path": "node_modules/aws-cdk-lib/node_modules/brace-expansion",
+          "version": "5.0.8"
+        },
+        {
+          "path": "node_modules/brace-expansion",
+          "version": "5.0.8"
+        }
+      ],
+      "resolution": "Compatible 1.1.21/5.0.12 copies; removed global cross-major override; CDK 2.273.0 fixes bundled copy.",
+      "remainingLockedNodes": [
+        {
+          "path": "node_modules/@eslint/config-array/node_modules/brace-expansion",
+          "version": "1.1.21"
+        },
+        {
+          "path": "node_modules/@eslint/eslintrc/node_modules/brace-expansion",
+          "version": "1.1.21"
+        },
+        {
+          "path": "node_modules/aws-cdk-lib/node_modules/brace-expansion",
+          "version": "5.0.12"
+        },
+        {
+          "path": "node_modules/brace-expansion",
+          "version": "5.0.12"
+        },
+        {
+          "path": "node_modules/eslint-plugin-import/node_modules/brace-expansion",
+          "version": "1.1.21"
+        },
+        {
+          "path": "node_modules/eslint-plugin-jsx-a11y/node_modules/brace-expansion",
+          "version": "1.1.21"
+        },
+        {
+          "path": "node_modules/eslint-plugin-react/node_modules/brace-expansion",
+          "version": "1.1.21"
+        },
+        {
+          "path": "node_modules/eslint/node_modules/brace-expansion",
+          "version": "1.1.21"
+        }
+      ]
+    },
+    {
+      "identifier": "GHSA-6j4f-fj2g-mc7p",
+      "package": "brace-expansion",
+      "severity": "high",
+      "title": "brace-expansion: DoS via uncontrolled recursion in parseCommaParts causing stack exhaustion",
+      "authoritativeUrl": "https://github.com/advisories/GHSA-6j4f-fj2g-mc7p",
+      "vulnerableRange": ">=4.0.0 <5.0.10",
+      "oldNodes": [
+        {
+          "path": "node_modules/aws-cdk-lib/node_modules/brace-expansion",
+          "version": "5.0.8"
+        },
+        {
+          "path": "node_modules/brace-expansion",
+          "version": "5.0.8"
+        }
+      ],
+      "resolution": "Compatible 1.1.21/5.0.12 copies; removed global cross-major override; CDK 2.273.0 fixes bundled copy.",
+      "remainingLockedNodes": [
+        {
+          "path": "node_modules/@eslint/config-array/node_modules/brace-expansion",
+          "version": "1.1.21"
+        },
+        {
+          "path": "node_modules/@eslint/eslintrc/node_modules/brace-expansion",
+          "version": "1.1.21"
+        },
+        {
+          "path": "node_modules/aws-cdk-lib/node_modules/brace-expansion",
+          "version": "5.0.12"
+        },
+        {
+          "path": "node_modules/brace-expansion",
+          "version": "5.0.12"
+        },
+        {
+          "path": "node_modules/eslint-plugin-import/node_modules/brace-expansion",
+          "version": "1.1.21"
+        },
+        {
+          "path": "node_modules/eslint-plugin-jsx-a11y/node_modules/brace-expansion",
+          "version": "1.1.21"
+        },
+        {
+          "path": "node_modules/eslint-plugin-react/node_modules/brace-expansion",
+          "version": "1.1.21"
+        },
+        {
+          "path": "node_modules/eslint/node_modules/brace-expansion",
+          "version": "1.1.21"
+        }
+      ]
+    },
+    {
+      "identifier": "GHSA-vfj7-8cjw-p6xm",
+      "package": "braces",
+      "severity": "high",
+      "title": "braces vulnerable to stack-exhaustion denial of service through deeply nested patterns",
+      "authoritativeUrl": "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
+      "vulnerableRange": "<=3.0.3",
+      "oldNodes": [
+        {
+          "path": "node_modules/braces",
+          "version": "3.0.3"
+        }
+      ],
+      "resolution": "Removed with Tailwind 4.3.3 and licensed Next lint source adaptation, retaining every enabled rule.",
+      "remainingLockedNodes": []
+    },
+    {
+      "identifier": "GHSA-c83g-rgw3-j3cx",
+      "package": "browserslist",
+      "severity": "high",
+      "title": "Browserslist: Unbounded memory growth (no cache eviction) via distinct query results, leading to eventual OOM",
+      "authoritativeUrl": "https://github.com/advisories/GHSA-c83g-rgw3-j3cx",
+      "vulnerableRange": "<=4.28.6",
+      "oldNodes": [
+        {
+          "path": "node_modules/browserslist",
+          "version": "4.28.2"
+        }
+      ],
+      "resolution": "Autoprefixer removed; remaining compatible paths resolve patched versions.",
+      "remainingLockedNodes": []
+    },
+    {
+      "identifier": "GHSA-73wf-gq98-2v4g",
+      "package": "browserslist",
+      "severity": "high",
+      "title": "Browserslist: Uncaught crash / prototype write via untrusted browserslist-stats.json custom stats (normalizeStats)",
+      "authoritativeUrl": "https://github.com/advisories/GHSA-73wf-gq98-2v4g",
+      "vulnerableRange": "<=4.28.6",
+      "oldNodes": [
+        {
+          "path": "node_modules/browserslist",
+          "version": "4.28.2"
+        }
+      ],
+      "resolution": "Autoprefixer removed; remaining compatible paths resolve patched versions.",
+      "remainingLockedNodes": []
+    },
+    {
+      "identifier": "GHSA-ggr8-5vv4-36mx",
+      "package": "deepmerge-ts",
+      "severity": "high",
+      "title": "DeepmergeTS has stack exhaustion when merging recursive object graphs",
+      "authoritativeUrl": "https://github.com/advisories/GHSA-ggr8-5vv4-36mx",
+      "vulnerableRange": "<8.0.0",
+      "oldNodes": [
+        {
+          "path": "node_modules/deepmerge-ts",
+          "version": "7.1.5"
+        }
+      ],
+      "resolution": "8.0.2 only under @prisma/config 6.19.3; plain config/no-config/errors/cyclic graph/merge plus client generation and transactions qualified; not claimed upstream-supported.",
+      "remainingLockedNodes": [
+        {
+          "path": "node_modules/deepmerge-ts",
+          "version": "8.0.2"
+        }
+      ]
+    },
+    {
+      "identifier": "GHSA-5p4m-2wfm-xmqj",
+      "package": "js-yaml",
+      "severity": "high",
+      "title": "JS-YAML: Quadratic CPU consumption in !!omap resolution (3.x and 4.x) \u2014 CVE-2026-59870 fix not backported",
+      "authoritativeUrl": "https://github.com/advisories/GHSA-5p4m-2wfm-xmqj",
+      "vulnerableRange": ">=4.0.0 <4.3.1",
+      "oldNodes": [
+        {
+          "path": "node_modules/js-yaml",
+          "version": "4.3.0"
+        }
+      ],
+      "resolution": "Remaining ESLint transitive path resolves patched compatible 4.x; FlatCompat removed.",
+      "remainingLockedNodes": [
+        {
+          "path": "node_modules/js-yaml",
+          "version": "4.3.2"
+        }
+      ]
+    },
+    {
+      "identifier": "GHSA-2883-xcg3-v3hh",
+      "package": "js-yaml",
+      "severity": "high",
+      "title": "js-yaml: maxTotalMergeKeys does not limit CPU use for empty merge sources",
+      "authoritativeUrl": "https://github.com/advisories/GHSA-2883-xcg3-v3hh",
+      "vulnerableRange": ">=4.0.0 <4.3.2",
+      "oldNodes": [
+        {
+          "path": "node_modules/js-yaml",
+          "version": "4.3.0"
+        }
+      ],
+      "resolution": "Remaining ESLint transitive path resolves patched compatible 4.x; FlatCompat removed.",
+      "remainingLockedNodes": [
+        {
+          "path": "node_modules/js-yaml",
+          "version": "4.3.2"
+        }
+      ]
+    },
+    {
+      "identifier": "GHSA-jrc7-96c5-q579",
+      "package": "maplibre-gl",
+      "severity": "critical",
+      "title": "MapLibre GL JS: XSS Sanitizer Bypass in DOM.sanitize() via Live NamedNodeMap Removal Skip",
+      "authoritativeUrl": "https://github.com/advisories/GHSA-jrc7-96c5-q579",
+      "vulnerableRange": "<=6.4.0",
+      "oldNodes": [
+        {
+          "path": "node_modules/maplibre-gl",
+          "version": "5.24.0"
+        }
+      ],
+      "resolution": "6.14.0; same-origin ESM worker bundle and visible unavailable-map fallback.",
+      "remainingLockedNodes": [
+        {
+          "path": "node_modules/maplibre-gl",
+          "version": "6.14.0"
+        }
+      ]
+    },
+    {
+      "identifier": "GHSA-p293-qw3h-jr36",
+      "package": "next",
+      "severity": "critical",
+      "title": "Next.js: Unauthenticated Remote Code Execution on windows-hosted servers",
+      "authoritativeUrl": "https://github.com/advisories/GHSA-p293-qw3h-jr36",
+      "vulnerableRange": ">=13.4.0 <15.5.24",
+      "oldNodes": [
+        {
+          "path": "node_modules/next",
+          "version": "15.5.22"
+        }
+      ],
+      "resolution": "Compatible 15.5.27 backport; React 19.2.8 retained.",
+      "remainingLockedNodes": [
+        {
+          "path": "node_modules/next",
+          "version": "15.5.27"
+        }
+      ]
+    },
+    {
+      "identifier": "GHSA-2xp9-vwfh-vxw4",
+      "package": "next",
+      "severity": "critical",
+      "title": "Next.js: Unauthenticated Remote Code Execution in Image Optimization API when AVIF files are used",
+      "authoritativeUrl": "https://github.com/advisories/GHSA-2xp9-vwfh-vxw4",
+      "vulnerableRange": ">=10.0.0 <15.5.24",
+      "oldNodes": [
+        {
+          "path": "node_modules/next",
+          "version": "15.5.22"
+        }
+      ],
+      "resolution": "Compatible 15.5.27 backport; React 19.2.8 retained.",
+      "remainingLockedNodes": [
+        {
+          "path": "node_modules/next",
+          "version": "15.5.27"
+        }
+      ]
+    },
+    {
+      "identifier": "GHSA-4jqv-mc3x-m676",
+      "package": "next",
+      "severity": "moderate",
+      "title": "Next.js has cache poisoning of SSG and ISR pages in self-hosted applications",
+      "authoritativeUrl": "https://github.com/advisories/GHSA-4jqv-mc3x-m676",
+      "vulnerableRange": ">=15.0.0 <15.5.27",
+      "oldNodes": [
+        {
+          "path": "node_modules/next",
+          "version": "15.5.22"
+        }
+      ],
+      "resolution": "Compatible 15.5.27 backport; React 19.2.8 retained.",
+      "remainingLockedNodes": [
+        {
+          "path": "node_modules/next",
+          "version": "15.5.27"
+        }
+      ]
+    },
+    {
+      "identifier": "GHSA-mcj8-r9mp-w47p",
+      "package": "next",
+      "severity": "moderate",
+      "title": "Next.js has cache poisoning in SSG/ISR rendering that leads to cross-user content substitution and persistent denial of service",
+      "authoritativeUrl": "https://github.com/advisories/GHSA-mcj8-r9mp-w47p",
+      "vulnerableRange": ">=15.0.0 <15.5.27",
+      "oldNodes": [
+        {
+          "path": "node_modules/next",
+          "version": "15.5.22"
+        }
+      ],
+      "resolution": "Compatible 15.5.27 backport; React 19.2.8 retained.",
+      "remainingLockedNodes": [
+        {
+          "path": "node_modules/next",
+          "version": "15.5.27"
+        }
+      ]
+    },
+    {
+      "identifier": "GHSA-w9m9-85wc-3x92",
+      "package": "postcss-selector-parser",
+      "severity": "low",
+      "title": "postcss-selector-parser allows denial of service through uncontrolled AST recursion",
+      "authoritativeUrl": "https://github.com/advisories/GHSA-w9m9-85wc-3x92",
+      "vulnerableRange": ">=6.1.0 <6.1.3",
+      "oldNodes": [
+        {
+          "path": "node_modules/postcss-selector-parser",
+          "version": "6.1.2"
+        }
+      ],
+      "resolution": "Removed with obsolete Tailwind 3/PostCSS-nested path; no major override.",
+      "remainingLockedNodes": []
+    },
+    {
+      "identifier": "GHSA-rj75-hqrm-r3gf",
+      "package": "postcss-selector-parser",
+      "severity": "moderate",
+      "title": "PostCSS: Quadratic complexity in flat selector parsing allows CPU exhaustion",
+      "authoritativeUrl": "https://github.com/advisories/GHSA-rj75-hqrm-r3gf",
+      "vulnerableRange": "<7.1.6",
+      "oldNodes": [
+        {
+          "path": "node_modules/postcss-selector-parser",
+          "version": "6.1.2"
+        }
+      ],
+      "resolution": "Removed with obsolete Tailwind 3/PostCSS-nested path; no major override.",
+      "remainingLockedNodes": []
+    },
+    {
+      "identifier": "GHSA-x5fp-wj9c-mxmx",
+      "package": "qs",
+      "severity": "moderate",
+      "title": "qs array-limit bypass via bracket-key comma parsing",
+      "authoritativeUrl": "https://github.com/advisories/GHSA-x5fp-wj9c-mxmx",
+      "vulnerableRange": ">=6.14.2 <=6.15.3",
+      "oldNodes": [
+        {
+          "path": "node_modules/qs",
+          "version": "6.15.3"
+        }
+      ],
+      "resolution": "Twilio-compatible 6.16.0 locked; actual SDK form encoding covered.",
+      "remainingLockedNodes": [
+        {
+          "path": "node_modules/qs",
+          "version": "6.16.1"
+        }
+      ]
+    },
+    {
+      "identifier": "GHSA-4mjr-xmp4-gh2g",
+      "package": "qs",
+      "severity": "moderate",
+      "title": "qs: Denial of Service via Attacker Controlled isBuffer",
+      "authoritativeUrl": "https://github.com/advisories/GHSA-4mjr-xmp4-gh2g",
+      "vulnerableRange": ">=2.2.5 <6.16.0",
+      "oldNodes": [
+        {
+          "path": "node_modules/qs",
+          "version": "6.15.3"
+        }
+      ],
+      "resolution": "Twilio-compatible 6.16.0 locked; actual SDK form encoding covered.",
+      "remainingLockedNodes": [
+        {
+          "path": "node_modules/qs",
+          "version": "6.16.1"
+        }
+      ]
+    },
+    {
+      "identifier": "GHSA-rgj7-g3m4-5g8c",
+      "package": "sharp",
+      "severity": "high",
+      "title": "sharp: Vulnerabilities in libheif: GHSA-g89c-p67h-r497 and GHSA-2jg2-4ch7-h545",
+      "authoritativeUrl": "https://github.com/advisories/GHSA-rgj7-g3m4-5g8c",
+      "vulnerableRange": "<0.35.4",
+      "oldNodes": [
+        {
+          "path": "node_modules/sharp",
+          "version": "0.35.3"
+        }
+      ],
+      "resolution": "0.35.5; patched libheif/librsvg validated on macOS and Linux; no global unsafe override.",
+      "remainingLockedNodes": [
+        {
+          "path": "node_modules/sharp",
+          "version": "0.35.5"
+        }
+      ]
+    },
+    {
+      "identifier": "GHSA-wq5f-xc86-pv6w",
+      "package": "sharp",
+      "severity": "high",
+      "title": "sharp : Vulnerability in librsvg dependency CVE-2026-96889",
+      "authoritativeUrl": "https://github.com/advisories/GHSA-wq5f-xc86-pv6w",
+      "vulnerableRange": "<0.35.5",
+      "oldNodes": [
+        {
+          "path": "node_modules/sharp",
+          "version": "0.35.3"
+        }
+      ],
+      "resolution": "0.35.5; patched libheif/librsvg validated on macOS and Linux; no global unsafe override.",
+      "remainingLockedNodes": [
+        {
+          "path": "node_modules/sharp",
+          "version": "0.35.5"
+        }
+      ]
+    },
+    {
+      "identifier": "GHSA-68fv-2mgg-jv7q",
+      "package": "source-map-js",
+      "severity": "high",
+      "title": "source-map-js allows event-loop denial of service through indexed source-map section offsets",
+      "authoritativeUrl": "https://github.com/advisories/GHSA-68fv-2mgg-jv7q",
+      "vulnerableRange": ">=1.0.0 <1.2.2",
+      "oldNodes": [
+        {
+          "path": "node_modules/source-map-js",
+          "version": "1.2.1"
+        }
+      ],
+      "resolution": "Compatible 1.2.2 across remaining PostCSS paths.",
+      "remainingLockedNodes": [
+        {
+          "path": "node_modules/source-map-js",
+          "version": "1.2.2"
+        }
+      ]
+    }
+  ],
+  "lintSource": {
+    "upstream": "@next/eslint-plugin-next@15.5.27",
+    "tarballSha256": "dffc7da03d3bd534dff89874efeaca6a217c3a3c4483f873dde202107792575a",
+    "onlyChangedDistFile": "utils/get-root-dirs.js is the only semantic change; utils/node-attributes.js has a comment-only trailing-space cleanup",
+    "ruleCoverage": "Exact 98 TS/TSX and 75 JS/MJS rule/option/severity parity; representative diagnostic and path-glob tests."
+  },
+  "verification": {
+    "unitContractIntegration": "316 tests/37 files pass",
+    "disposableDatabase": "59 tests/12 files; 35 clean migrations and historical compatibility pass (includes preserved uncommitted official-menu work)",
+    "legacyReservationDatabase": "12 tests pass in owned loopback-only fixture",
+    "legacyDrinksDatabase": "4 tests pass in owned loopback-only fixture",
+    "linux": "27 dependency-boundary tests pass on node:22.23.2-bookworm-slim, no production credentials",
+    "visual": "0 selected computed-style differences on home/reservation/drinks/order/login at390/1440; menu screenshot pixel difference under0.01%; frozen committed menu baseline",
+    "infrastructure": "Offline no-lookups synth passes with old CLI; same52 logical resources, unchanged IAM/network/retention policies; only CDK metadata and bundled Lambda asset hashes differ",
+    "aggregate": "IN_PROGRESS"
+  },
+  "installNote": "npm ci/prune retained six locked optional WASM artifacts labelled extraneous on native macOS. These were preserved outside the isolated native install; portable lock metadata remains. Final npm ls has no problems; native tests rerun pass. Root install remains untouched for active image workers.",
+  "remainingLimits": [
+    "No real/provider/production smoke is claimed.",
+    "Tailwind4 browser floor Safari16.4/Chrome111/Firefox128; MapLibre6 requires WebGL2 with visible fallback.",
+    "ESLint9 deprecation is optional maintenance, not a current advisory.",
+    "Next lint source adaptation and scoped Prisma override require future review/removal when upstream supports clean paths."
+  ]
+}

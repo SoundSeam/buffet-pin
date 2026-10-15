@@ -33,6 +33,9 @@ try {
   const testEnvironment = {
     ...process.env,
     NODE_ENV: "test",
+    // Clean CI/worktrees must not borrow configured authentication credentials.
+    NEXT_PUBLIC_SUPABASE_URL: "https://auth.example.invalid",
+    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "disposable-database-test-key",
     DATABASE_URL: databaseUrl,
     DIRECT_URL: databaseUrl,
     TEST_DATABASE_URL: databaseUrl,

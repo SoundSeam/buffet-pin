@@ -19,7 +19,8 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
+      - run: npm install --global npm@11.8.0
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm run verify
-      - run: npm run security:audit
+      # Both strict audit graphs run first in npm run verify.

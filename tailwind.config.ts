@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import legacyTheme from "./tooling/tailwind-v3-theme.json";
 
 const config: Config = {
   content: [
@@ -6,6 +7,8 @@ const config: Config = {
     "./components/**/*.{ts,tsx}",
   ],
   theme: {
+    // Freeze v3 colors, shadows, radii and typography while using the patched v4 compiler.
+    ...legacyTheme,
     extend: {
       colors: {
         background: "hsl(var(--background))",

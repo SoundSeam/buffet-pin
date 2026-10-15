@@ -388,11 +388,17 @@ test.describe("authenticated launch workflows", () => {
         await route.continue();
       },
     );
+    const acceptance = page.waitForResponse(response => response.url().endsWith("/api/admin/orders/browser-new-order/accept") && response.request().method() === "POST");
     await page
       .getByRole("dialog")
       .getByRole("button", { name: "Accept", exact: true })
       .click();
     await expect(page.getByRole("dialog")).toHaveCount(0, { timeout: 300 });
+    // Preserve the optimistic 300ms close assertion, then verify the authoritative
+    // response rather than racing a cold dev-server route compilation.
+    const accepted = await acceptance;
+    expect(accepted.ok()).toBe(true);
+    expect((await accepted.json()).ok).toBe(true);
 
     const order = page.locator("article").filter({ hasText: "BP-260722-9000" });
     await expect(order).toContainText("Ready target");
@@ -493,7 +499,9 @@ test.describe("authenticated launch workflows", () => {
     await nearZone
       .getByLabel("Zone 1 — Saint-Jean-Baptiste / East fee")
       .fill("4.25");
+    const feeSave = page.waitForResponse(response => response.url().includes("/api/admin/delivery-zones/") && response.request().method() === "PATCH");
     await nearZone.getByRole("button", { name: "Save", exact: true }).click();
+    expect((await feeSave).ok()).toBe(true);
     await expect(nearZone).toContainText("$4.25");
 
     const zones = await page.evaluate(async () =>
@@ -605,13 +613,17 @@ test.describe("authenticated launch workflows", () => {
   test("driver arrives, stores private photo proof, and completes the run", async ({
     page,
   }) => {
+    // This flow compiles several independent API routes in a clean dev server.
+    test.setTimeout(60_000);
     await page.goto("/driver/access/browser-driver-token");
     await expect(page).toHaveURL(/\/driver\/runs$/);
     await expect(page.getByText("RUN-BROWSER-001")).toBeVisible();
     await expect(
       page.getByRole("heading", { name: "BP-260722-9003" }),
     ).toBeVisible();
+    const arrival = page.waitForResponse(response => response.url().includes("/api/driver/runs/") && response.request().method() === "POST");
     await page.getByRole("button", { name: "I have arrived" }).click();
+    expect((await arrival).ok()).toBe(true);
     await expect(page.getByRole("heading", { name: "Delivery photo" })).toBeVisible();
     await page.locator('input[type="file"]').setInputFiles({
       name: "dropoff.png",
@@ -622,9 +634,13 @@ test.describe("authenticated launch workflows", () => {
       ),
     });
     await expect(page.getByAltText("Delivery proof preview")).toBeVisible();
+    const storedProof = page.waitForResponse(response => response.url().endsWith("/proof") && response.request().method() === "POST");
     await page.getByRole("button", { name: "Store this photo" }).click();
+    expect((await storedProof).ok()).toBe(true);
     await expect(page.getByText("Delivery photo stored privately.")).toBeVisible();
+    const completed = page.waitForResponse(response => response.url().includes("/api/driver/runs/") && response.request().method() === "POST");
     await page.getByRole("button", { name: "Finalize delivery" }).click();
+    expect((await completed).ok()).toBe(true);
     await expect(
       page.getByRole("heading", { name: "Return to Buffet PIN" }),
     ).toBeVisible();

@@ -17,3 +17,6 @@ cdk.out
 
 # Local generated reference-image cache.
 /.cache/
+
+# Generated, same-origin MapLibre worker (build/dev/browser lifecycle).
+/public/maplibre-worker.js

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Feature, FeatureCollection, Point, Polygon } from "geojson";
 import type { Map as MapLibreMap } from "maplibre-gl";
 
@@ -24,17 +24,21 @@ type Props = {
 };
 
 export default function DeliveryZoneMap({ zones, restaurant }: Props) {
+  const [mapUnavailable, setMapUnavailable] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
 
+    delete containerRef.current.dataset.mapReady;
     let cancelled = false;
+    setMapUnavailable(false);
 
     const initialize = async () => {
       const maplibregl = await import("maplibre-gl");
       if (cancelled || !containerRef.current) return;
+      maplibregl.setWorkerUrl("/maplibre-worker.js");
 
       const zoneFeatures: Feature<Polygon>[] = zones.flatMap((zone) => {
         const polygon = parseDeliveryZonePolygon(zone.boundaryGeoJson);
@@ -90,6 +94,10 @@ export default function DeliveryZoneMap({ zones, restaurant }: Props) {
         },
       });
       mapRef.current = map;
+      map.on("error", () => { if (!cancelled) setMapUnavailable(true); });
+      map.once("idle", () => {
+        if (!cancelled && containerRef.current) containerRef.current.dataset.mapReady = "true";
+      });
       map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
       map.addControl(
         new maplibregl.AttributionControl({ compact: true }),
@@ -166,7 +174,9 @@ export default function DeliveryZoneMap({ zones, restaurant }: Props) {
       });
     };
 
-    void initialize();
+    void initialize().catch(() => {
+      if (!cancelled) setMapUnavailable(true);
+    });
 
     return () => {
       cancelled = true;
@@ -182,6 +192,11 @@ export default function DeliveryZoneMap({ zones, restaurant }: Props) {
         className="h-[520px] w-full"
         aria-label="Map of the four Buffet Pin delivery zones"
       />
+      {mapUnavailable ? (
+        <div role="status" className="absolute inset-0 flex items-center justify-center bg-[#EDF2EF] p-6 text-center text-sm text-[#062F24]">
+          Map unavailable on this device. Delivery zone details and controls remain available below.
+        </div>
+      ) : null}
       <div className="pointer-events-none absolute left-3 top-3 rounded-button bg-white/95 px-3 py-2 text-xs font-bold text-[#062F24] shadow-sm">
         Red dot: Buffet Pin · Click a zone for its name
       </div>

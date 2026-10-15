@@ -1,6 +1,7 @@
+const path = require("node:path");
 module.exports = {
   plugins: {
-    tailwindcss: {},
-    autoprefixer: {},
+    "@tailwindcss/postcss": {},
+    [path.join(__dirname, "tooling/postcss-v3-compat.cjs")]: {},
   },
 };

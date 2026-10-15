@@ -1,6 +1,18 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss" source(none);
+@config "../tailwind.config.ts";
+@source "./";
+@source "../components";
+
+/* Tailwind 4 compiler, explicitly retained Tailwind 3 interaction/default semantics. */
+@theme {
+  --default-ring-width: 3px;
+  --default-ring-color: rgb(59 130 246 / 0.5);
+}
+@custom-variant hover (&:hover);
+@utility rounded { border-radius: 0.25rem; }
+@utility shadow { --tw-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1); box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow); }
+@utility outline-none { outline: 2px solid transparent; outline-offset: 2px; }
+@utility bg-gradient-to-r { background-image: linear-gradient(to right, var(--tw-gradient-stops)); }
 
 @layer base {
   :root {
@@ -83,15 +95,7 @@
     color-scheme: light;
   }
 
-  select:not([multiple]):not([size]) {
-    -webkit-appearance: none;
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23062F24' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 7.5 5 5 5-5'/%3E%3C/svg%3E");
-    background-position: right 1rem center;
-    background-repeat: no-repeat;
-    background-size: 1rem;
-    padding-right: 3rem;
-  }
+  [type="search"] { outline-offset: -2px; }
 
   :focus {
     outline: none;
@@ -120,6 +124,17 @@
       transition-duration: 0.01ms !important;
     }
   }
+}
+
+/* Keep the original select arrow padding above utility layers, as in v3. */
+select:not([multiple]):not([size]) {
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23062F24' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 7.5 5 5 5-5'/%3E%3C/svg%3E");
+  background-position: right 1rem center;
+  background-repeat: no-repeat;
+  background-size: 1rem;
+  padding-right: 3rem;
 }
 
 .glass-panel {

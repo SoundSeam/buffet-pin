@@ -1,0 +1,8 @@
+{
+  "name": "buffet-pin-next-lint-source",
+  "private": true,
+  "version": "15.5.27-buffet.1",
+  "type": "commonjs",
+  "main": "dist/index.js",
+  "license": "MIT"
+}
