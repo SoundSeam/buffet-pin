@@ -11,7 +11,9 @@ export default defineConfig({
   webServer: {
     command: "node tests/browser/workflow-server.mjs",
     url: "http://localhost:3100/dev/fake-order-flow",
-    reuseExistingServer: !process.env.CI,
+    // Never reuse mutable fixture state or a caller-owned database.
+    reuseExistingServer: false,
+    gracefulShutdown: { signal: "SIGTERM", timeout: 10_000 },
     timeout: 180_000,
   },
   use: {

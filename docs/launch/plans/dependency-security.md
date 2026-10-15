@@ -25,7 +25,7 @@ Production deployment, database/provider mutations, enabling ordering, unrelated
 Existing deterministic fakes, disposable Postgres, Playwright and safe build. No real credentials needed. Native image/worker compatibility verified locally and Linux checks configured in CI. Coordinate menu shared docs and main integration.
 
 ## Assumptions
-Use Node 22.23.2/npm 10.9.8. Tailwind 4 browser floor Safari 16.4/Chrome 111/Firefox 128; preserve v3 visual semantics explicitly. Prisma deepmerge-ts 8 candidate is qualified before retention; no unsupported compatibility claim. Unpatched braces paths must be removed through actual tooling/source changes, not advisory suppression.
+Use Node 22.23.2/npm 11.8.0 (npm10.9.8 peer resolution crashed; no force/peer bypass). Tailwind 4 browser floor Safari 16.4/Chrome 111/Firefox 128; preserve v3 visual semantics explicitly. Prisma deepmerge-ts 8 candidate is qualified before retention; no unsupported compatibility claim. Unpatched braces paths must be removed through actual tooling/source changes, not advisory suppression.
 
 ## Expected change surface
 ### Files and modules
@@ -52,7 +52,7 @@ No credentials/card data/new privilege boundaries. Audit gates check every sever
 
 ## Implementation sequence
 1. Preserve baseline and coordinate menu task; isolate checkout.
-2. Compatible Next/Sharp/Vitest/Twilio transitives/source-map patches; scoped brace versions.
+2. Compatible Next/Sharp/Vitest/Twilio transitives/source-map patches; compatible brace versions; CDK2.273.0 fixes its bundled copy without cross-major overrides.
 3. Qualify Prisma config override; migrate MapLibre worker/types and fallback.
 4. Migrate Tailwind preserving v3 appearance; remove obsolete vulnerable tooling.
 5. Remove Next lint fast-glob dependency with licensed minimal source adaptation and native flat composition preserving rules.
@@ -78,6 +78,17 @@ Planned: npm ci; npm ls --all; Prisma generate/validate; typecheck; lint; full V
 
 ## Rollback and deployment considerations
 Revert scoped code/dependency commit and regenerate client as one artifact; no data rollback. Vulnerable baseline rollback is emergency containment only. Existing publication/ordering guards retained. Vercel's configured build migrates: any future release reviews pending migrations separately. No security publication.
+
+## Verification findings resolved
+- Rebuilt the graph with npm11.8 after npm10's optional-peer crash; pinned untouched direct versions to preserve React/Supabase/Twilio/AWS runtime behavior.
+- Native lint keeps exact prior 98 TS/TSX and75 JS/MJS rules/options/severities; only root-discovery semantics and one comment whitespace change differ from upstream dist.
+- Patched CDK library is required for its bundled brace dependency; CLI unchanged and offline52-resource semantics preserved.
+- Tailwind v3 palettes/fonts/shadows/radii, responsive font-size resets, sibling spacing/dividers, select padding, hover/ring/outline defaults retained; actual public computed-style comparison zero across10 page/viewport combinations.
+- MapLibre6 worker must be bundled explicitly for Next chunk layout; tested real ESM worker and deterministic tiles plus visible failure handling.
+- Cold-route test races fixed by awaiting and checking real mutation responses, retaining the300ms optimistic-close assertion. Driver multi-route test has a60s harness budget; business deadlines remain unchanged.
+- Clean verification supplies non-production Supabase placeholders for disposable DB tests and loopback datasource URLs only for schema validation. Production env validation is unchanged.
+- Browser test harness now owns a direct Next process group and closes fake-auth keep-alive connections during teardown; interrupted-run fixture leaks were removed, preserving unrelated Docker builders.
+- Six locked optional WASM orphan artifacts were preserved outside the isolated native install after npm ci/prune labelled them extraneous. Portable lock metadata is retained; final installed graph and repeated native tests are clean. Root image-worker install was not modified.
 
 ## Progress log
 | Date | Change | Verification | Decision/blocker |
