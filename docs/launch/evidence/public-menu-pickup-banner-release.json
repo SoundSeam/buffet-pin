@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-15",
+  "status": "VERIFIED",
+  "deployment": "dpl_7eGRsq9ejvUJAxZ9TKwiNN9LSojF",
+  "url": "https://www.buffetpin.com/menu",
+  "rollback": "dpl_8wf56ALyL3C29bGgtesT7gW2Y53H",
+  "uploadedSourceFilesVerified": 224,
+  "productionSourceDifference": [
+    "components/menu/public-menu.tsx"
+  ],
+  "checks": {
+    "unitTests": 4,
+    "typecheck": "pass",
+    "focusedLint": "zero errors; existing img warning",
+    "isolatedSafeBuild": "pass",
+    "mainBuildSafe": "pass",
+    "localAndLiveBrowser": "pass bilingual 390px/1440px; placement, colors, tel href; 65 images, no ordering requests",
+    "screenshots": "reviewed",
+    "otherPublicPageSnapshots": "identical before/after"
+  },
+  "migrations": false
+}

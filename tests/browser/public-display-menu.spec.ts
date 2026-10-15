@@ -14,6 +14,13 @@ test("public food menu is bilingual, complete, accessible and display-only", asy
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/menu");
     await expect(page.locator("h1")).toHaveText("Buffet Pin");
+    const pickupBanner = page.locator("[data-menu-pickup-banner]");
+    await expect(pickupBanner).toHaveText("Pour une commande à emporter, appelez le (450) 699-8088.");
+    await expect(pickupBanner).toHaveAttribute("href", "tel:+14506998088");
+    await expect(pickupBanner).toHaveCSS("background-color", "rgb(6, 47, 36)");
+    await expect(pickupBanner).toHaveCSS("color", "rgb(255, 255, 255)");
+    await expect(pickupBanner).toHaveCSS("text-align", "center");
+    expect(await pickupBanner.evaluate(element => element.getBoundingClientRect().bottom)).toBeLessThan(await page.locator("h1").evaluate(element => element.getBoundingClientRect().top));
     await expect(page.locator("[data-menu-item]")).toHaveCount(65);
     await expect(page.locator('main section[id^="food-"]')).toHaveCount(13);
     await expect(page.locator("[data-menu-banner], [data-menu-image]")).toHaveCount(0);
@@ -56,6 +63,7 @@ test("public food menu is bilingual, complete, accessible and display-only", asy
     const toggle = page.getByRole("button", { name: /English|EN|Choisir la langue/ }).last();
     await toggle.click();
     await expect(page.getByRole("searchbox")).toHaveAttribute("aria-label", "Search in Buffet Pin");
+    await expect(pickupBanner).toHaveText("Call (450) 699-8088 to place a pickup order.");
     for (const item of source.items) {
       const article = page.locator(`[data-menu-item="${item.key}"]`);
       await expect(article.locator("h3")).toContainText(item.nameEn);

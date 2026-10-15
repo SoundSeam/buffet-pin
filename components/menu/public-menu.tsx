@@ -26,6 +26,9 @@ export default function PublicMenu({ categories }: { categories: DisplayCategory
     <section data-public-menu className="bg-white pb-20">
       <div className="bg-white pb-10 pt-16 lg:pb-14 lg:pt-20">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <a data-menu-pickup-banner href="tel:+14506998088" className="block rounded-surface bg-[#062F24] px-6 py-4 text-center text-base font-medium text-white">
+            {fr ? "Pour une commande à emporter, appelez le (450) 699-8088." : "Call (450) 699-8088 to place a pickup order."}
+          </a>
           <div className="mt-6 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
             <div><h1 className="max-w-2xl text-3xl font-semibold leading-tight text-black sm:text-4xl">Buffet Pin</h1></div>
             <div className="relative w-full md:max-w-sm">
